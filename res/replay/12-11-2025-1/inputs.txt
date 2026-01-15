@@ -1,0 +1,1 @@
+put intputs here in format every line after this one is one tick add inouts on the right line, the other folder is the map so know starting pos and whatever

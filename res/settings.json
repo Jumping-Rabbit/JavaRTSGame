@@ -1,0 +1,19 @@
+{
+  "graphics": {
+    "index": 0,
+    "display mode": {
+      "value": "windowed",
+      "values": ["windowed, windowedFullscreen, fullscreen"]
+    },
+    "moniter": {
+      "value": 1,
+      "values": "int"
+    }
+  },
+  "keybinds": {
+    "index": 1
+  },
+  "back": {
+    "index": 2
+  }
+}
