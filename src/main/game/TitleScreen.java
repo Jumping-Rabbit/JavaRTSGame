@@ -60,6 +60,14 @@ public class TitleScreen {
         return selectedButton;
     }
 
+    public File getSelectedFile(){
+        return switch (selectedButton) {
+            case CUSTOM -> !customMaps.isEmpty() ? customMaps.get(selectedIndex) : null;
+            case REPLAYS -> !replays.isEmpty() ? replays.get(selectedIndex) : null;
+            default -> null;
+        };
+    }
+
     public void resetSelections(){
         selectedButton = Buttons.HOME;
     }
@@ -105,7 +113,13 @@ public class TitleScreen {
                                 }
                                 break;
                         }
-                }
+                    } else if(Objects.equals(input.getKey(), "enter")){
+                        switch (selectedButton){
+                            case CUSTOM, REPLAYS:
+                                exit = true;
+                                break;
+                        }
+                    }
                     break;
                 case LEFT_CLICK:
                     for (Buttons button : Buttons.values()) {
@@ -116,10 +130,7 @@ public class TitleScreen {
                                 selectedIndex = 0;
                             }
                             switch (button){
-                                case MAP_EDITOR:
-                                    exit = true;
-                                    break;
-                                case SETTINGS:
+                                case MAP_EDITOR, SETTINGS:
                                     exit = true;
                                     break;
                             }
@@ -224,7 +235,7 @@ public class TitleScreen {
         }else {
             start = selectedIndex - 4;
         }
-        for (int i = start; i < start + 9; i++){
+        for (int i = start; i < Math.min(start + 9, customMaps.size()); i++){//prevent error when custom maps size is less than 9
             drawUtil.setColor(0, 0, 0);
             drawUtil.fillRect(50, (i - start)*100 + 150, 1000, 80);
             if (i == selectedIndex){
@@ -233,13 +244,15 @@ public class TitleScreen {
                 drawUtil.setColor(0, 150, 255);
             }
             drawUtil.drawRect(50,(i - start)*100 + 150, 1000, 80);
-            JSONParser parser = new JSONParser();
-            try {
-                Object object = parser.parse(new FileReader(customMaps.get(i).getPath() + "/map.json"));
-                JSONObject map = (JSONObject) object;
-                drawUtil.drawString(525, (i - start)*100 + 200, (String) map.get("name"), 50);
-            } catch (IOException | ParseException e) {
-                throw new RuntimeException(e);
+            if (!customMaps.isEmpty()){
+                JSONParser parser = new JSONParser();
+                try {
+                    Object object = parser.parse(new FileReader(customMaps.get(i).getPath() + "/map.json"));
+                    JSONObject map = (JSONObject) object;
+                    drawUtil.drawString(525, (i - start)*100 + 200, (String) map.get("name"), 50);
+                } catch (IOException | ParseException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
     }

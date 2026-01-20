@@ -5,6 +5,7 @@ import main.inputHandler.InputHandler;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
 import java.text.DecimalFormat;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -104,6 +105,10 @@ public class GamePanel extends JPanel
                     settings = new Settings(drawUtil);
                     gameStatus = GameStatus.SETTINGS;
                     break;
+                case CUSTOM:
+                    if (titleScreen.getSelectedFile() == null) break;
+                    game = new Game(drawUtil, titleScreen.getSelectedFile());
+                    gameStatus = GameStatus.GAME;
             }
             titleScreen.resetSelections();
         }
@@ -137,7 +142,7 @@ public class GamePanel extends JPanel
         drawUtil.fillBackground();
         switch (gameStatus){
             case GAME:
-                game.draw(drawUtil);
+                game.draw();
                 break;
             case TITLESCREEN:
                 titleScreen.draw();
@@ -152,7 +157,7 @@ public class GamePanel extends JPanel
 
         g2.setColor(Color.white);
         g2.setFont(Fonts.fpsFont);
-        g2.drawString("fps:" + formatString(performanceStorage.getFPS(), "00000.00") + " 1%: " + formatString(performanceStorage.getFPSLow(), "00000.00") + " tps:" + formatString(performanceStorage.getTPS(), "00") + " 1%: " + formatString(performanceStorage.getTPSLow(), "00000.00"), 10, 10);
+        g2.drawString("fps:" + formatString(performanceStorage.getFPS(), "00000.00") + " tps:" + formatString(performanceStorage.getTPS(), "00"), 10, 10);
         g2.drawString( "ttu:" + formatString(performanceStorage.getTickTimeUsed(), "0000.00") + "%" + " ttu1%:" + formatString(performanceStorage.getTickTimeUsedLow(), "0000.00") + "%" + " late frames:" + performanceStorage.getLateFrames(), 10, 20);
 
         g2.dispose();
@@ -173,7 +178,7 @@ public class GamePanel extends JPanel
                 currentTime = System.nanoTime();
                 if (currentTime >= targetTime) {
                     updateOnFrame();
-                    targetTime += targetFrameInterval;
+                    targetTime = currentTime + targetFrameInterval;
                     if (!waited){
                         performanceStorage.addLateFrame();
                     }else{
@@ -217,16 +222,17 @@ public class GamePanel extends JPanel
 }
 class PerformanceStorage{
     private ArrayList<Long> tFrames = new ArrayList<>(21);
-    private ArrayList<long[]> tFramesLow = new ArrayList<>(101);
+//    private ArrayList<long[]> tFramesLow = new ArrayList<>(101);
     private ArrayList<Long> dFrames = new ArrayList<>();
-    private ArrayList<long[]> dFramesLow = new ArrayList<>();
+//    private ArrayList<long[]> dFramesLow = new ArrayList<>();
     private ArrayList<Double> tickTimeUsed = new ArrayList<>();
     public int lateFrames = 0;
     public double fps;
     public double tps;
-    public double fpsLow;
-    public double tpsLow;
+//    public double fpsLow;
+//    public double tpsLow;
     public double ttu;
+    public long late;
     ExecutorService executor = Executors.newFixedThreadPool(3);//amount of function that will need to be calculated
 
     public synchronized void addLateFrame(){
@@ -235,19 +241,19 @@ class PerformanceStorage{
 
     public synchronized void addTFrame(long currentFrame, long lastFrame){
         tFrames.add(currentFrame);
-        tFramesLow.add(new long[]{currentFrame, currentFrame-lastFrame});
-        executor.submit(() -> calculateFPS());
+//        tFramesLow.add(new long[]{currentFrame, currentFrame-lastFrame});
+        executor.submit(this::calculateFPS);
 //            tFramesLow.add(frame);
     }
     public synchronized void addDFrame(long currentFrame, long lastFrame){
         dFrames.add(currentFrame);
-        dFramesLow.add(new long[]{currentFrame, currentFrame-lastFrame});
-        executor.submit(() -> calculateTPS());
+//        dFramesLow.add(new long[]{currentFrame, currentFrame-lastFrame});
+        executor.submit(this::calculateTPS);
 //            dFramesLow.add(frame);
     }
     public synchronized void addTickTimeUsed(double ttu){
         tickTimeUsed.add(ttu);
-        executor.submit(() -> calculateTTULow());
+        executor.submit(this::calculateTTULow);
     }
     public synchronized double getTPS(){
         return tps;
@@ -255,12 +261,12 @@ class PerformanceStorage{
     public synchronized double getFPS(){
         return fps;
     }
-    public synchronized double getTPSLow(){
-        return tpsLow;
-    }
-    public synchronized double getFPSLow(){
-        return fpsLow;
-    }
+//    public synchronized double getTPSLow(){
+//        return tpsLow;
+//    }
+//    public synchronized double getFPSLow(){
+//        return fpsLow;
+//    }
     public synchronized int getLateFrames(){
         return lateFrames;
     }
@@ -278,28 +284,28 @@ class PerformanceStorage{
         tFrames.removeIf(f -> System.nanoTime() - f >= 1000000000);
         tps = tFrames.size();
 
-        tFramesLow.removeIf(f -> System.nanoTime() - f[0] >= 5000000000L);
-        tpsLow = 1000000000/tFramesLow.stream()
-                .map(array -> array[1])
-                .sorted(Comparator.reverseOrder())
-                .limit(tFramesLow.size()/100)
-                .mapToDouble(Long::doubleValue)
-                .average()
-                .orElse(0.0);
+//        tFramesLow.removeIf(f -> System.nanoTime() - f[0] >= 5000000000L);
+//        tpsLow = 1000000000/tFramesLow.stream()
+//                .map(array -> array[1])
+//                .sorted(Comparator.reverseOrder())
+//                .limit(tFramesLow.size()/100)
+//                .mapToDouble(Long::doubleValue)
+//                .average()
+//                .orElse(0.0);
     }
 
     private synchronized void calculateFPS() {
         dFrames.removeIf(f -> System.nanoTime() - f >= 2000000000);
         fps = dFrames.size()/2f;
 
-        dFramesLow.removeIf(f -> System.nanoTime() - f[0] >= 5000000000L);
-        fpsLow = 1000000000/dFramesLow.stream()
-                .map(array -> array[1])
-                .sorted(Comparator.reverseOrder())
-                .limit(dFramesLow.size()/100)
-                .mapToDouble(Long::doubleValue)
-                .average()
-                .orElse(0.0);
+//        dFramesLow.removeIf(f -> System.nanoTime() - f[0] >= 5000000000L);
+//        fpsLow = 1000000000/dFramesLow.stream()
+//                .map(array -> array[1])
+//                .sorted(Comparator.reverseOrder())
+//                .limit(dFramesLow.size()/100)
+//                .mapToDouble(Long::doubleValue)
+//                .average()
+//                .orElse(0.0);
     }
 
     private synchronized void calculateTTULow(){

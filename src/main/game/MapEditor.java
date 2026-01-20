@@ -120,10 +120,16 @@ public class MapEditor {
         map.put("name", directory.substring(directory.lastIndexOf("/") + 1));
 
         JSONArray emptyArray = new JSONArray();
+        JSONObject playerData = new JSONObject();
+        JSONArray playersData = new JSONArray();
+        playersData.add(playerData);
+        playerData.put("x", 0);
+        playerData.put("y", 0);
         emptyArray.add(new JSONArray());
         map.put("tileMap", emptyArray);
         map.put("heightMap", emptyArray);
         map.put("key", new JSONObject());
+        map.put("playerData", playersData);
         try(FileWriter writer = new FileWriter(directory +"/map.json")){
             writer.write(map.toJSONString());
             writer.flush();
