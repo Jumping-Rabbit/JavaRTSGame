@@ -18,16 +18,10 @@ public class CollisionUtil {
         return (x2 >= x1 && x2 <= x1 + width1) && (y2 >= y1 && y2 <= y1 + height1);
     }
     public static boolean RectRectCollision(Rectangle rec1, Rectangle rec2){
-        return (rec2.x >= rec1.x && rec2.x <= rec1.x + rec1.width) && (rec2.y >= rec1.y && rec2.y <= rec1.y + rec1.height) ||
-                (rec2.x + rec2.width >= rec1.x && rec2.x + rec2.width <= rec1.x + rec1.width) && (rec2.y >= rec1.y && rec2.y <= rec1.y + rec1.height) ||
-                (rec2.x + rec2.width >= rec1.x && rec2.x + rec2.width <= rec1.x + rec1.width) && (rec2.y + rec2.height >= rec1.y && rec2.y + rec2.height<= rec1.y + rec1.height) ||
-                (rec2.x >= rec1.x && rec2.x <= rec1.x + rec1.width) && (rec2.y + rec2.height >= rec1.y && rec2.y + rec2.height <= rec1.y + rec1.height);
+        return RectRectCollision(rec1.getX(), rec1.getY(), rec1.getWidth(), rec1.getHeight(), rec2.getX(), rec2.getY(), rec2.getWidth(), rec2.getHeight());
     }
     public static boolean RectRectCollision(Rectangle2D.Double rec1, Rectangle2D.Double rec2){
-        return (rec2.x >= rec1.x && rec2.x <= rec1.x + rec1.width) && (rec2.y >= rec1.y && rec2.y <= rec1.y + rec1.height) ||
-                (rec2.x + rec2.width >= rec1.x && rec2.x + rec2.width <= rec1.x + rec1.width) && (rec2.y >= rec1.y && rec2.y <= rec1.y + rec1.height) ||
-                (rec2.x + rec2.width >= rec1.x && rec2.x + rec2.width <= rec1.x + rec1.width) && (rec2.y + rec2.height >= rec1.y && rec2.y + rec2.height<= rec1.y + rec1.height) ||
-                (rec2.x >= rec1.x && rec2.x <= rec1.x + rec1.width) && (rec2.y + rec2.height >= rec1.y && rec2.y + rec2.height <= rec1.y + rec1.height);
+        return RectRectCollision(rec1.getX(), rec1.getY(), rec1.getWidth(), rec1.getHeight(), rec2.getX(), rec2.getY(), rec2.getWidth(), rec2.getHeight());
     }
     public static boolean RectRectCollision(double x1, double y1, double width1, double height1, double x2, double y2, double width2, double height2){
         return (x2 >= x1 && x2 <= x1 + width1) && (y2 >= y1 && y2 <= y1 + height1) ||

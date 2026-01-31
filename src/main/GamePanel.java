@@ -5,15 +5,10 @@ import main.inputHandler.InputHandler;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.File;
 import java.text.DecimalFormat;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.function.Predicate;
 
 import static java.lang.Math.*;
 
@@ -21,8 +16,8 @@ import static java.lang.Math.*;
 public class GamePanel extends JPanel
 {
 
-//    double targetFPS = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDisplayMode().getRefreshRate(); // 0 or negative number means unlimited
-    double targetFPS = 0;
+    double targetFPS = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDisplayMode().getRefreshRate(); // 0 or negative number means unlimited
+//    double targetFPS = 60;
     enum GameStatus {
         TITLESCREEN,
         SETTINGS,
@@ -42,10 +37,11 @@ public class GamePanel extends JPanel
     MapEditor mapEditor;
     Settings settings;
     PerformanceStorage performanceStorage;
+    double interpolationFactor = 0;
+    double lastTickTime = System.currentTimeMillis();
 
     public GamePanel() {
         Dimension d = new Dimension((int)floor((Viewport.viewport.getWidth() * Viewport.viewport.getScale()) + Viewport.viewport.getXOffset()*2), (int)floor((Viewport.viewport.getHeight() * Viewport.viewport.getScale()) + Viewport.viewport.getYOffset()*2));
-//        System.out.println(d);
         this.setPreferredSize(d);
         this.setDoubleBuffered(true); // buffer for better performance
         this.addKeyListener(InputHandler.getKeyHandler());
@@ -67,27 +63,6 @@ public class GamePanel extends JPanel
         logicThread.start();
     }
 
-
-//    GameData newGame(KeyHandler keyHandler, MouseHandler mouseHandler) {
-//        return new GameData(123456, keyHandler, mouseHandler);
-//    }
-//    @Override
-//    public void run() {
-//        long currentTime;
-//        long lastTime = System.nanoTime();
-//        double targetFrameInterval = 50000000;
-//
-//        while (gameThread != null) {
-//            currentTime = System.nanoTime();
-//            if (currentTime - lastTime >= targetFrameInterval) {
-//                frames.add(currentTime);
-//                calculateFPS(currentTime);
-//                updateOnFrame();
-//                repaint();
-//                lastTime = currentTime;
-//            }
-//        }
-//    }
     private String formatString(Double num, String format){
         DecimalFormat df = new DecimalFormat(format);
         return Objects.toString(df.format(num));
@@ -133,16 +108,19 @@ public class GamePanel extends JPanel
                 }
                 break;
         }
+        lastTickTime = System.currentTimeMillis();
     }
 
     public synchronized void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        interpolationFactor = (System.currentTimeMillis()-lastTickTime)/50d;//change 1000 to tick time in milis
         drawUtil.setG2(g2);
         drawUtil.fillBackground();
         switch (gameStatus){
             case GAME:
-                game.draw();
+                game.draw(interpolationFactor);
                 break;
             case TITLESCREEN:
                 titleScreen.draw();
@@ -170,23 +148,21 @@ public class GamePanel extends JPanel
         @Override
         public void run(){
             long currentTime;
-            long lastTime = System.nanoTime();
             long targetFrameInterval = 50000000;//20 tps
             long targetTime = System.nanoTime() + targetFrameInterval;
             boolean waited = true;
             while (logicThread != null) {
                 currentTime = System.nanoTime();
                 if (currentTime >= targetTime) {
-                    updateOnFrame();
                     targetTime = currentTime + targetFrameInterval;
+                    updateOnFrame();
                     if (!waited){
                         performanceStorage.addLateFrame();
                     }else{
                         waited = false;
                     }
-                    performanceStorage.addTFrame(currentTime, lastTime);
-                    performanceStorage.addTickTimeUsed((double) (System.nanoTime()-currentTime)/500000); //targetFrameInterval accounted for percentantage change
-                    lastTime = currentTime;
+                    performanceStorage.addTFrame(currentTime);
+                    performanceStorage.addTickTimeUsed((double) (System.nanoTime()-currentTime)/500000d); //targetFrameInterval accounted for percentantage change
                     continue;
                 }
                 waited = true;
@@ -199,7 +175,6 @@ public class GamePanel extends JPanel
             this.performanceStorage = performanceStorage;
         }
         private double targetFrameInterval;
-
         @Override
         public void run(){
             long currentTime;
@@ -212,47 +187,49 @@ public class GamePanel extends JPanel
                 }
                 currentTime = System.nanoTime();
                 if (currentTime - lastTime >= targetFrameInterval) {
-                    repaint();
-                    performanceStorage.addDFrame(currentTime, lastTime);
                     lastTime = currentTime;
+                    repaint();
+                    performanceStorage.addDFrame(currentTime);
                 }
             }
         }
     }
 }
 class PerformanceStorage{
-    private ArrayList<Long> tFrames = new ArrayList<>(21);
-//    private ArrayList<long[]> tFramesLow = new ArrayList<>(101);
-    private ArrayList<Long> dFrames = new ArrayList<>();
-//    private ArrayList<long[]> dFramesLow = new ArrayList<>();
-    private ArrayList<Double> tickTimeUsed = new ArrayList<>();
+    private LinkedList<Long> tFrames = new LinkedList<>();
+    private LinkedList<Long> dFrames = new LinkedList<>();
+    private LinkedList<Double> tickTimeUsed = new LinkedList<>();
     public int lateFrames = 0;
     public double fps;
     public double tps;
-//    public double fpsLow;
-//    public double tpsLow;
     public double ttu;
-    public long late;
-    ExecutorService executor = Executors.newFixedThreadPool(3);//amount of function that will need to be calculated
+    private synchronized void setTps(double tps){
+        this.tps = tps;
+    }
+    private synchronized void setFps(double fps){
+        this.fps = fps;
+    }
+    private final ExecutorService executor = Executors.newFixedThreadPool(3);//amount of function that will need to be calculated
 
     public synchronized void addLateFrame(){
         lateFrames++;
     };
-
-    public synchronized void addTFrame(long currentFrame, long lastFrame){
+    private synchronized void addTickFrames(long currentFrame){
         tFrames.add(currentFrame);
-//        tFramesLow.add(new long[]{currentFrame, currentFrame-lastFrame});
-        executor.submit(this::calculateFPS);
-//            tFramesLow.add(frame);
     }
-    public synchronized void addDFrame(long currentFrame, long lastFrame){
-        dFrames.add(currentFrame);
-//        dFramesLow.add(new long[]{currentFrame, currentFrame-lastFrame});
+    public void addTFrame(long currentFrame){
+        addTickFrames(currentFrame);
         executor.submit(this::calculateTPS);
-//            dFramesLow.add(frame);
+        executor.submit(this::calculateFPS);
     }
-    public synchronized void addTickTimeUsed(double ttu){
+    public synchronized void addDFrame(long currentFrame){
+        dFrames.add(currentFrame);
+    }
+    private synchronized void addTTU(double ttu){
         tickTimeUsed.add(ttu);
+    }
+    public void addTickTimeUsed(double ttu){
+        addTTU(ttu);
         executor.submit(this::calculateTTULow);
     }
     public synchronized double getTPS(){
@@ -261,12 +238,6 @@ class PerformanceStorage{
     public synchronized double getFPS(){
         return fps;
     }
-//    public synchronized double getTPSLow(){
-//        return tpsLow;
-//    }
-//    public synchronized double getFPSLow(){
-//        return fpsLow;
-//    }
     public synchronized int getLateFrames(){
         return lateFrames;
     }
@@ -279,33 +250,30 @@ class PerformanceStorage{
     public synchronized double getTickTimeUsedLow(){
         return ttu;
     }
-
-    private synchronized void calculateTPS() {
-        tFrames.removeIf(f -> System.nanoTime() - f >= 1000000000);
-        tps = tFrames.size();
-
-//        tFramesLow.removeIf(f -> System.nanoTime() - f[0] >= 5000000000L);
-//        tpsLow = 1000000000/tFramesLow.stream()
-//                .map(array -> array[1])
-//                .sorted(Comparator.reverseOrder())
-//                .limit(tFramesLow.size()/100)
-//                .mapToDouble(Long::doubleValue)
-//                .average()
-//                .orElse(0.0);
+    private synchronized LinkedList<Long> getTFrames(){
+        return (LinkedList<Long>) tFrames.clone();
+    }
+    private synchronized void setTFrames (LinkedList<Long> tFrames){
+        this.tFrames = tFrames;
+    }
+    private synchronized LinkedList<Long> getDFrames(){
+        return (LinkedList<Long>) dFrames.clone();
+    }
+    private synchronized void setDFrames (LinkedList<Long> dFrames){
+        this.dFrames = dFrames;
+    }
+    private void calculateTPS() {
+        LinkedList<Long> newTFrames = getTFrames();
+        newTFrames.removeIf(f -> System.nanoTime() - f >= 1000000000);
+        setTFrames(newTFrames);
+        setTps(tFrames.size());
     }
 
-    private synchronized void calculateFPS() {
-        dFrames.removeIf(f -> System.nanoTime() - f >= 2000000000);
-        fps = dFrames.size()/2f;
-
-//        dFramesLow.removeIf(f -> System.nanoTime() - f[0] >= 5000000000L);
-//        fpsLow = 1000000000/dFramesLow.stream()
-//                .map(array -> array[1])
-//                .sorted(Comparator.reverseOrder())
-//                .limit(dFramesLow.size()/100)
-//                .mapToDouble(Long::doubleValue)
-//                .average()
-//                .orElse(0.0);
+    private void calculateFPS() {
+        LinkedList<Long> newDFrames = getDFrames();
+        newDFrames.removeIf(f -> System.nanoTime() - f >= 2000000000);
+        setDFrames(newDFrames);
+        setFps(dFrames.size()/2f);
     }
 
     private synchronized void calculateTTULow(){

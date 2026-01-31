@@ -104,30 +104,37 @@ public class MapEditor {
         directory = "res/map/custom/" + DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss").format(time);//use -SSSSSSSSS for nanosecs
 //        name = String.format("res/map/custom/%d-%d-%d-%d-%d-%d-%d", );
 //        name = "res/map/custom/" + time.getYear()+"-"+time.getMonthValue()+"-"+time.getDayOfMonth()+"-"+time.getHour()+"-"+time.getMinute()+"-"+time.getSecond()+"-"+time.getNano();
-        Path path = Paths.get(directory);
-        Path unitsPath = Paths.get(directory + "/units");
-        Path buildingsPath = Paths.get(directory + "/buildings");
-        Path objectsPath = Paths.get(directory + "/objects");
         try{
-            Files.createDirectories(path);
-            Files.createDirectories(unitsPath);
-            Files.createDirectories(buildingsPath);
-            Files.createDirectories(objectsPath);
+            Files.createDirectories(Paths.get(directory));
+            Files.createDirectories(Paths.get(directory + "/units"));
+            Files.createDirectories(Paths.get(directory + "/buildings"));
+            Files.createDirectories(Paths.get(directory + "/objects"));
+            Files.createDirectories(Paths.get(directory + "/tiles"));
         }catch(IOException e){
             e.printStackTrace();
         }
         JSONObject map = new JSONObject();
         map.put("name", directory.substring(directory.lastIndexOf("/") + 1));
 
-        JSONArray emptyArray = new JSONArray();
+        JSONArray zero2DArray = new JSONArray();
+        JSONArray zeroArray = new JSONArray();
         JSONObject playerData = new JSONObject();
         JSONArray playersData = new JSONArray();
+        for (int i = 0; i < 50; i++){
+            zeroArray.add(0);
+        }
+        for (int i = 0; i < 50; i++){
+            zero2DArray.add(zeroArray);
+        }
         playersData.add(playerData);
         playerData.put("x", 0);
         playerData.put("y", 0);
-        emptyArray.add(new JSONArray());
-        map.put("tileMap", emptyArray);
-        map.put("heightMap", emptyArray);
+
+        JSONObject key = new JSONObject();
+        key.put("0", "default.png");
+
+        map.put("tileMap", zero2DArray);
+        map.put("heightMap", zero2DArray);
         map.put("key", new JSONObject());
         map.put("playerData", playersData);
         try(FileWriter writer = new FileWriter(directory +"/map.json")){

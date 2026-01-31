@@ -1,7 +1,15 @@
 package main.game;
 
+import entity.Command;
+import entity.Entity;
+import entity.building.Building;
+import entity.players;
+import entity.unit.Unit;
+import entity.unit.testRace1.Marine;
 import main.DrawUtil;
+import main.inputHandler.Input;
 import main.inputHandler.InputHandler;
+import main.inputHandler.InputType;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -12,6 +20,7 @@ import java.awt.*;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class Game {
     public enum GameState {
@@ -24,6 +33,9 @@ public class Game {
     GameState gameState = GameState.RUNNING;
     GameViewport gameViewport;//get x and y from map
     TileManager tileManager;
+    ArrayList<Unit> units;
+    ArrayList<Building> buildings;
+    ArrayList<Entity> selectedEntities;
     public Game(DrawUtil drawUtil, File map) {
         JSONParser parser = new JSONParser();
         Object object;
@@ -35,9 +47,16 @@ public class Game {
         JSONObject mapJSON = (JSONObject) object;
         JSONArray playersData = (JSONArray) mapJSON.get("playerData");
         this(drawUtil, map, (int)Math.floor(Math.random() * playersData.size()));
+
     }
     public Game(DrawUtil drawUtil, File map, int playerNum) {
-        tileManager = new TileManager(new File("test"));
+        units = new ArrayList<>();
+        units.add(new Marine(drawUtil, 100, 100, players.BLUE));//temp for testing
+        buildings = new ArrayList<>();
+        selectedEntities = new ArrayList<>();
+        selectedEntities.add(units.getFirst());
+
+        tileManager = new TileManager(drawUtil, map);
         this.map = map;
         JSONParser parser = new JSONParser();
         try {
@@ -46,6 +65,8 @@ public class Game {
             JSONArray playersData = (JSONArray) mapJSON.get("playerData");
             JSONObject playerData = (JSONObject) playersData.get(playerNum);
             gameViewport = new GameViewport(Double.parseDouble(String.valueOf(playerData.get("x"))), Double.parseDouble(String.valueOf(playerData.get("y"))));
+            System.out.println(gameViewport.getX());
+            System.out.println(gameViewport.getY());
         } catch (IOException | ParseException e) {
             throw new RuntimeException(e);
         }
@@ -55,9 +76,28 @@ public class Game {
     }
 //
     public void updateOnFrame() {
-
+        for (Input input : InputHandler.getInputs()){
+            switch (input.getInputType()) {
+                case LEFT_CLICK:
+                    for (Entity entity : selectedEntities){
+                        entity.addCommand(new Command(InputType.LEFT_CLICK, input.getX(), input.getY()));
+                    }
+                    break;
+            }
+        }
+        for (Unit unit : units){
+            unit.updateOnFrame();
+        }
+        for (Building building : buildings){
+            building.updateOnFrame();
+        }
     }
-    public void draw() {
-
+    public void draw(double factor) {
+        for (Unit unit : units){
+            unit.draw(factor);
+        }
+        for (Building building : buildings){
+            building.draw(factor);
+        }
     }
 }

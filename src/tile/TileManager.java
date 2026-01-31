@@ -1,53 +1,49 @@
 package tile;
 
+import main.DrawUtil;
 import main.game.Game;
 import main.game.Viewport;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Scanner;
 
 public class TileManager {
-    public enum Maps {
-        OVERWORLD
-    }
-    Maps currentMap;
-    Game gd;
+    Game game;
+    DrawUtil drawUtil;
     Tile[] tile;
     int [][] currentMapNum;
     int mapWidth;
     int mapHeight;
-    String[] tilePaths = {
+    BufferedImage[] tiles;
 
-    };
 
-    public TileManager(File file) {
-        tile = new Tile[tilePaths.length]; // amount of diffrent tiles
-        getTileImage();
-        setCurrentMap(Maps.OVERWORLD);
+    public TileManager(DrawUtil drawUtil, File file) {
+//        this.drawUtil = drawUtil;
+//        //TODO: declare and populate tiles here from file
+//        //TODO: fix not permission when new scanner of file
+//
+//
+//        tile = new Tile[tiles.length]; // amount of diffrent tiles
+//        getTileImage();
+//        setCurrentMap(file);
     }
 
     public void getTileImage() {
-        for (int x = 0; x < tilePaths.length; x++) {
-            try {
-                tile[x] = new Tile();
-                tile[x].image = ImageIO.read(new File(tilePaths[x]));
-            }catch (IOException e) {
-                e.printStackTrace();
-            }
+        for (int x = 0; x < tiles.length; x++) {
+            tile[x] = new Tile();
+            tile[x].image = tiles[x];
         }
     }
 
-    public void setCurrentMap(Maps maps) {
-        currentMap = maps;
-        File map = null;
+    public void setCurrentMap(File file) {
         currentMapNum = new int[mapHeight][mapWidth];
-        map = new File("C:\\Users\\ryanl\\IdeaProjects\\javaPokemonGame\\res\\map\\overworld");
         try {
-            Scanner mapReader = new Scanner(map);
+            Scanner mapReader = new Scanner(file);
             mapWidth = Integer.parseInt(mapReader.nextLine());
             mapHeight = Integer.parseInt(mapReader.nextLine());
             currentMapNum = new int[mapHeight][mapWidth];

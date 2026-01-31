@@ -2,20 +2,29 @@ package entity.unit;
 
 import entity.Effects;
 import entity.Entity;
+import entity.players;
 
-import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
 public abstract class Unit extends Entity {
-    private long hp;
-    private int armor;
-    private int speed;
-    private int turnSpeed;
-    private long direction;
-    private long x;
-    private long y;
-    ArrayList<Effects> effects;
-    private BufferedImage image;
-
+    protected long hp;
+    protected long armor;
+    protected long speed;
+    protected long turnSpeed;
+    protected long direction;
+    protected long lastDirection;
+    protected long x;
+    protected long y;
+    protected long lastX;
+    protected long lastY;
+    protected long damage;
+    protected long attackSpeed;//in ticks
+    protected long ticksUntilAttack;
+    protected players player;
+    protected ArrayList<Effects> effects;
+    protected UnitState unitState;
+    protected long targetX;
+    protected long targetY;
+    protected long targetDirection;
+    protected Entity attckTarget;
 }

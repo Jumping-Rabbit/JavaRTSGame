@@ -1,15 +1,12 @@
 package main;
 
-import main.game.Viewport;
-import main.inputHandler.InputHandler;
-
 import java.awt.*;
 
 import javax.swing.*;
 
 public class Main {
     private static JFrame window = new JFrame();
-    public static void main(String[] args) {
+    static void main() {
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 //        window.setResizable(false);
 //        window.setUndecorated(true);
@@ -22,9 +19,6 @@ public class Main {
         window.setLocationRelativeTo(null);
         window.setVisible(true);
         gamePanel.startGameThread();
-    }
-    public static Component getWindow(){
-        return window;
     }
     public static void setFullscreen(int moniterNum){
         window.dispose();
