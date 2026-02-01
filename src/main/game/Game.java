@@ -22,7 +22,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class Game {
+public class Game extends Screen{
     public enum GameState {
         RUNNING,
         PAUSED,
@@ -74,7 +74,29 @@ public class Game {
         this.drawUtil = drawUtil;
         drawUtil.setGameViewport(gameViewport);
     }
-//
+
+    public Screen copy(){
+        return new Game(this);
+    }
+
+    private Game(Game game){
+        map = game.map;
+        drawUtil = game.drawUtil;
+        gameState = game.gameState;
+        gameViewport = game.gameViewport;
+        tileManager = game.tileManager;
+        selectedEntities = new ArrayList<>();
+        units = new ArrayList<>();
+        for (Unit unit : game.units){
+            Unit newUnit = unit.copy();
+            units.add(newUnit);
+            if (game.selectedEntities.contains(unit)){
+                selectedEntities.add(newUnit);
+            }
+        }
+        buildings = game.buildings;
+    }
+
     public void updateOnFrame() {
         for (Input input : InputHandler.getInputs()){
             switch (input.getInputType()) {
@@ -92,12 +114,17 @@ public class Game {
             building.updateOnFrame();
         }
     }
-    public void draw(double factor) {
+
+    public void draw() {
+        for (Entity selected : selectedEntities){
+            selected.drawSelectedRing();
+        }
         for (Unit unit : units){
-            unit.draw(factor);
+            unit.draw();
         }
         for (Building building : buildings){
-            building.draw(factor);
+            building.draw();
         }
+
     }
 }

@@ -21,7 +21,7 @@ import java.util.Objects;
 
 import static main.inputHandler.InputType.*;
 
-public class TitleScreen {
+public class TitleScreen extends Screen{
     public enum Buttons {
         HOME(new Rectangle(0, 0, 200, 100), "home"),
         CAMPAIGN(new Rectangle(200, 0, 400, 100), "campaign"),
@@ -43,12 +43,16 @@ public class TitleScreen {
             return rectangle;
         }
     }
+
     private Buttons selectedButton = Buttons.HOME;
 
     private ArrayList<File> customMaps = new ArrayList<>(Arrays.asList(Objects.requireNonNull(new File("res/map/custom").listFiles())));
     private ArrayList<File> replays = new ArrayList<>(Arrays.asList(Objects.requireNonNull(new File("res/replay").listFiles())));
     private int selectedIndex = 0;
     private boolean exit = false;
+    private DrawUtil drawUtil;
+
+
     public boolean isExit() {
         if (exit){
             exit = false;
@@ -72,10 +76,23 @@ public class TitleScreen {
         selectedButton = Buttons.HOME;
     }
 
-    private DrawUtil drawUtil;
+
 
     public TitleScreen(DrawUtil drawUtil){
         this.drawUtil = drawUtil;
+    }
+
+    private TitleScreen(TitleScreen titleScreen){//copy constructor
+        selectedButton = titleScreen.selectedButton;
+        customMaps = new ArrayList<>(Arrays.asList(Objects.requireNonNull(new File("res/map/custom").listFiles())));
+        replays = new ArrayList<>(Arrays.asList(Objects.requireNonNull(new File("res/replay").listFiles())));
+        selectedIndex = titleScreen.selectedIndex;
+        exit = titleScreen.exit;
+        drawUtil = titleScreen.drawUtil;
+    }
+
+    public Screen copy(){
+        return new TitleScreen(this);
     }
 
     public void updateOnFrame() {
@@ -170,17 +187,13 @@ public class TitleScreen {
             replays = new ArrayList<>(Arrays.asList(Objects.requireNonNull(new File("res/replay").listFiles())));
         }
         switch (selectedButton){
-            case MAP_EDITOR:
-                exit = true;
-                break;
-            case SETTINGS:
+            case MAP_EDITOR, SETTINGS:
                 exit = true;
                 break;
             default:
                 break;
         }
     }
-
 
     public void draw() {
         drawUtil.setColor(75, 75, 75);

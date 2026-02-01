@@ -11,12 +11,6 @@ public abstract class Unit extends Entity {
     protected long armor;
     protected long speed;
     protected long turnSpeed;
-    protected long direction;
-    protected long lastDirection;
-    protected long x;
-    protected long y;
-    protected long lastX;
-    protected long lastY;
     protected long damage;
     protected long attackSpeed;//in ticks
     protected long ticksUntilAttack;
@@ -27,4 +21,6 @@ public abstract class Unit extends Entity {
     protected long targetY;
     protected long targetDirection;
     protected Entity attckTarget;
+
+    public abstract Unit copy();
 }

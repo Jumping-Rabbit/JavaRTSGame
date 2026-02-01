@@ -1,10 +1,14 @@
 package main;
 
+import javazoom.jl.decoder.JavaLayerException;
+import javazoom.jl.player.Player;
 import main.game.*;
 import main.inputHandler.InputHandler;
 
+import javax.sound.sampled.*;
 import javax.swing.*;
 import java.awt.*;
+import java.io.*;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -13,32 +17,63 @@ import java.util.concurrent.Executors;
 import static java.lang.Math.*;
 
 
-public class GamePanel extends JPanel
-{
+public class GamePanel extends JPanel{
 
     double targetFPS = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDisplayMode().getRefreshRate(); // 0 or negative number means unlimited
-//    double targetFPS = 60;
+//    double targetFPS = 0;
     enum GameStatus {
         TITLESCREEN,
         SETTINGS,
         GAME,
         MAP_EDITOR
     }
-    GameStatus gameStatus = GameStatus.TITLESCREEN;
+    private GameStatus gameStatus = GameStatus.TITLESCREEN;
 
 
-    Thread drawThread;
-    Thread logicThread;
+    private Thread drawThread;
+    private Thread logicThread;
+    private Thread soundThread;
 
-    DrawUtil drawUtil;
+    private DrawUtil drawUtil;
 
-    Game game;
-    TitleScreen titleScreen;
-    MapEditor mapEditor;
-    Settings settings;
-    PerformanceStorage performanceStorage;
+    private Game game;
+    private Screen tickScreen;
+
+    private TitleScreen titleScreen;
+    private MapEditor mapEditor;
+    private Settings settings;
+    private PerformanceStorage performanceStorage;
     double interpolationFactor = 0;
     double lastTickTime = System.currentTimeMillis();
+
+    private synchronized void setGame(Game game){
+        this.game = game;
+    }
+    private synchronized Game getGame(){
+        return game;
+    }
+
+    private synchronized TitleScreen getTitleScreen() {
+        return titleScreen;
+    }
+    private synchronized void setTitleScreen(TitleScreen titleScreen) {
+        this.titleScreen = titleScreen;
+    }
+
+    private synchronized MapEditor getMapEditor() {
+        return mapEditor;
+    }
+    private synchronized void setMapEditor(MapEditor mapEditor) {
+        this.mapEditor = mapEditor;
+    }
+
+    private synchronized Settings getSettings() {
+        return settings;
+    }
+    private synchronized void setSettings(Settings settings) {
+        this.settings = settings;
+    }
+
 
     public GamePanel() {
         Dimension d = new Dimension((int)floor((Viewport.viewport.getWidth() * Viewport.viewport.getScale()) + Viewport.viewport.getXOffset()*2), (int)floor((Viewport.viewport.getHeight() * Viewport.viewport.getScale()) + Viewport.viewport.getYOffset()*2));
@@ -53,14 +88,15 @@ public class GamePanel extends JPanel
         drawUtil = new DrawUtil();
         titleScreen = new TitleScreen(drawUtil);
         performanceStorage = new PerformanceStorage();
-
     }
 
     public void startGameThread() {
         drawThread = new Thread(new drawThread(performanceStorage));
         logicThread = new Thread(new logicThread(performanceStorage));
+        soundThread = new Thread(new soundThread());
         drawThread.start();
         logicThread.start();
+        soundThread.start();
     }
 
     private String formatString(Double num, String format){
@@ -68,7 +104,7 @@ public class GamePanel extends JPanel
         return Objects.toString(df.format(num));
     }
 
-    public synchronized void updateOnFrame() {
+    public void updateOnFrame() {
         InputHandler.tick();
         if (titleScreen.isExit()){
             switch (titleScreen.getSelectedButton()){
@@ -89,12 +125,17 @@ public class GamePanel extends JPanel
         }
         switch (gameStatus){
             case GAME:
-                game.updateOnFrame();
+                tickScreen = getGame().copy();
+                tickScreen.updateOnFrame();
+                setGame((Game)tickScreen);
                 break;
             case TITLESCREEN:
-                titleScreen.updateOnFrame();
+                tickScreen = getTitleScreen().copy();
+                tickScreen.updateOnFrame();
+                setTitleScreen((TitleScreen)tickScreen);
                 break;
             case MAP_EDITOR:
+                tickScreen = getMapEditor().copy();
                 mapEditor.updateOnFrame();
                 if (mapEditor.isExit()){
                     gameStatus = GameStatus.TITLESCREEN;
@@ -111,16 +152,16 @@ public class GamePanel extends JPanel
         lastTickTime = System.currentTimeMillis();
     }
 
-    public synchronized void paintComponent(Graphics g) {
+    public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        interpolationFactor = (System.currentTimeMillis()-lastTickTime)/50d;//change 1000 to tick time in milis
+        drawUtil.setFactor((System.currentTimeMillis()-lastTickTime)/50d);
         drawUtil.setG2(g2);
         drawUtil.fillBackground();
         switch (gameStatus){
             case GAME:
-                game.draw(interpolationFactor);
+                game.draw();
                 break;
             case TITLESCREEN:
                 titleScreen.draw();
@@ -190,6 +231,51 @@ public class GamePanel extends JPanel
                     lastTime = currentTime;
                     repaint();
                     performanceStorage.addDFrame(currentTime);
+                }
+            }
+        }
+    }
+    class soundThread implements Runnable{
+        @Override
+        public void run(){
+            Player player1 = null;
+            Player player2 = null;
+            try {
+                player1 = new Player(new BufferedInputStream(new FileInputStream("res/sounds/music/music1.mp3")));
+                player2 = new Player(new BufferedInputStream(new FileInputStream("res/sounds/music/music2.mp3")));
+
+            } catch (FileNotFoundException | JavaLayerException e) {
+                e.printStackTrace();
+            }
+            while (soundThread != null){
+                try {
+                    player1.play();
+                } catch (JavaLayerException e) {
+                    e.printStackTrace();
+                }
+                while (!player1.isComplete()){
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                try {
+                    player2.play();
+                } catch (JavaLayerException e) {
+                    e.printStackTrace();
+                }
+                while (!player2.isComplete()){
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
             }
         }

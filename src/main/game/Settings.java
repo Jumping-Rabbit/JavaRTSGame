@@ -17,7 +17,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class Settings {
+public class Settings extends Screen{
     private DrawUtil drawUtil;
     private int sectionIndex = 0;
     private int settingsIndex = 0;
@@ -52,6 +52,20 @@ public class Settings {
         } catch (IOException | ParseException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public Settings(Settings settings){
+        drawUtil = settings.drawUtil;
+        sectionIndex = settings.sectionIndex;
+        settingsIndex = settings.settingsIndex;
+        sections = settings.sections;
+        sectionSettings = (ArrayList<String>) settings.sectionSettings.clone();
+        sectionWidth = settings.sectionWidth;
+        exit = settings.exit ;
+    }
+
+    public Screen copy(){
+        return new Settings(this);
     }
 
     public void updateOnFrame() {

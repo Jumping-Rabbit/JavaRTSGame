@@ -13,7 +13,11 @@ public class DrawUtil{
     double x;
     double y;
     double rotation;
-    boolean startRotate = false;
+    double factor = 0;
+
+    public void setFactor(double factor){
+        this.factor = factor;
+    }
 
     public void setGameViewport(GameViewport gameViewport) {
         this.gameViewport = gameViewport;
@@ -31,14 +35,14 @@ public class DrawUtil{
         return g2;
     }
 
-    public void startRotation(){
-        startRotate = true;
+    public void startRotation(double x1, double y1, double x2, double y2, double xOffset, double yOffset, double direction1, double direction2){
+        factor = Math.clamp(factor, 0, 1);
+        double x = (x2 * factor + x1 * (1 - factor)) + xOffset;
+        double y = (y2 * factor + y1 * (1 - factor)) + yOffset;
+        rotate(x, y, direction2 * factor + direction1 * (1 - factor));
     }
 
     private void rotate(double x, double y, double rotation){
-        if (!startRotate){
-            return;
-        }
         if (rotated){
             g2.rotate(-Math.toRadians(rotation), (x-Viewport.viewport.getX())*Viewport.viewport.getScale() + Viewport.viewport.getXOffset(), (y-Viewport.viewport.getY())*Viewport.viewport.getScale() + Viewport.viewport.getYOffset());//TODO: account for the offset and scale and stuff
         }
@@ -47,7 +51,6 @@ public class DrawUtil{
         this.x = x;
         this.y = y;
         this.rotation = rotation;
-        startRotate = false;
     }
     public void resetRotation(){
         if (rotated){
@@ -76,7 +79,7 @@ public class DrawUtil{
         g2.fillRect((int)Math.round((x-Viewport.viewport.getX())*scale + Viewport.viewport.getXOffset()), (int)Math.round((y-Viewport.viewport.getY())*scale + Viewport.viewport.getYOffset()), (int)Math.round(width*scale), (int)Math.round(height*scale));
     }
 
-    public void fillRectInterpolate(double x1, double y1, double width, double height, double x2, double y2,  double factor, double direction1, double direction2) {
+    public void fillRectInterpolate(double x1, double y1, double width, double height, double x2, double y2, double direction1, double direction2) {
         factor = Math.clamp(factor, 0, 1);
         double x = x2 * factor + x1 * (1 - factor);
         double y = y2 * factor + y1 * (1 - factor);
@@ -86,8 +89,22 @@ public class DrawUtil{
             }
         }
         double scale = Viewport.viewport.getScale();
-        rotate(x + width/2, y + height/2, direction2 * factor + direction1 * (1 - factor));
+//        rotate(x + width/2, y + height/2, direction2 * factor + direction1 * (1 - factor));
         g2.fillRect((int)Math.round((x-Viewport.viewport.getX())*scale + Viewport.viewport.getXOffset()), (int)Math.round((y-Viewport.viewport.getY())*scale + Viewport.viewport.getYOffset()), (int)Math.round(width*scale), (int)Math.round(height*scale));
+//        resetRotation();
+    }
+    public void fillRoundRectInterpolate(double x1, double y1, double width, double height, double edge, double x2, double y2, double direction1, double direction2) {
+        factor = Math.clamp(factor, 0, 1);
+        double x = x2 * factor + x1 * (1 - factor);
+        double y = y2 * factor + y1 * (1 - factor);
+        if (gameViewport != null){
+            if (!CollisionUtil.RectRectCollision(gameViewport.getX(), gameViewport.getY(), gameViewport.getWidth(), gameViewport.getHeight(), x, y, width, height)){
+                return;
+            }
+        }
+        double scale = Viewport.viewport.getScale();
+//        rotate(x + width/2, y + height/2, direction2 * factor + direction1 * (1 - factor));
+        g2.fillRoundRect((int)Math.round((x-Viewport.viewport.getX())*scale + Viewport.viewport.getXOffset()), (int)Math.round((y-Viewport.viewport.getY())*scale + Viewport.viewport.getYOffset()), (int)Math.round(width*scale), (int)Math.round(height*scale), (int)Math.round(edge*scale), (int)Math.round(edge*scale));
 //        resetRotation();
     }
 
@@ -121,7 +138,7 @@ public class DrawUtil{
         double scale = Viewport.viewport.getScale();
         g2.fillOval((int)Math.round((x-Viewport.viewport.getX())*scale + Viewport.viewport.getXOffset()), (int)Math.round((y-Viewport.viewport.getY())*scale + Viewport.viewport.getYOffset()), (int)Math.round(radius*2*scale), (int)Math.round(radius*2*scale));
     }
-    public void fillCircleInterpolate(double x1, double y1, double radius, double x2, double y2, double factor, double direction1, double direction2) {
+    public void fillCircleInterpolate(double x1, double y1, double radius, double x2, double y2, double direction1, double direction2) {
         factor = Math.clamp(factor, 0, 1);
         double x = x2 * factor + x1 * (1 - factor);
         double y = y2 * factor + y1 * (1 - factor);
@@ -131,7 +148,7 @@ public class DrawUtil{
             }
         }
         double scale = Viewport.viewport.getScale();
-        rotate(x + radius, y + radius, direction2 * factor + direction1 * (1 - factor));
+//        rotate(x + radius, y + radius, direction2 * factor + direction1 * (1 - factor));
         g2.fillOval((int)Math.round((x - Viewport.viewport.getX())*scale + Viewport.viewport.getXOffset()), (int)Math.round((y-Viewport.viewport.getY())*scale + Viewport.viewport.getYOffset()), (int)Math.round(radius*2*scale), (int)Math.round(radius*2*scale));
 //        resetRotation();
     }

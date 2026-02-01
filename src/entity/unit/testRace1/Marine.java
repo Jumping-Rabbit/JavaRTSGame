@@ -1,6 +1,7 @@
 package entity.unit.testRace1;
 
 import entity.Command;
+import entity.Effects;
 import entity.numUtil;
 import entity.players;
 import entity.unit.Unit;
@@ -32,6 +33,42 @@ public class Marine extends Unit {
         effects = new ArrayList<>();
         hasCollision = true;
         unitState = UnitState.IDLE;
+        radius = 20;
+    }
+    @Override
+    public Unit copy(){
+        return new Marine(this);
+    }
+
+    private Marine(Marine marine){
+        player = marine.player;
+        drawUtil = marine.drawUtil;
+        x = marine.x;
+        y = marine.y;
+        lastX = marine.x;
+        lastY = marine.y;
+        validCommandTypes = new ArrayList<>();
+        validCommandTypes.add(InputType.LEFT_CLICK);
+        hp = marine.hp;
+        armor = marine.armor;
+        speed = marine.speed;
+        turnSpeed = marine.turnSpeed;
+        direction = marine.direction;
+        lastDirection = marine.lastDirection;
+        damage = marine.damage;
+        attackSpeed = marine.attackSpeed;
+        ticksUntilAttack = marine.ticksUntilAttack;
+
+        effects = new ArrayList<>();
+        effects.addAll(marine.effects);
+
+        hasCollision = true;
+        unitState = marine.unitState;
+
+        targetDirection = marine.targetDirection;
+        targetX = marine.targetX;
+        targetY = marine.targetY;
+        radius = 20;
     }
     public double getX(){
         return numUtil.LTD(x);
@@ -39,13 +76,16 @@ public class Marine extends Unit {
     public double getY(){
         return numUtil.LTD(y);
     }
-    public void draw(double factor){
-        drawUtil.startRotation();
+    public void draw(){
+        drawUtil.startRotation(numUtil.LTD(lastX), numUtil.LTD(lastY), numUtil.LTD(x), numUtil.LTD(y), 20, 20, numUtil.LTD(lastDirection), numUtil.LTD(direction));
+        drawUtil.setColor(0, 0, 0);
+        drawUtil.fillRectInterpolate(numUtil.LTD(lastX) + 25, numUtil.LTD(lastY)+30, 20, 5, numUtil.LTD(x) + 25, numUtil.LTD(y) + 30, numUtil.LTD(lastDirection), numUtil.LTD(direction));
         drawUtil.setColor(80, 80, 80);
-        drawUtil.fillCircleInterpolate(numUtil.LTD(lastX), numUtil.LTD(lastY), 20, numUtil.LTD(x), numUtil.LTD(y), factor, numUtil.LTD(lastDirection), numUtil.LTD(direction));
+        drawUtil.fillCircleInterpolate(numUtil.LTD(lastX), numUtil.LTD(lastY), 20, numUtil.LTD(x), numUtil.LTD(y), numUtil.LTD(lastDirection), numUtil.LTD(direction));
         drawUtil.setColor(player.getColor());
-        drawUtil.fillCircleInterpolate(numUtil.LTD(lastX) + 10, numUtil.LTD(lastY) + 10,10, numUtil.LTD(x) + 10, numUtil.LTD(y)+10, factor, numUtil.LTD(lastDirection), numUtil.LTD(direction));
-        drawUtil.fillRectInterpolate(numUtil.LTD(lastX), numUtil.LTD(lastY), 5, 20, numUtil.LTD(x), numUtil.LTD(y), factor, numUtil.LTD(lastDirection), numUtil.LTD(direction));
+        drawUtil.fillCircleInterpolate(numUtil.LTD(lastX) + 10, numUtil.LTD(lastY) + 10,10, numUtil.LTD(x) + 10, numUtil.LTD(y)+10, numUtil.LTD(lastDirection), numUtil.LTD(direction));
+//        drawUtil.fillRectInterpolate(numUtil.LTD(lastX), numUtil.LTD(lastY), 5, 40, numUtil.LTD(x), numUtil.LTD(y), numUtil.LTD(lastDirection), numUtil.LTD(direction));
+        drawUtil.fillRoundRectInterpolate(numUtil.LTD(lastX), numUtil.LTD(lastY), 10, 40, 10, numUtil.LTD(x), numUtil.LTD(y), numUtil.LTD(lastDirection), numUtil.LTD(direction));
         drawUtil.resetRotation();
     }
     public void updateOnFrame(){
@@ -108,4 +148,5 @@ public class Marine extends Unit {
                 break;
         }
     }
+
 }

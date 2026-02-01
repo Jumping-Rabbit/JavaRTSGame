@@ -23,7 +23,7 @@ import java.util.Objects;
 
 import javax.swing.*;
 
-public class MapEditor {
+public class MapEditor extends Screen{
     private String directory;
     private boolean isRenaming;
     private String newName;
@@ -52,6 +52,27 @@ public class MapEditor {
     public MapEditor(DrawUtil drawUtil) {
         this.drawUtil = drawUtil;
         tileIndex = 0;
+    }
+
+    private MapEditor(MapEditor mapEditor){
+        directory = mapEditor.directory;
+        isRenaming = mapEditor.isRenaming;
+        newName = mapEditor.newName;
+
+        tileMap = (ArrayList<ArrayList<Integer>>)mapEditor.tileMap.clone();
+        heightMap = (ArrayList<ArrayList<Integer>>)mapEditor.heightMap.clone();
+        tiles = (ArrayList<BufferedImage>)mapEditor.tiles.clone();
+        units = new ArrayList<>();
+        buildings = new ArrayList<>();
+        objects = new ArrayList<>();
+        tileWidth = mapEditor.tileIndex;
+        drawUtil = mapEditor.drawUtil;
+        tileIndex = mapEditor.tileIndex;
+        height = mapEditor.height;
+    }
+
+    public Screen copy(){
+        return new MapEditor(this);
     }
 
     public enum Buttons {
