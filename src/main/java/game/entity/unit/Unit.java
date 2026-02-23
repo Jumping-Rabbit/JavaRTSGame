@@ -2,7 +2,7 @@ package game.entity.unit;
 
 import game.entity.Effects;
 import game.entity.Entity;
-import utils.numUtil;
+import utils.NumUtil;
 import game.entity.players;
 
 import java.util.ArrayList;
@@ -21,30 +21,48 @@ public abstract class Unit extends Entity {
     protected long targetX;
     protected long targetY;
     protected long targetDirection;
+    private Long newX;
+    private Long newY;
     protected Entity attackTarget;
-    public double getX(){
-        return numUtil.LTD(x);
+    public long getX(){
+        return x;
     }
-    public double getY(){
-        return numUtil.LTD(y);
+    public long getY(){
+        return y;
     }
-    public double getTargetX(){
-        return numUtil.LTD(targetX);
+    public long getTargetX(){
+        return targetX;
     }
-    public double getTargetY(){
-        return numUtil.LTD(targetX);
+    public long getTargetY(){
+        return targetY;
     }
     public void changeX(long change){
-        x += change;
+        if (newX == null){
+            newX = x+change;
+        } else {
+            newX += change;
+        }
     }
     public void changeY(long change){
-        y += change;
+        if (newY == null){
+            newY = y+change;
+        } else {
+            newY += change;
+        }
     }
-    public double getLastX(){
-        return numUtil.LTD(lastX);
+    public void tick(){
+        if (newX != null){
+            x = newX;
+        }
+        if (newY != null){
+            y = newY;
+        }
     }
-    public double getLastY(){
-        return numUtil.LTD(lastY);
+    public long getLastX(){
+        return lastX;
+    }
+    public long getLastY(){
+        return lastY;
     }
     public UnitState getUnitState(){
         return unitState;

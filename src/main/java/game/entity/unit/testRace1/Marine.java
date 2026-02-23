@@ -2,7 +2,7 @@ package game.entity.unit.testRace1;
 
 import game.entity.Command;
 import javafx.scene.image.Image;
-import utils.numUtil;
+import utils.NumUtil;
 import game.entity.players;
 import game.entity.unit.Unit;
 import game.entity.unit.UnitState;
@@ -16,25 +16,25 @@ public class Marine extends Unit {
     public Marine(DrawUtil drawUtil, long x, long y, players player){
         this.player = player;
         this.drawUtil = drawUtil;
-        this.x = numUtil.DTL(x);
-        this.y = numUtil.DTL(y);
-        lastX = numUtil.DTL(x);
-        lastY = numUtil.DTL(y);
+        this.x = NumUtil.DTL(x);
+        this.y = NumUtil.DTL(y);
+        lastX = NumUtil.DTL(x);
+        lastY = NumUtil.DTL(y);
         validCommandTypes = new ArrayList<>();
         validCommandTypes.add(InputType.RIGHT_CLICK);
-        hp = numUtil.DTL(40);
-        armor = numUtil.DTL(1);
-        speed = numUtil.DTL(10);
-        turnSpeed = numUtil.DTL(100);
-        direction = numUtil.DTL(0);
-        damage = numUtil.DTL(0.5);
+        hp = NumUtil.DTL(40);
+        armor = NumUtil.DTL(1);
+        speed = NumUtil.DTL(10);
+        turnSpeed = NumUtil.DTL(100);
+        direction = NumUtil.DTL(0);
+        damage = NumUtil.DTL(0.5);
         attackSpeed = 1;
         ticksUntilAttack = 1;
         effects = new ArrayList<>();
         hasCollision = true;
         unitState = UnitState.IDLE;
-        radius = 20;
-        collisionRadius = 25;
+        radius = NumUtil.DTL(20);
+        collisionRadius = NumUtil.DTL(25);
         image = MARINE_IMAGE;
     }
     @Override
@@ -70,24 +70,24 @@ public class Marine extends Unit {
         targetDirection = marine.targetDirection;
         targetX = marine.targetX;
         targetY = marine.targetY;
-        radius = 20;
-        collisionRadius = 25;
+        radius = marine.radius;
+        collisionRadius = marine.collisionRadius;
 
         commands = marine.commands;
         image = MARINE_IMAGE;
     }
 
     public void draw(){
-        drawUtil.startRotation(numUtil.LTD(lastX), numUtil.LTD(lastY), numUtil.LTD(x), numUtil.LTD(y), 20, 20, numUtil.LTD(lastDirection), numUtil.LTD(direction));
-        drawUtil.fillImageInterpolate(image, numUtil.LTD(lastX), numUtil.LTD(lastY), 40, 40, numUtil.LTD(x), numUtil.LTD(y));
+        drawUtil.startRotation(NumUtil.LTD(lastX), NumUtil.LTD(lastY), NumUtil.LTD(x), NumUtil.LTD(y), 20, 20, NumUtil.LTD(lastDirection), NumUtil.LTD(direction));
+        drawUtil.fillImageInterpolate(image, NumUtil.LTD(lastX), NumUtil.LTD(lastY), 40, 40, NumUtil.LTD(x), NumUtil.LTD(y));
 //        drawUtil.setColor(0, 0, 0);
-//        drawUtil.fillRectInterpolate(numUtil.LTD(lastX) + 25, numUtil.LTD(lastY)+30, 20, 5, numUtil.LTD(x) + 25, numUtil.LTD(y) + 30, numUtil.LTD(lastDirection), numUtil.LTD(direction));
+//        drawUtil.fillRectInterpolate(NumUtil.LTD(lastX) + 25, NumUtil.LTD(lastY)+30, 20, 5, NumUtil.LTD(x) + 25, NumUtil.LTD(y) + 30, NumUtil.LTD(lastDirection), NumUtil.LTD(direction));
 //        drawUtil.setColor(80, 80, 80);
-//        drawUtil.fillCircleInterpolate(numUtil.LTD(lastX), numUtil.LTD(lastY), 20, numUtil.LTD(x), numUtil.LTD(y), numUtil.LTD(lastDirection), numUtil.LTD(direction));
+//        drawUtil.fillCircleInterpolate(NumUtil.LTD(lastX), NumUtil.LTD(lastY), 20, NumUtil.LTD(x), NumUtil.LTD(y), NumUtil.LTD(lastDirection), NumUtil.LTD(direction));
 //        drawUtil.setColor(player.getColor());
-//        drawUtil.fillCircleInterpolate(numUtil.LTD(lastX) + 10, numUtil.LTD(lastY) + 10,10, numUtil.LTD(x) + 10, numUtil.LTD(y)+10, numUtil.LTD(lastDirection), numUtil.LTD(direction));
-////        drawUtil.fillRectInterpolate(numUtil.LTD(lastX), numUtil.LTD(lastY), 5, 40, numUtil.LTD(x), numUtil.LTD(y), numUtil.LTD(lastDirection), numUtil.LTD(direction));
-//        drawUtil.fillRoundRectInterpolate(numUtil.LTD(lastX), numUtil.LTD(lastY), 10, 40, 10, numUtil.LTD(x), numUtil.LTD(y), numUtil.LTD(lastDirection), numUtil.LTD(direction));
+//        drawUtil.fillCircleInterpolate(NumUtil.LTD(lastX) + 10, NumUtil.LTD(lastY) + 10,10, NumUtil.LTD(x) + 10, NumUtil.LTD(y)+10, NumUtil.LTD(lastDirection), NumUtil.LTD(direction));
+////        drawUtil.fillRectInterpolate(NumUtil.LTD(lastX), NumUtil.LTD(lastY), 5, 40, NumUtil.LTD(x), NumUtil.LTD(y), NumUtil.LTD(lastDirection), NumUtil.LTD(direction));
+//        drawUtil.fillRoundRectInterpolate(NumUtil.LTD(lastX), NumUtil.LTD(lastY), 10, 40, 10, NumUtil.LTD(x), NumUtil.LTD(y), NumUtil.LTD(lastDirection), NumUtil.LTD(direction));
         drawUtil.resetRotation();
     }
     public void updateOnFrame(){
@@ -96,8 +96,8 @@ public class Marine extends Unit {
             for (Command command : commands){
                 if (command.getInputType() == InputType.RIGHT_CLICK){
                     unitState = UnitState.MOVING;
-                    targetX = numUtil.DTL(command.getX()-20);
-                    targetY = numUtil.DTL(command.getY()-20);
+                    targetX = command.getX()-radius;
+                    targetY = command.getY()-radius;
                     break;
                 }
             }
@@ -110,8 +110,8 @@ public class Marine extends Unit {
         lastY = y;
         switch (unitState){
             case MOVING:
-                targetDirection = numUtil.DTL(Math.toDegrees(Math.atan2(targetY - y, targetX - x)));
-                if (Math.abs(direction - targetDirection) > turnSpeed){
+                targetDirection = NumUtil.DTL(NumUtil.atan2(targetY - y, targetX - x));
+                if (StrictMath.abs(direction - targetDirection) > turnSpeed){
                     if (direction > targetDirection){
                         if (direction - turnSpeed < targetDirection){
                             direction = targetDirection;
@@ -127,8 +127,8 @@ public class Marine extends Unit {
                     }
                 } else {
                     direction = targetDirection;
-                    long xChange = (long) (speed*Math.cos(Math.toRadians(numUtil.LTD(targetDirection))));
-                    long yChange = (long) (speed*Math.sin(Math.toRadians(numUtil.LTD(targetDirection))));
+                    long xChange = (long) (speed*NumUtil.cos(NumUtil.LTD(targetDirection)));
+                    long yChange = (long) (speed*NumUtil.sin(NumUtil.LTD(targetDirection)));
                     if (targetX > x ? x+xChange >= targetX : x+xChange <= targetX){
                         x = targetX;
                     } else {
@@ -139,15 +139,14 @@ public class Marine extends Unit {
                     } else {
                         y += yChange;
                     }
-                    if ((numUtil.LTD(x - targetX) * numUtil.LTD(x - targetX)) + (numUtil.LTD(y - targetY) * numUtil.LTD(y - targetY)) <= (radius * radius)){
-
+                    if (((x - targetX) * (x - targetX)) + ((y - targetY) * (y - targetY)) <= (radius * radius)){
                         unitState = UnitState.IDLE;
                         removeCommand();
                     }
                 }
-//                System.out.println(numUtil.longToDouble(targetDirection));
-//                System.out.println("targetx:" + numUtil.longToDouble(targetX) + ":" + numUtil.longToDouble(x));
-//                System.out.println("targety:" + numUtil.longToDouble(targetY) + ":" + numUtil.longToDouble(y));
+//                System.out.println(NumUtil.longToDouble(targetDirection));
+//                System.out.println("targetx:" + NumUtil.longToDouble(targetX) + ":" + NumUtil.longToDouble(x));
+//                System.out.println("targety:" + NumUtil.longToDouble(targetY) + ":" + NumUtil.longToDouble(y));
                 break;
         }
 //        */

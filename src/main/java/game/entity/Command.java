@@ -3,8 +3,8 @@ package game.entity;
 import inputHandler.InputType;
 
 public class Command {
-    double x;
-    double y;
+    long x;
+    long y;
     String button;
     InputType inputType;
     public Command (String button){
@@ -13,7 +13,7 @@ public class Command {
         x = 0;
         y = 0;
     }
-    public Command (InputType inputType, double x, double y){
+    public Command (InputType inputType, long x, long y){
         this.button = "";
         this.x = x;
         this.y = y;
@@ -22,10 +22,10 @@ public class Command {
     public String getButton(){
         return button;
     }
-    public double getX(){
+    public long getX(){
         return x;
     }
-    public double getY(){
+    public long getY(){
         return y;
     }
     public InputType getInputType(){

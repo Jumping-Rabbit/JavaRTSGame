@@ -7,7 +7,7 @@ import main.game.Viewport;
 import java.awt.*;
 import java.util.HashMap;
 
-import static java.lang.Math.round;
+import static java.lang.StrictMath.round;
 
 public class Scout extends Trainers {
     int hp;

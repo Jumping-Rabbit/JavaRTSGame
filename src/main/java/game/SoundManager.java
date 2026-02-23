@@ -12,7 +12,7 @@ import java.io.File;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static java.lang.Math.random;
+import static java.lang.StrictMath.random;
 
 
 public class SoundManager{
@@ -20,12 +20,12 @@ public class SoundManager{
     private static double bgmVolume = 0;
     private static double sfxVolume = 0;
     private static Thread soundThread;
-    private static final Media[] bgms = {
-            new Media(SoundManager.class.getResource("/sounds/bgm/Heavens Devils.mp3").toString()),
-            new Media(SoundManager.class.getResource("/sounds/bgm/The Golden Armada.mp3").toString()),
-            new Media(SoundManager.class.getResource("/sounds/bgm/Wings Of Liberty.mp3").toString())
+    private static final String[] bgms = {
+            "/sounds/bgm/Heavens Devils.mp3",
+            "/sounds/bgm/The Golden Armada.mp3",
+            "/sounds/bgm/Wings Of Liberty.mp3"
     };
-    private static MediaPlayer bgmPlayer = new MediaPlayer(bgms[0]);
+    private static MediaPlayer bgmPlayer = new MediaPlayer(new Media(SoundManager.class.getResource("/sounds/bgm/Heavens Devils.mp3").toString()));
 
     private static void setVolume(){
         bgmPlayer.setVolume(bgmVolume*masterVolume);
@@ -56,7 +56,8 @@ public class SoundManager{
         int bgmNum;
         while (soundThread != null){
             bgmNum = (int)(random()*3);
-            bgmPlayer = new MediaPlayer(bgms[bgmNum]);
+            bgmPlayer = new MediaPlayer(new Media(SoundManager.class.getResource(bgms[bgmNum]).toString()));
+            bgmPlayer.setVolume(bgmVolume*masterVolume);
             bgmPlayer.play();
             try {
                 while (bgmPlayer.getStatus()!=MediaPlayer.Status.STOPPED){

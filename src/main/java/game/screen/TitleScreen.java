@@ -2,6 +2,7 @@ package game.screen;
 
 
 import game.Fonts;
+import game.Main;
 import javafx.geometry.Rectangle2D;
 import utils.CollisionUtil;
 import utils.DrawUtil;
@@ -41,10 +42,14 @@ public class TitleScreen extends Screen{
         }
     }
 
+    private Rectangle2D exitButton = new Rectangle2D(760, 520, 400, 100);
+
     private Buttons selectedButton = Buttons.HOME;
 
-    private ArrayList<File> customMaps = new ArrayList<>(Arrays.asList(Objects.requireNonNull(new File("src/main/resources/map/custom").listFiles())));
-    private ArrayList<File> replays = new ArrayList<>(Arrays.asList(Objects.requireNonNull(new File("src/main/resources/replay").listFiles())));
+    private ArrayList<File> customMaps = new ArrayList<>();
+    private ArrayList<File> replays = new ArrayList<>();
+    private ArrayList<String> customMapsName = new ArrayList<>();
+    private ArrayList<String> replaysName = new ArrayList<>();
     private int selectedIndex = 0;
     private boolean exit = false;
     private boolean closing = false;
@@ -83,7 +88,7 @@ public class TitleScreen extends Screen{
     private TitleScreen(TitleScreen titleScreen){//copy constructor
         selectedButton = titleScreen.selectedButton;
         customMaps = new ArrayList<>(Arrays.asList(Objects.requireNonNull(new File("src/main/resources/map/custom").listFiles())));
-        replays = new ArrayList<>(Arrays.asList(Objects.requireNonNull(new File("src/main/resources/replay").listFiles())));
+        replays = new ArrayList<>(Arrays.asList(Objects.requireNonNull(new File("src/main/resources/replays").listFiles())));
         selectedIndex = titleScreen.selectedIndex;
         exit = titleScreen.exit;
         drawUtil = titleScreen.drawUtil;
@@ -140,6 +145,14 @@ public class TitleScreen extends Screen{
                     }
                     break;
                 case LEFT_CLICK:
+                    if (closing){
+                        if (CollisionUtil.RectPointCollision(exitButton, input.getX(), input.getY())){
+                            Main.close();
+                        } else{
+                            closing = false;
+                        }
+                        return;
+                    }
                     for (Buttons button : Buttons.values()) {
                         if (CollisionUtil.RectPointCollision(button.getRectangle(), input.getX(), input.getY())) {
                             Buttons oldButton = selectedButton;
@@ -154,6 +167,7 @@ public class TitleScreen extends Screen{
                             }
                         }
                     }
+
                     break;
                 case SCROLL:
                     switch (selectedButton) {
@@ -183,9 +197,32 @@ public class TitleScreen extends Screen{
         }
         if (selectedButton == Buttons.CUSTOM){
             customMaps = new ArrayList<>(Arrays.asList((new File("src/main/resources/map/custom").listFiles())));
+            customMapsName = new ArrayList<>();
+            for (File customMap : customMaps) {
+                JSONParser parser = new JSONParser();
+                try {
+                    Object object = parser.parse(new FileReader(customMap.getPath() + "/map.json"));
+                    JSONObject map = (JSONObject) object;
+                    customMapsName.add((String) map.get("name"));
+                } catch (IOException | ParseException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
         }
         if (selectedButton == Buttons.REPLAYS){
-            replays = new ArrayList<>(Arrays.asList((new File("src/main/res/replay").listFiles())));
+            replays = new ArrayList<>(Arrays.asList((new File("src/main/resources/replays").listFiles())));
+            replaysName = new ArrayList<>();
+            for (File replay : replays) {
+                JSONParser parser = new JSONParser();
+                try {
+                    Object object = parser.parse(new FileReader(replay.getPath() + "/map.json"));
+                    JSONObject map = (JSONObject) object;
+                    replaysName.add((String) map.get("name"));
+                } catch (IOException | ParseException e) {
+                    throw new RuntimeException(e);
+                }
+            }
         }
         switch (selectedButton){
             case MAP_EDITOR, SETTINGS:
@@ -233,12 +270,15 @@ public class TitleScreen extends Screen{
                 break;
         }
         if (closing){
-            drawUtil.setColor(0, 0, 0, 25);
+            drawUtil.setColor(0, 0, 0, 0.25);
             drawUtil.fillRect(0, 0, 1920, 1080);
             drawUtil.setColor(100, 100, 100);
-            drawUtil.fillRect(660, 440, 600, 200);
+            drawUtil.fillRect(620, 390, 680, 300);
+            drawUtil.setColor(150, 150, 150);
+            drawUtil.fillRect(exitButton);
             drawUtil.setColor(255, 255, 255);
-            drawUtil.drawString(960, 500, "close program?", 50, Fonts.DEFAULT);
+            drawUtil.drawString(960, 450, "close program?", 50, Fonts.DEFAULT);
+            drawUtil.drawString(960, 570, "close", 50, Fonts.DEFAULT);
         }
     }
     private void drawHome(DrawUtil drawUtil){
@@ -248,6 +288,9 @@ public class TitleScreen extends Screen{
 
     }
     private void drawCustom(DrawUtil drawUtil){
+        if(customMaps.isEmpty()){
+            return;
+        }
         int start;
         if (selectedIndex - 4 < 0) {
             start = 0;
@@ -256,7 +299,7 @@ public class TitleScreen extends Screen{
         }else {
             start = selectedIndex - 4;
         }
-        for (int i = start; i < Math.min(start + 9, customMaps.size()); i++){//prevent error when custom maps size is less than 9
+        for (int i = start; i < StrictMath.min(start + 9, customMaps.size()); i++){//prevent error when custom maps size is less than 9
             drawUtil.setColor(0, 0, 0);
             drawUtil.fillRect(50, (i - start)*100 + 150, 1000, 80);
             if (i == selectedIndex){
@@ -266,14 +309,7 @@ public class TitleScreen extends Screen{
             }
             drawUtil.drawRect(50,(i - start)*100 + 150, 1000, 80);
             if (!customMaps.isEmpty()){
-                JSONParser parser = new JSONParser();
-                try {
-                    Object object = parser.parse(new FileReader(customMaps.get(i).getPath() + "/map.json"));
-                    JSONObject map = (JSONObject) object;
-                    drawUtil.drawString(525, (i - start)*100 + 200, (String) map.get("name"), 20, Fonts.DEFAULT);
-                } catch (IOException | ParseException e) {
-                    throw new RuntimeException(e);
-                }
+                drawUtil.drawString(525, (i - start)*100 + 200, customMapsName.get(i), 20, Fonts.DEFAULT);
             }
         }
     }
@@ -281,11 +317,14 @@ public class TitleScreen extends Screen{
 
     }
     private void drawReplays(DrawUtil drawUtil){
+        if (replays.isEmpty()){
+            return;
+        }
         int start;
         if (selectedIndex - 4 < 0) {
             start = 0;
-        }else if (selectedIndex > customMaps.size()-5){
-            start = customMaps.size()-9;
+        }else if (selectedIndex > replays.size()-5){
+            start = replays.size()-9;
         }else {
             start = selectedIndex - 4;
         }
@@ -298,14 +337,8 @@ public class TitleScreen extends Screen{
                 drawUtil.setColor(0, 150, 255);
             }
             drawUtil.drawRect(50,(i - start)*100 + 150, 1000, 80);
-            JSONParser parser = new JSONParser();
-            try {
-                Object object = parser.parse(new FileReader(customMaps.get(i).getPath() + "/map.json"));
-                JSONObject map = (JSONObject) object;
-                drawUtil.drawString(525, (i - start)*100 + 200, (String) map.get("name"), 50, Fonts.DEFAULT);
-            } catch (IOException | ParseException e) {
-                throw new RuntimeException(e);
-            }
+            drawUtil.drawString(525, (i - start)*100 + 200, replaysName.get(i), 50, Fonts.DEFAULT);
+
         }
     }
 }

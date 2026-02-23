@@ -31,10 +31,15 @@ public class Main extends Application {
         stage.show();
         gamePanel.startGameThread();
         stage.setOnCloseRequest(event -> {
-            Platform.exit(); // Shuts down the JavaFX application
-            System.exit(0);  // Terminates the entire JVM
+            Platform.exit();
+            System.exit(0);
         });
 
+    }
+
+    public static void close(){
+        Platform.exit();
+        System.exit(0);
     }
 
     public static void main(String[] args) {

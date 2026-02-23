@@ -3,7 +3,7 @@ package game.entity;
 import javafx.scene.image.Image;
 import utils.DrawUtil;
 import inputHandler.InputType;
-import utils.numUtil;
+import utils.NumUtil;
 
 import java.util.ArrayList;
 
@@ -16,8 +16,8 @@ public abstract class Entity {
     protected long lastDirection;
     protected boolean hasCollision;
     protected DrawUtil drawUtil;
-    protected double radius;
-    protected double collisionRadius;
+    protected long radius;
+    protected long collisionRadius;
     protected Image image;
 
     public abstract void draw();
@@ -39,12 +39,12 @@ public abstract class Entity {
     }
     public void drawSelectedRing(){
         drawUtil.setColor(0, 255, 0, 0.2);
-        drawUtil.fillCircleInterpolate(numUtil.LTD(lastX)-5, numUtil.LTD(lastY)-5, radius+5, numUtil.LTD(x)-5, numUtil.LTD(y)-5);
+        drawUtil.fillCircleInterpolate(NumUtil.LTD(lastX)-5, NumUtil.LTD(lastY)-5, NumUtil.LTD(collisionRadius), NumUtil.LTD(x)-5, NumUtil.LTD(y)-5);
     }
-    public double getRadius(){
+    public long getRadius(){
         return radius;
     }
-    public double getCollisionRadius(){
+    public long getCollisionRadius(){
         return collisionRadius;
     }
 

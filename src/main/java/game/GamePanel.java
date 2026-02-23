@@ -9,6 +9,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.FontSmoothingType;
 import javafx.scene.text.TextAlignment;
 import utils.DrawUtil;
+import utils.NumUtil;
 
 import java.text.DecimalFormat;
 import java.util.*;
@@ -17,7 +18,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static java.lang.Math.*;
+import static java.lang.StrictMath.*;
 
 
 public class GamePanel extends Canvas {
@@ -193,7 +194,8 @@ public class GamePanel extends Canvas {
         gc.setTextAlign(TextAlignment.LEFT);
         gc.setTextBaseline(VPos.TOP);
         gc.fillText("fps:" + formatString(performanceStorage.getFPS(), "00000.00") + " tps:" + formatString(performanceStorage.getTPS(), "00"), 10, 10);
-        gc.fillText( "ttu:" + formatString(performanceStorage.getTickTimeUsed(), "0000.00") + "%" + " ttu1%:" + formatString(performanceStorage.getTickTimeUsedLow(), "0000.00") + "%" + " late frames:" + performanceStorage.getLateFrames(), 10, 20);
+        gc.fillText( "dt:" + formatString(performanceStorage.getCurrentDT(), "0000.00") + "ms" + " dt1%:" + formatString(performanceStorage.getPeakDT(), "0000.00") + "ms", 10, 20);
+        gc.fillText( "ttu:" + formatString(performanceStorage.getTickTimeUsed(), "0000.00") + "%" + " ttu1%:" + formatString(performanceStorage.getTickTimeUsedLow(), "0000.00") + "%" + " late frames:" + performanceStorage.getLateFrames(), 10, 30);
     }
     class logicThread implements Runnable{
         PerformanceStorage performanceStorage;
@@ -247,6 +249,8 @@ public class GamePanel extends Canvas {
                 }
 
                 if (!isRendering.get()) {
+
+
                     if (targetFPS <= 0 || currentTime >= targetTime) {
                         targetTime = currentTime + targetFrameInterval;
                         isRendering.set(true);
@@ -254,6 +258,7 @@ public class GamePanel extends Canvas {
                             try {
                                 draw();
                                 performanceStorage.addDFrame();
+                                performanceStorage.addDrawTimeUsed(currentTime);
                             } finally {
                                 isRendering.set(false);
                             }
@@ -274,6 +279,7 @@ class PerformanceStorage {
     private final AtomicInteger dFrameCount = new AtomicInteger(0);
     private final AtomicInteger tFrameCount = new AtomicInteger(0);
 
+
     private double currentFPS = 0;
     private double currentTPS = 0;
 
@@ -285,9 +291,8 @@ class PerformanceStorage {
         long now = System.nanoTime();
         long delta = now - lastFPSUpdate;
 
-        if (delta >= 250000000L) {
-//            System.out.println(dFrameCount.get()*4);
-            this.currentFPS = (dFrameCount.getAndSet(0) / (delta/250000000d))*4;
+        if (delta >= 500000000L) {
+            this.currentFPS = (dFrameCount.getAndSet(0) / (delta/500000000d))*2;
             lastFPSUpdate = now;
         }
     }
@@ -296,17 +301,18 @@ class PerformanceStorage {
         tFrameCount.incrementAndGet();
         long now = System.nanoTime();
         long delta = now - lastTPSUpdate;
-        if (delta >= 250000000L) {
-            currentTPS = (tFrameCount.getAndSet(0) / (delta/250000000d))*4;
+        if (delta >= 500000000L) {
+            currentTPS = (tFrameCount.getAndSet(0) / (delta/500000000d))*2;
             lastTPSUpdate = now;
         }
     }
 
     public double getFPS() { return currentFPS; }
     public double getTPS() { return currentTPS; }
+
     private volatile double currentTTU = 0;
     private volatile double peakTTU = 0;
-    private final List<Double> ttuHistory = new ArrayList<>();
+    private final ArrayList<Double> ttuHistory = new ArrayList<>();
 
     public void addTickTimeUsed(long startNano) {
         long duration = System.nanoTime() - startNano;
@@ -315,7 +321,7 @@ class PerformanceStorage {
         synchronized(ttuHistory) {
             ttuHistory.add(percent);
             if (ttuHistory.size() > 100) {
-                ttuHistory.remove(0);
+                ttuHistory.removeFirst();
             }
             double max = 0;
             for (Double d : ttuHistory) {
@@ -323,10 +329,40 @@ class PerformanceStorage {
             }
             this.peakTTU = max;
         }
+        synchronized(dtHistory) {
+            peakDT = dtHistory.stream()
+                    .sorted(Comparator.reverseOrder())
+                    .limit(Math.max(1, StrictMath.round(dtHistory.size() / 100d)))
+                    .mapToDouble(d -> d)
+                    .average()
+                    .orElse(0.0);
+        }
     }
-
     public double getTickTimeUsed() { return currentTTU; }
     public double getTickTimeUsedLow() { return peakTTU; }
+
+
+    private volatile double currentDT = 0;
+    private volatile double peakDT = 0;
+
+    private final ArrayList<Double> dtHistory = new ArrayList<>();
+
+    public void addDrawTimeUsed(long startNano) {
+        double dt = (System.nanoTime() - startNano) / 1000000d;
+
+        this.currentDT = dt;
+
+        synchronized(dtHistory) {
+            dtHistory.add(dt);
+        }
+    }
+
+    public double getCurrentDT() { return currentDT; }
+    public double getPeakDT() { return peakDT; }
+
+
+
+
 
     private final AtomicInteger lateFrames = new AtomicInteger(0);
 

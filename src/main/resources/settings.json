@@ -1,1 +1,1 @@
-{"graphics":{"monitorNum":0,"targetFPS":12000,"graphicsQuality":"high","antialiasing":true,"displayMode":"windowed"},"audio":{"masterVolume":100,"BGMVolume":50, "SFXVolume": 10}}
+{"graphics":{"monitorNum":0,"targetFPS":12000,"graphicsQuality":"high","antialiasing":true,"displayMode":"windowed"},"audio":{"masterVolume":0,"BGMVolume":50, "SFXVolume": 10}}

@@ -195,7 +195,7 @@ public class SettingsManager{
 
 
     public void setTargetFPS(int targetFPS){
-        targetFPS = Math.max(targetFPS, minTargetFPS);
+        targetFPS = StrictMath.max(targetFPS, minTargetFPS);
         if (targetFPS < minTargetFPS){
             return;
         }
@@ -211,7 +211,7 @@ public class SettingsManager{
     }
 
     public void setMonitorNum(int monitorNum){
-        monitorNum = Math.max(monitorNum, minMonitorNum);
+        monitorNum = StrictMath.max(monitorNum, minMonitorNum);
         synchronized (monitorNumLock){
             this.monitorNum = monitorNum;
             writeSettings("graphics", "monitorNum", monitorNum);
@@ -267,7 +267,7 @@ public class SettingsManager{
     }
 
     public void setMasterVolume(int volume){
-        volume = Math.clamp(volume, minMasterVolume, maxMasterVolume);
+        volume = StrictMath.clamp(volume, minMasterVolume, maxMasterVolume);
         synchronized (masterVolumeLock){
             writeSettings("audio", "masterVolume", volume);
             SoundManager.setMasterVolume(volume);
@@ -280,7 +280,7 @@ public class SettingsManager{
     }
 
     public void setBGMVolume(int volume){
-        volume = Math.clamp(volume, minBGMVolume, maxBGMVolume);
+        volume = StrictMath.clamp(volume, minBGMVolume, maxBGMVolume);
         synchronized (BGMVolumeLock){
             writeSettings("audio", "BGMVolume", volume);
             SoundManager.setBGMVolume(volume);
@@ -293,7 +293,7 @@ public class SettingsManager{
     }
 
     public void setSFXVolume(int volume){
-        volume = Math.clamp(volume, minSFXVolume, maxSFXVolume);
+        volume = StrictMath.clamp(volume, minSFXVolume, maxSFXVolume);
         synchronized (SFXVolumeLock){
             writeSettings("audio", "SFXVolume", volume);
             SoundManager.setSFXVolume(volume);

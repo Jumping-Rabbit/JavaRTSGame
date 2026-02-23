@@ -5,12 +5,12 @@ import java.io.FileReader;
 import java.io.IOException;
 
 public class GameViewport {
-    private double viewportX;
-    private double viewportY;
-    private final double viewportWidth;
-    private final double viewportHeight;
-    private double scale;
-    public GameViewport(double x, double y) {
+    private long viewportX;
+    private long viewportY;
+    private final long viewportWidth;
+    private final long viewportHeight;
+    private long scale;
+    public GameViewport(long x, long y) {
         viewportX = x;
         viewportY = y;
         viewportWidth = 1920;
@@ -18,43 +18,43 @@ public class GameViewport {
         scale = 1;
     }
 
-    public double getX() {
+    public long getX() {
         return viewportX;
     }
 
-    public void setX(double viewportX) {
+    public void setX(long viewportX) {
         this.viewportX = viewportX;
     }
 
-    public double getY() {
+    public long getY() {
         return viewportY;
     }
 
-    public void setY(double viewportY) {
+    public void setY(long viewportY) {
         this.viewportY = viewportY;
     }
 
-    public void changeX(double change){
+    public void changeX(long change){
         viewportX += change;
     }
 
-    public void changeY(double change){
+    public void changeY(long change){
         viewportY += change;
     }
 
-    public double getWidth() {
+    public long getWidth() {
         return viewportWidth;
     }
 
-    public double getHeight() {
+    public long getHeight() {
         return viewportHeight;
     }
 
-    public double getScale() {
+    public long getScale() {
         return scale;
     }
 
-    public void setScale(double scale){
+    public void setScale(long scale){
         this.scale = scale;
     }
 

@@ -6,7 +6,7 @@ import game.entity.Entity;
 import game.entity.building.Building;
 import game.entity.unit.UnitState;
 import javafx.geometry.Rectangle2D;
-import utils.numUtil;
+import utils.NumUtil;
 import game.entity.players;
 import game.entity.unit.Unit;
 import game.entity.unit.testRace1.Marine;
@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.concurrent.*;
+import static utils.NumUtil.DTL;
 
 public class Game extends Screen {
     public enum GameState {
@@ -56,13 +57,13 @@ public class Game extends Screen {
         }
         JSONObject mapJSON = (JSONObject) object;
         JSONArray playersData = (JSONArray) mapJSON.get("playerData");
-        this(drawUtil, map, (int)Math.floor(Math.random() * playersData.size()));
+        this(drawUtil, map, (int)StrictMath.floor(StrictMath.random() * playersData.size()));
 
     }
     public Game(DrawUtil drawUtil, File map, int playerNum) {
         units = new ArrayList<>();
-        for (int i = 0; i <100; i++){
-            units.add(new Marine(drawUtil, (int)(Math.random()*1800), (int)(Math.random()*900), players.BLUE));
+        for (int i = 0; i <500; i++){
+            units.add(new Marine(drawUtil, (int)(StrictMath.random()*1800), (int)(StrictMath.random()*900), players.BLUE));
         }
         buildings = new ArrayList<>();
         selectedEntities = new ArrayList<>();
@@ -76,7 +77,7 @@ public class Game extends Screen {
             JSONObject mapJSON = (JSONObject) object;
             JSONArray playersData = (JSONArray) mapJSON.get("playerData");
             JSONObject playerData = (JSONObject) playersData.get(playerNum);
-            gameViewport = new GameViewport(Double.parseDouble(String.valueOf(playerData.get("x"))), Double.parseDouble(String.valueOf(playerData.get("y"))));
+            gameViewport = new GameViewport(DTL(Double.parseDouble(String.valueOf(playerData.get("x")))), DTL(Double.parseDouble(String.valueOf(playerData.get("y")))));
         } catch (IOException | ParseException e) {
             throw new RuntimeException(e);
         }
@@ -120,46 +121,81 @@ public class Game extends Screen {
     }
 
 
-    private void calculatePhysics(){
-        for (int i = 0; i < 2; i++){
-            boolean all = true;
-            for (Unit unit1 : units){
-                for (Unit unit2 : units){
-                    if (unit1 == unit2){
+    private void calculatePhysics() {//TODO: optimise this
+        for (int iter = 0; iter < 10; iter++) {
+            boolean noCollisions = true;
+
+            for (int i = 0; i < units.size(); i++){
+                Unit unit1 = units.get(i);
+                long r1 = unit1.getCollisionRadius();
+                long x1 = unit1.getX();
+                long y1 = unit1.getY();
+
+                for (int j = i + 1; j < units.size(); j++) {
+                    Unit unit2 = units.get(j);
+                    long r2 = unit2.getCollisionRadius();
+                    long x2 = unit2.getX();
+                    long y2 = unit2.getY();
+                    //bounding box check
+                    if (!CollisionUtil.RectRectCollision(x1, y1, r1+r1, r1+r1, x2, y2, r2+r2, r2+r2)) {
                         continue;
                     }
-                    if (CollisionUtil.CircleCircleCollision(unit1.getX(), unit1.getY(), unit1.getCollisionRadius(), unit2.getX(), unit2.getY(), unit2.getCollisionRadius())){
-                        double distance = Math.sqrt(Math.pow(unit2.getX() - unit1.getX(), 2) + Math.pow(unit2.getY() - unit1.getY(), 2));
-                        double overlap = (unit1.getCollisionRadius() + unit2.getCollisionRadius()) - distance;
-                        double ux = (unit2.getX() - unit1.getX()) / distance;
-                        double uy = (unit2.getY() - unit1.getY()) / distance;
 
-                        unit1.changeX(numUtil.DTL(clampOutside((ux * (overlap / 2))*-1)));
-                        unit1.changeY(numUtil.DTL(clampOutside((uy * (overlap / 2))*-1)));
-                        unit2.changeX(numUtil.DTL(clampOutside(ux * (overlap / 2))));
-                        unit2.changeY(numUtil.DTL(clampOutside(uy * (overlap / 2))));
-                        all = false;
-                        if (unit1.getTargetX() == unit2.getTargetX() && unit1.getTargetY() == unit2.getTargetY()){//same target
-                            if (unit1.getUnitState() == UnitState.MOVING && unit2.getUnitState() == UnitState.IDLE){//if moving but colliding unit is idle
-                                if ((unit1.getTargetX()-unit1.getX())*(unit1.getTargetX()-unit1.getX()) + (unit1.getTargetY()-unit1.getY())*(unit1.getTargetY()-unit1.getY()) <= (unit2.getTargetX()-unit2.getX())*(unit2.getTargetX()-unit2.getX()) + (unit2.getTargetY()-unit2.getY())*(unit2.getTargetY()-unit2.getY())){
-                                    unit1.removeCommand();
-                                }
-                            }
+                    //circle check
+                    if (CollisionUtil.CircleCircleCollision(x1+r1, y1+r1, r1, x2+r2, y2+r2, r2)) {
+                        long dx = x2 - x1;
+                        long dy = y2 - y1;
+                        long distSqScaled = (dx * dx) + (dy * dy);
+
+                        if (distSqScaled == 0) {
+                            unit1.changeX(-1);
+                            unit2.changeX(1);
+                            noCollisions = false;
+                            continue;
                         }
+
+                        long distance = NumUtil.sqrt(distSqScaled);
+                        if (distance == 0) distance = 1;
+
+                        long overlap = (r1+r2) - distance;
+
+                        if (overlap > 0) {
+                            long halfOverlap = overlap / 2;
+                            long moveX = (dx * halfOverlap) / distance;
+                            long moveY = (dy * halfOverlap) / distance;
+
+                            unit1.changeX(-moveX);
+                            unit1.changeY(-moveY);
+                            unit2.changeX(moveX);
+                            unit2.changeY(moveY);
+
+                            noCollisions = false;
+                        }
+
+                        // 3. Same-target logic
+//                        if (unit1.getTargetX() == unit2.getTargetX() && unit1.getTargetY() == unit2.getTargetY()) {
+//                            if (unit1.getUnitState() == UnitState.MOVING && unit2.getUnitState() == UnitState.IDLE) {
+//                                long tdx1 = unit1.getTargetX() - x1;
+//                                long tdy1 = unit1.getTargetY() - y1;
+//                                long tdx2 = unit2.getTargetX() - x2;
+//                                long tdy2 = unit2.getTargetY() - y2;
+//
+//                                if ((tdx1 * tdx1 + tdy1 * tdy1) <= (tdx2 * tdx2 + tdy2 * tdy2) + unit2.getCollisionRadius()) {
+//                                    unit1.removeCommand();
+//                                }
+//                            }
+//                        }
                     }
                 }
             }
-            if (all){
-                return;
+            for (Unit unit : units){
+                unit.tick();
             }
+            if (noCollisions) return;
         }
+
     }
 
-//    private void updateUnits(int startIndex, int endIndex){
-//        for (int i = startIndex; i < endIndex; i++) {
-//            units.get(i).updateOnFrame();
-//        }
-//    }
 
     public void updateOnFrame() {
         for (Input input : InputHandler.getInputs()){
@@ -167,7 +203,7 @@ public class Game extends Screen {
                 case LEFT_CLICK:
                     selectedEntities.clear();
                     for (Unit unit : units){
-                        if(CollisionUtil.PointCircleCollision(input.getX() + gameViewport.getX(), input.getY() + gameViewport.getY(), numUtil.interpolate(unit.getLastX(), unit.getX(), drawUtil.getFactor())+unit.getRadius()-5, numUtil.interpolate(unit.getLastY(), unit.getY(), drawUtil.getFactor())+unit.getRadius()-5, unit.getRadius())){
+                        if(CollisionUtil.PointCircleCollision(DTL(input.getX()) + gameViewport.getX(), DTL(input.getY()) + gameViewport.getY(), NumUtil.interpolate(unit.getLastX(), unit.getX(), drawUtil.getFactor())+unit.getRadius(), NumUtil.interpolate(unit.getLastY(), unit.getY(), drawUtil.getFactor())+unit.getRadius(), unit.getRadius())){
                             selectedEntities.clear();
                             selectedEntities.add(unit);
                         }
@@ -176,16 +212,16 @@ public class Game extends Screen {
                 case DRAG:
                     selectedEntities.clear();
                     for (Unit unit : units){
-                        if(CollisionUtil.RectCircleCollision(numUtil.interpolate(unit.getLastX(), unit.getX(), drawUtil.getFactor())+unit.getRadius()-5, numUtil.interpolate(unit.getLastY(), unit.getY(), drawUtil.getFactor())+unit.getRadius()-5, unit.getRadius(), Math.min(input.getX(), input.getStartX())+ gameViewport.getX(), Math.min(input.getY(), input.getStartY())+ gameViewport.getY(), Math.abs(input.getX()-input.getStartX()), Math.abs(input.getX()-input.getStartX()))){
+                        if(CollisionUtil.RectCircleCollision(NumUtil.interpolate(unit.getLastX(), unit.getX(), drawUtil.getFactor())+unit.getRadius(), NumUtil.interpolate(unit.getLastY(), unit.getY(), drawUtil.getFactor())+unit.getRadius(), unit.getRadius(), DTL(StrictMath.min(input.getX(), input.getStartX()))+ gameViewport.getX(), DTL(StrictMath.min(input.getY(), input.getStartY()))+ gameViewport.getY(), DTL(StrictMath.abs(input.getX()-input.getStartX())), DTL(StrictMath.abs(input.getX()-input.getStartX())))){
                             selectedEntities.add(unit);
                         }
                     }
-                    selectedRectangle = new Rectangle2D(Math.min(input.getX(), input.getStartX()), Math.min(input.getY(), input.getStartY()), Math.abs(input.getX()-input.getStartX()), Math.abs(input.getY()-input.getStartY()));
+                    selectedRectangle = new Rectangle2D(StrictMath.min(input.getX(), input.getStartX()), StrictMath.min(input.getY(), input.getStartY()), StrictMath.abs(input.getX()-input.getStartX()), StrictMath.abs(input.getY()-input.getStartY()));
                     break;
                 case RIGHT_CLICK:
                     for (Entity entity : selectedEntities){
                         entity.clearCommands();//make shift button work
-                        entity.addCommand(new Command(InputType.RIGHT_CLICK, input.getX() + gameViewport.getX(), input.getY() + gameViewport.getY()));
+                        entity.addCommand(new Command(InputType.RIGHT_CLICK, DTL(input.getX()) + gameViewport.getX(), DTL(input.getY()) + gameViewport.getY()));
                     }
                     break;
                 case KEYPRESS:
@@ -201,28 +237,14 @@ public class Game extends Screen {
                     break;
             }
         }
-//        int chunk = units.size()/4;
-//        updateThreadPool.submit(() -> updateUnits(0, chunk));
-//        updateThreadPool.submit(() -> updateUnits(chunk, chunk*2));
-//        updateThreadPool.submit(() -> updateUnits(chunk*2, chunk*3));
-//        updateThreadPool.submit(() -> updateUnits(chunk*3, units.size()));
+
         for (Building building : buildings){
             building.updateOnFrame();
         }
         for (Unit unit : units){
             unit.updateOnFrame();
         }
-//        for (int i = 0; i < 4; i++){
-//            System.out.println(i);
-//            try {
-//                updateThreadPoolCompletion.take().get();
-//            } catch (InterruptedException e) {
-//                throw new RuntimeException(e);
-//            } catch (ExecutionException e) {
-//                throw new RuntimeException(e);
-//            }
-//
-//        }
+
         calculatePhysics();
         if (!InputHandler.MouseDown()){
             selectedRectangle = null;
@@ -231,14 +253,14 @@ public class Game extends Screen {
 
     public void draw() {
         drawUtil.setGameViewport(gameViewport);
-//        for (Entity selected : selectedEntities){
-//            selected.drawSelectedRing();
-//        }
+        for (Entity selected : selectedEntities){
+            selected.drawSelectedRing();
+        }
         for (Unit unit : units){
             unit.draw();
-            if (unit.getUnitState() == UnitState.IDLE){
-                unit.drawSelectedRing();
-            }
+//            if (unit.getUnitState() == UnitState.IDLE){
+//                unit.drawSelectedRing();
+//            }
         }
         for (Building building : buildings){
             building.draw();
@@ -248,6 +270,5 @@ public class Game extends Screen {
             drawUtil.fillRect(selectedRectangle);
         }
         drawUtil.disableGameViewport();
-
     }
 }

@@ -330,11 +330,11 @@ public class MapEditor extends Screen{
     }
 
     private void increaseHeight(){
-        height = Math.min(height+1, 9);
+        height = StrictMath.min(height+1, 9);
     }
 
     private void decreaseHeight(){
-        height = Math.max(height-1, 0);
+        height = StrictMath.max(height-1, 0);
     }
 
 

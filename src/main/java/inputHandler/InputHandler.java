@@ -2,6 +2,7 @@ package inputHandler;
 
 import game.Sounds;
 import game.Viewport;
+import utils.NumUtil;
 
 import java.util.ArrayDeque;
 
@@ -43,8 +44,8 @@ public class InputHandler {
         public boolean mouseDown() { return isLeftDown; }
 
         public void handleMouse(javafx.scene.input.MouseEvent e) {
-            double mouseX = (e.getX() - Viewport.getXOffset()) / Viewport.getScale();
-            double mouseY = (e.getY() - Viewport.getYOffset()) / Viewport.getScale();
+            double mouseX = ((e.getX() - Viewport.getXOffset()) / Viewport.getScale());
+            double mouseY = ((e.getY() - Viewport.getYOffset()) / Viewport.getScale());
 
             if (e.getEventType() == javafx.scene.input.MouseEvent.MOUSE_PRESSED) {
                 if (e.getButton() == javafx.scene.input.MouseButton.PRIMARY) {

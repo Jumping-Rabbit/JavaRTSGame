@@ -28,8 +28,8 @@ public class CollisionUtil {
         return x1b && y1b || x2b && y1b || x2b && y2b || x1b && y2b;
     }
     public static boolean RectCircleCollision(double x1, double y1, double r1, double x2, double y2, double width2, double height2){
-        var distX = Math.abs((x1+r1) - x2-width2/2);
-        var distY = Math.abs((y1+r1) - y2-height2/2);
+        var distX = StrictMath.abs((x1+r1) - x2-width2/2);
+        var distY = StrictMath.abs((y1+r1) - y2-height2/2);
 
         if (distX > (width2/2 + r1)) { return false; }
         if (distY > (height2/2 + r1)) { return false; }

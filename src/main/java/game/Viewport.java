@@ -15,7 +15,7 @@ public class Viewport {
     public static void calculateViewport(double windowWidth, double windowHeight){
         double windowWidthScale = windowWidth / 1920d;
         double windowHeightScale = windowHeight / 1080d;
-        scale = Math.min(windowWidthScale, windowHeightScale);
+        scale = StrictMath.min(windowWidthScale, windowHeightScale);
         xOffset = ((windowWidth - (viewportWidth * scale)) / 2d);
         yOffset = ((windowHeight - (viewportHeight * scale)) / 2d);
 //        System.out.print(windowWidth + " ");
