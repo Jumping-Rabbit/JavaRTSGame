@@ -2,6 +2,8 @@ package game.screen;
 
 import game.Fonts;
 import game.SettingsManager;
+import inputHandler.KeyType;
+import inputHandler.Keys;
 import javafx.geometry.Rectangle2D;
 import utils.CollisionUtil;
 import utils.DrawUtil;
@@ -32,7 +34,7 @@ public class Settings extends Screen{
     public enum AudioButtons {
         MASTER_VOLUME(new Rectangle2D(50, 150, 1000, 100), "master volume", SettingsManager.Settings.MASTER_VOLUME, "masterVolume"),
         BGM_VOLUME(new Rectangle2D(50, 300, 1000, 100), "bgm volume", SettingsManager.Settings.BGM_VOLUME, "BGMVolume"),
-        SFX_VOLUME(new Rectangle2D(50, 450, 1000, 100), "bgm volume", SettingsManager.Settings.BGM_VOLUME, "SFXVolume");
+        SFX_VOLUME(new Rectangle2D(50, 450, 1000, 100), "sfx volume", SettingsManager.Settings.SFX_VOLUME, "SFXVolume");
 
         private final Rectangle2D rectangle;
         private final String name;
@@ -92,16 +94,7 @@ public class Settings extends Screen{
     private Buttons currentSection = Buttons.GRAPHICS;
     private GraphicsButtons currentGraphicsSetting = GraphicsButtons.GRAPHICS_QUALITY;
     private AudioButtons currentAudioSetting = AudioButtons.MASTER_VOLUME;
-    private boolean exit = false;
     private SettingsManager settingsManager;
-
-    public boolean isExit() {
-        if (exit){
-            exit = false;
-            return true;
-        }
-        return false;
-    }
 
     public void resetSelections(){
         isEditing = false;
@@ -129,9 +122,9 @@ public class Settings extends Screen{
         return new Settings(this);
     }
 
-    private boolean isDouble(String string){
+    private boolean isInt(String string){
         try{
-            Double.parseDouble(string);
+            Integer.parseInt(string);
             return true;
         } catch (NumberFormatException e) {
             return false;
@@ -142,61 +135,14 @@ public class Settings extends Screen{
         for (Input input : InputHandler.getInputs()){
             switch (input.getInputType()) {
                 case KEYPRESS:
-                    if (Objects.equals(input.getKey(), "a") || Objects.equals(input.getKey(), "left")){
-                        if (!isEditing) {
-                            Buttons oldButton = currentSection;
-                            currentSection = Buttons.values()[(currentSection.ordinal() - 1) >= 0 ? (currentSection.ordinal() - 1) : (Buttons.values().length - 1)];
-                            if (currentSection != oldButton) {
-                                currentGraphicsSetting = GraphicsButtons.GRAPHICS_QUALITY;
-                                currentAudioSetting = AudioButtons.MASTER_VOLUME;
-                            }
-                            break;
-                        }
-                    } else if (Objects.equals(input.getKey(), "d") || Objects.equals(input.getKey(), "right")){
-                        if(!isEditing) {
-                            Buttons oldButton = currentSection;
-                            currentSection = Buttons.values()[(currentSection.ordinal() + 1) % Buttons.values().length];
-                            if (currentSection != oldButton) {
-                                currentGraphicsSetting = GraphicsButtons.GRAPHICS_QUALITY;
-                                currentAudioSetting = AudioButtons.MASTER_VOLUME;
-                            }
-                        }
-                    } else if (Objects.equals(input.getKey(), "w")) {
-                        if(!isEditing) {
-                            switch (currentSection) {
-                                case GRAPHICS:
-                                    currentGraphicsSetting = GraphicsButtons.values()[(currentGraphicsSetting.ordinal() - 1) >= 0 ? (currentGraphicsSetting.ordinal() - 1) : (GraphicsButtons.values().length - 1)];
-                                    break;
-                                case AUDIO:
-                                    currentAudioSetting = AudioButtons.values()[(currentAudioSetting.ordinal() - 1) >= 0 ? (currentAudioSetting.ordinal() - 1) : (AudioButtons.values().length - 1)];
-                                    break;
-                            }
-                        }
-                    } else if (Objects.equals(input.getKey(), "s")) {
-                        if(!isEditing) {
-                            switch (currentSection) {
-                                case GRAPHICS:
-                                    currentGraphicsSetting = GraphicsButtons.values()[(currentGraphicsSetting.ordinal() + 1) % GraphicsButtons.values().length];
-                                    break;
-                                case AUDIO:
-                                    currentAudioSetting = AudioButtons.values()[(currentAudioSetting.ordinal() + 1) % AudioButtons.values().length];
-                                    break;
-                            }
-                        }
-                    } else if (Objects.equals(input.getKey(), "escape")){
-                        if (isEditing){
+                    if (isEditing){
+                         if (input.getKey() == Keys.ESCAPE){
                             isEditing = false;
                             break;
-                        }
-                        exit = true;
-                    } else if (Objects.equals(input.getKey(), "enter")){
-                        if (currentSection == Buttons.EXIT){
-                            exit = true;
+                         }else if (input.getKey() == Keys.ENTER){
+                            isEditing = false;
                             break;
-                        }
-                        isEditing = !isEditing;
-                    }
-                    if (isEditing){
+                         }
                         String currentSetting = switch (currentSection) {
                             case GRAPHICS -> currentGraphicsSetting.getId();
                             case AUDIO -> currentAudioSetting.getId();
@@ -204,23 +150,76 @@ public class Settings extends Screen{
                         };
                         switch(SettingsManager.Settings.fromValue(currentSetting).getSettingType()){
                             case INTEGER:
-                                if (Objects.equals(input.getKey(), "backspace") && !settingsManager.getSettingStringValue(currentSetting).isEmpty()){
+                                if (input.getKey() == Keys.BACKSPACE && !settingsManager.getSettingStringValue(currentSetting).isEmpty()){
                                     settingsManager.setSetting(currentSetting, !settingsManager.getSettingStringValue(currentSetting).substring(0, String.valueOf(settingsManager.getSettingStringValue(currentSetting)).length() - 1).isEmpty() ? settingsManager.getSettingStringValue(currentSetting).substring(0, String.valueOf(settingsManager.getSettingStringValue(currentSetting)).length() - 1) : "0");
-                                } else if (isDouble(input.getKey())){
-                                    settingsManager.setSetting(currentSetting,settingsManager.getSettingStringValue(currentSetting) + input.getKey());
+                                } else if (input.getKey().getType() == KeyType.NUMBER){
+                                    settingsManager.setSetting(currentSetting,settingsManager.getSettingStringValue(currentSetting) + input.getKey().getString());
                                 }
                                 break;
                             case BOOLEAN:
-                                if (Objects.equals(input.getKey(), "w")||Objects.equals(input.getKey(), "a")||Objects.equals(input.getKey(), "s")||Objects.equals(input.getKey(), "d")){
+                                if (input.getKey() == Keys.W||input.getKey() == Keys.A||input.getKey() == Keys.S||input.getKey() == Keys.D){
                                     settingsManager.setSetting(currentSetting, settingsManager.getSettingStringValue(currentSetting).equals("true") ? "false" : "true");
                                 }
                                 break;
                             case STRING:
-                                //TODO: handle the string cases with the enums
+                                if (input.getKey() == Keys.W||input.getKey() == Keys.A||input.getKey() == Keys.S||input.getKey() == Keys.D){
+                                    switch (currentSetting){
+                                        case "graphicsQuality":
+                                            settingsManager.setSetting(currentSetting, SettingsManager.GraphicsQuality.values()[(SettingsManager.GraphicsQuality.fromValue(settingsManager.getSettingStringValue(currentSetting)).ordinal() + 1) % SettingsManager.GraphicsQuality.values().length].getString());
+                                            break;
+                                        case "displayMode":
+                                            settingsManager.setSetting(currentSetting, SettingsManager.DisplayModes.values()[(SettingsManager.DisplayModes.fromValue(settingsManager.getSettingStringValue(currentSetting)).ordinal() + 1) % SettingsManager.DisplayModes.values().length].getString());
+                                            break;
+                                    }
+
+                                }
                                 break;
                         }
-
+                        break;
                     }
+                    if (input.getKey()== Keys.A || input.getKey() == Keys.LEFT){
+                        Buttons oldButton = currentSection;
+                        currentSection = Buttons.values()[(currentSection.ordinal() - 1) >= 0 ? (currentSection.ordinal() - 1) : (Buttons.values().length - 1)];
+                        if (currentSection != oldButton) {
+                            currentGraphicsSetting = GraphicsButtons.GRAPHICS_QUALITY;
+                            currentAudioSetting = AudioButtons.MASTER_VOLUME;
+                        }
+                        break;
+                    } else if (input.getKey()== Keys.D || input.getKey()== Keys.RIGHT){
+                        Buttons oldButton = currentSection;
+                        currentSection = Buttons.values()[(currentSection.ordinal() + 1) % Buttons.values().length];
+                        if (currentSection != oldButton) {
+                            currentGraphicsSetting = GraphicsButtons.GRAPHICS_QUALITY;
+                            currentAudioSetting = AudioButtons.MASTER_VOLUME;
+                        }
+                    } else if (input.getKey() == Keys.W) {
+                        switch (currentSection) {
+                            case GRAPHICS:
+                                currentGraphicsSetting = GraphicsButtons.values()[(currentGraphicsSetting.ordinal() - 1) >= 0 ? (currentGraphicsSetting.ordinal() - 1) : (GraphicsButtons.values().length - 1)];
+                                break;
+                            case AUDIO:
+                                currentAudioSetting = AudioButtons.values()[(currentAudioSetting.ordinal() - 1) >= 0 ? (currentAudioSetting.ordinal() - 1) : (AudioButtons.values().length - 1)];
+                                break;
+                        }
+                    } else if (input.getKey() == Keys.S) {
+                        switch (currentSection) {
+                            case GRAPHICS:
+                                currentGraphicsSetting = GraphicsButtons.values()[(currentGraphicsSetting.ordinal() + 1) % GraphicsButtons.values().length];
+                                break;
+                            case AUDIO:
+                                currentAudioSetting = AudioButtons.values()[(currentAudioSetting.ordinal() + 1) % AudioButtons.values().length];
+                                break;
+                        }
+                    } else if (input.getKey() == Keys.ESCAPE){
+                        exit = true;
+                    } else if (input.getKey() == Keys.ENTER){
+                        if (currentSection == Buttons.EXIT){
+                            exit = true;
+                            break;
+                        }
+                        isEditing = true;
+                    }
+
                     break;
                 case LEFT_CLICK:
                     for (Buttons button : Buttons.values()){
@@ -233,23 +232,37 @@ public class Settings extends Screen{
                             break;
                         }
                     }
+                    boolean pressedButton = false;
                     switch(currentSection){
                         case AUDIO:
+                            AudioButtons lastAudioButton = currentAudioSetting;
                             for (AudioButtons button : AudioButtons.values()){
                                 if (CollisionUtil.RectPointCollision(button.getRectangle(), input.getX(), input.getY())){
                                     currentAudioSetting = button;
+                                    pressedButton = true;
                                     break;
                                 }
+                            }
+                            if (pressedButton && lastAudioButton == currentAudioSetting){
+                                isEditing = !isEditing;
                             }
                             break;
                         case GRAPHICS:
+                            GraphicsButtons lastGraphicsButton = currentGraphicsSetting;
                             for (GraphicsButtons button : GraphicsButtons.values()){
                                 if (CollisionUtil.RectPointCollision(button.getRectangle(), input.getX(), input.getY())){
                                     currentGraphicsSetting = button;
+                                    pressedButton = true;
                                     break;
                                 }
                             }
+                            if (pressedButton && lastGraphicsButton == currentGraphicsSetting){
+                                isEditing = !isEditing;
+                            }
                             break;
+                    }
+                    if (isEditing && !pressedButton){
+                        isEditing = false;
                     }
                     break;
                 case SCROLL:
@@ -277,7 +290,7 @@ public class Settings extends Screen{
                 drawUtil.setColor(0, 150, 255);
             }
             drawUtil.drawRect(button.getRectangle());
-            drawUtil.drawString(button.getRectangle().getMinX() + button.getRectangle().getWidth()/2, 50, button.getName(), 20, Fonts.DEFAULT);
+            drawUtil.drawString(button.getRectangle().getMinX() + button.getRectangle().getWidth()/2, 50, button.getName(), 40, Fonts.DEFAULT);
         }
         switch(currentSection){
             case GRAPHICS:
@@ -288,8 +301,8 @@ public class Settings extends Screen{
                         drawUtil.setColor(0, 150, 255);
                     }
                     drawUtil.drawRect(button.getRectangle());
-                    drawUtil.drawString(button.getRectangle().getMinX() + button.getRectangle().getWidth()/5, button.getRectangle().getMinY() + button.getRectangle().getHeight()/2, button.getName(), 20, Fonts.DEFAULT);
-                    drawUtil.drawString(button.getRectangle().getMinX() + (button.getRectangle().getWidth()/5)*4, button.getRectangle().getMinY() + button.getRectangle().getHeight()/2, settingsManager.getSettingStringValue(button.getSetting().getId()), 20, Fonts.DEFAULT);
+                    drawUtil.drawString(button.getRectangle().getMinX() + button.getRectangle().getWidth()/5, button.getRectangle().getMinY() + button.getRectangle().getHeight()/2, button.getName(), 40, Fonts.DEFAULT);
+                    drawUtil.drawString(button.getRectangle().getMinX() + (button.getRectangle().getWidth()/5)*4, button.getRectangle().getMinY() + button.getRectangle().getHeight()/2, settingsManager.getSettingStringValue(button.getSetting().getId()), 40, Fonts.DEFAULT);
                 }
                 break;
             case AUDIO:
@@ -300,10 +313,32 @@ public class Settings extends Screen{
                         drawUtil.setColor(0, 150, 255);
                     }
                     drawUtil.drawRect(button.getRectangle());
-                    drawUtil.drawString(button.getRectangle().getMinX() + button.getRectangle().getWidth()/5, button.getRectangle().getMinY() + button.getRectangle().getHeight()/2, button.getName(), 20, Fonts.DEFAULT);
-                    drawUtil.drawString(button.getRectangle().getMinX() + (button.getRectangle().getWidth()/5)*4, button.getRectangle().getMinY() + button.getRectangle().getHeight()/2, settingsManager.getSettingStringValue(button.getSetting().getId()), 20, Fonts.DEFAULT);
+                    drawUtil.drawString(button.getRectangle().getMinX() + button.getRectangle().getWidth()/5, button.getRectangle().getMinY() + button.getRectangle().getHeight()/2, button.getName(), 40, Fonts.DEFAULT);
+                    drawUtil.drawString(button.getRectangle().getMinX() + (button.getRectangle().getWidth()/5)*4, button.getRectangle().getMinY() + button.getRectangle().getHeight()/2, settingsManager.getSettingStringValue(button.getSetting().getId()), 40, Fonts.DEFAULT);
                 }
                 break;
+        }
+        if (isEditing){
+            drawUtil.setColor(0, 0, 0, 0.33);
+            drawUtil.fillRect(0, 0, 1920, 1080);
+            switch(currentSection){
+                case GRAPHICS:
+                    drawUtil.setColor(50, 50, 50);
+                    drawUtil.fillRect(currentGraphicsSetting.getRectangle());
+                    drawUtil.setColor(0, 255, 255);
+                    drawUtil.drawRect(currentGraphicsSetting.getRectangle());
+                    drawUtil.drawString(currentGraphicsSetting.getRectangle().getMinX() + currentGraphicsSetting.getRectangle().getWidth()/5, currentGraphicsSetting.getRectangle().getMinY() + currentGraphicsSetting.getRectangle().getHeight()/2, currentGraphicsSetting.getName(), 40, Fonts.DEFAULT);
+                    drawUtil.drawString(currentGraphicsSetting.getRectangle().getMinX() + (currentGraphicsSetting.getRectangle().getWidth()/5)*4, currentGraphicsSetting.getRectangle().getMinY() + currentGraphicsSetting.getRectangle().getHeight()/2, settingsManager.getSettingStringValue(currentGraphicsSetting.getSetting().getId()), 40, Fonts.DEFAULT);
+                    break;
+                case AUDIO:
+                    drawUtil.setColor(50, 50, 50);
+                    drawUtil.fillRect(currentAudioSetting.getRectangle());
+                    drawUtil.setColor(0, 255, 255);
+                    drawUtil.drawRect(currentAudioSetting.getRectangle());
+                    drawUtil.drawString(currentAudioSetting.getRectangle().getMinX() + currentAudioSetting.getRectangle().getWidth()/5, currentAudioSetting.getRectangle().getMinY() + currentAudioSetting.getRectangle().getHeight()/2, currentAudioSetting.getName(), 40, Fonts.DEFAULT);
+                    drawUtil.drawString(currentAudioSetting.getRectangle().getMinX() + (currentAudioSetting.getRectangle().getWidth()/5)*4, currentAudioSetting.getRectangle().getMinY() + currentAudioSetting.getRectangle().getHeight()/2, settingsManager.getSettingStringValue(currentAudioSetting.getSetting().getId()), 40, Fonts.DEFAULT);
+                    break;
+            }
         }
     }
 }

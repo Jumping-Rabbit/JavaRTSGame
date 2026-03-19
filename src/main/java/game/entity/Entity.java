@@ -14,16 +14,16 @@ public abstract class Entity {
     protected long lastY;
     protected long direction;
     protected long lastDirection;
-    protected boolean hasCollision;
+    protected static boolean hasCollision;
     protected DrawUtil drawUtil;
-    protected long radius;
-    protected long collisionRadius;
-    protected Image image;
+    protected static long radius;
+    protected static long collisionRadius;
+    protected static Image image;
 
     public abstract void draw();
     public abstract void updateOnFrame();
     protected ArrayList<Command> commands = new ArrayList<>();
-    protected ArrayList<InputType> validCommandTypes = new ArrayList<>();
+    protected static ArrayList<InputType> validCommandTypes = new ArrayList<>();
     public void clearCommands(){
         commands.clear();
     }

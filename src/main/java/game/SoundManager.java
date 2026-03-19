@@ -6,29 +6,53 @@ import javafx.scene.media.MediaPlayer;
 
 import javax.sound.sampled.Clip;
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Stream;
 
 import static java.lang.StrictMath.random;
 
 
 public class SoundManager{
+    private static int bgmNum;
+    private static String bgmName;
+
     private static double masterVolume = 0;
     private static double bgmVolume = 0;
     private static double sfxVolume = 0;
     private static Thread soundThread;
-    private static final String[] bgms = {
-            "/sounds/bgm/Heavens Devils.mp3",
-            "/sounds/bgm/The Golden Armada.mp3",
-            "/sounds/bgm/Wings Of Liberty.mp3"
-    };
-    private static MediaPlayer bgmPlayer = new MediaPlayer(new Media(SoundManager.class.getResource("/sounds/bgm/Heavens Devils.mp3").toString()));
-
+    private static ArrayList<String> bgms = new ArrayList<>();
+    private static MediaPlayer bgmPlayer = null;
+    private static AtomicBoolean newBGM = new AtomicBoolean(false);
+    static{
+        Path root = Paths.get("resources/sounds/bgm");
+        try (Stream<Path> paths = Files.walk(root)) {
+            paths.filter(Files::isRegularFile)
+                    .forEach(sourcePath -> {
+                        String pathString = sourcePath.toAbsolutePath().toString();
+                        bgms.add(pathString);
+                        if (pathString.contains("geometry dash")) {
+                            for (int i = 0; i < 4; i++) {
+                                bgms.add(pathString);
+                            }
+                        }
+                    });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
     private static void setVolume(){
-        bgmPlayer.setVolume(bgmVolume*masterVolume);
+        if (bgmPlayer != null){
+            bgmPlayer.setVolume(bgmVolume*masterVolume);
+        }
         for (Sounds sounds : Sounds.values()){
             sounds.getAudioClip().setVolume(masterVolume*sfxVolume);
         }
@@ -51,19 +75,41 @@ public class SoundManager{
         soundThread.start();
     }
 
+    public static void newBGM(){
+        newBGM.set(true);
+    }
+
+    public static String getBgmName(){
+        return bgmName;
+    }
+
     private static void playBGM(){
 
-        int bgmNum;
         while (soundThread != null){
-            bgmNum = (int)(random()*3);
-            bgmPlayer = new MediaPlayer(new Media(SoundManager.class.getResource(bgms[bgmNum]).toString()));
+            newBGM.set(false);
+            bgmNum = (int)(random()*bgms.size());
+            bgmPlayer = new MediaPlayer(new Media(new File(bgms.get(bgmNum)).toURI().toString()));
             bgmPlayer.setVolume(bgmVolume*masterVolume);
             bgmPlayer.play();
+            bgmName = Paths.get(bgms.get(bgmNum)).getFileName().toString().replaceFirst("[.][^.]+$", "");
             try {
-                while (bgmPlayer.getStatus()!=MediaPlayer.Status.STOPPED){
+                for (int i = 0; i < 10; i++){
+                    if (newBGM.get()){
+                        break;
+                    }
                     Thread.sleep(50);
                 }
-                Thread.sleep(3000);
+                while (bgmPlayer.getStatus()!=MediaPlayer.Status.HALTED){
+                    Thread.sleep(100);
+                    if (newBGM.get()){
+                        bgmPlayer.stop();
+                        break;
+                    }
+                }
+                if (!newBGM.get()){
+                    Thread.sleep(3000);
+                }
+
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }

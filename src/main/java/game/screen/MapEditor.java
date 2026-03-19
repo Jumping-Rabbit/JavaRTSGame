@@ -1,16 +1,14 @@
 package game.screen;
 
 import game.Fonts;
+import inputHandler.KeyType;
+import inputHandler.Keys;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.image.Image;
 import utils.CollisionUtil;
 import utils.DrawUtil;
 import inputHandler.Input;
 import inputHandler.InputHandler;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
 import java.awt.*;
 import java.io.*;
@@ -134,36 +132,36 @@ public class MapEditor extends Screen{
         }catch(IOException e){
             e.printStackTrace();
         }
-        JSONObject map = new JSONObject();
-        map.put("name", directory.substring(directory.lastIndexOf("/") + 1));
-
-        JSONArray zero2DArray = new JSONArray();
-        JSONArray zeroArray = new JSONArray();
-        JSONObject playerData = new JSONObject();
-        JSONArray playersData = new JSONArray();
-        for (int i = 0; i < 50; i++){
-            zeroArray.add(0);
-        }
-        for (int i = 0; i < 50; i++){
-            zero2DArray.add(zeroArray);
-        }
-        playersData.add(playerData);
-        playerData.put("x", 0);
-        playerData.put("y", 0);
-
-        JSONObject key = new JSONObject();
-        key.put("0", "default.png");
-
-        map.put("tileMap", zero2DArray);
-        map.put("heightMap", zero2DArray);
-        map.put("key", new JSONObject());
-        map.put("playerData", playersData);
-        try(FileWriter writer = new FileWriter(directory +"/map.json")){
-            writer.write(map.toJSONString());
-            writer.flush();
-        }catch(IOException e){
-            e.printStackTrace();
-        }
+//        JSONObject map = new JSONObject();
+//        map.put("name", directory.substring(directory.lastIndexOf("/") + 1));
+//
+//        JSONArray zero2DArray = new JSONArray();
+//        JSONArray zeroArray = new JSONArray();
+//        JSONObject playerData = new JSONObject();
+//        JSONArray playersData = new JSONArray();
+//        for (int i = 0; i < 50; i++){
+//            zeroArray.add(0);
+//        }
+//        for (int i = 0; i < 50; i++){
+//            zero2DArray.add(zeroArray);
+//        }
+//        playersData.add(playerData);
+//        playerData.put("x", 0);
+//        playerData.put("y", 0);
+//
+//        JSONObject key = new JSONObject();
+//        key.put("0", "default.png");
+//
+//        map.put("tileMap", zero2DArray);
+//        map.put("heightMap", zero2DArray);
+//        map.put("key", new JSONObject());
+//        map.put("playerData", playersData);
+//        try(FileWriter writer = new FileWriter(directory +"/map.json")){
+//            writer.write(map.toJSONString());
+//            writer.flush();
+//        }catch(IOException e){
+//            e.printStackTrace();
+//        }
 
     }
 
@@ -272,30 +270,30 @@ public class MapEditor extends Screen{
         isRenaming = false;
     }
 
-    private void renameMap(String key){
+    private void renameMap(Keys key){
         if (directory == null){
             return;
         }
-        JSONParser parser = new JSONParser();
-        try {
-            Object object = parser.parse(new FileReader(directory + "/map.json"));
-            JSONObject map = (JSONObject) object;
-            if (Objects.equals(key, "backspace") && !String.valueOf(map.get("name")).isEmpty()){
-                map.put("name", String.valueOf(map.get("name")).substring(0, String.valueOf(map.get("name")).length() - 1));
-            }else if (key.equals("space")){
-                map.put("name", map.get("name") + " ");
-            } else if (key.length() == 1){
-                map.put("name", map.get("name") + key);
-            }
-            try (FileWriter file = new FileWriter(directory + "/map.json")) {
-                file.write(map.toJSONString());
-                file.flush();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        } catch (IOException | ParseException e) {
-            throw new RuntimeException(e);
-        }
+//        JSONParser parser = new JSONParser();
+//        try {
+//            Object object = parser.parse(new FileReader(directory + "/map.json"));
+//            JSONObject map = (JSONObject) object;
+//            if (key == Keys.BACKSPACE && !String.valueOf(map.get("name")).isEmpty()){
+//                map.put("name", String.valueOf(map.get("name")).substring(0, String.valueOf(map.get("name")).length() - 1));
+//            }else if (key == Keys.SPACE){
+//                map.put("name", map.get("name") + " ");
+//            } else if (key.getType() == KeyType.LETTER){
+//                map.put("name", map.get("name") + key.getString());
+//            }
+//            try (FileWriter file = new FileWriter(directory + "/map.json")) {
+//                file.write(map.toJSONString());
+//                file.flush();
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        } catch (IOException | ParseException e) {
+//            throw new RuntimeException(e);
+//        }
     }
 
     private void importTile(){
@@ -363,14 +361,14 @@ public class MapEditor extends Screen{
         for (Buttons button : Buttons.values()) {
             drawUtil.drawRect(button.getRectangle2D());
             if (button == Buttons.RENAME_MAP && directory != null){
-                JSONParser parser = new JSONParser();
-                try {
-                    Object object = parser.parse(new FileReader(directory + "/map.json"));
-                    JSONObject map = (JSONObject) object;
-                    drawUtil.drawString(button.getRectangle2D().getMinX() + button.getRectangle2D().getWidth() / 2, button.getRectangle2D().getMinY() + button.getRectangle2D().getHeight() / 2, (String) map.get("name"), 20, Fonts.DEFAULT);
-                } catch (IOException | ParseException e) {
-                    throw new RuntimeException(e);
-                }
+//                JSONParser parser = new JSONParser();
+//                try {
+//                    Object object = parser.parse(new FileReader(directory + "/map.json"));
+//                    JSONObject map = (JSONObject) object;
+//                    drawUtil.drawString(button.getRectangle2D().getMinX() + button.getRectangle2D().getWidth() / 2, button.getRectangle2D().getMinY() + button.getRectangle2D().getHeight() / 2, (String) map.get("name"), 20, Fonts.DEFAULT);
+//                } catch (IOException | ParseException e) {
+//                    throw new RuntimeException(e);
+//                }
                 continue;
             } else if (button == Buttons.HEIGHT_COUNTER){
                 drawUtil.drawString(button.getRectangle2D().getMinX() + button.getRectangle2D().getWidth() / 2, button.getRectangle2D().getMinY() + button.getRectangle2D().getHeight() / 2, String.valueOf(height), 20, Fonts.DEFAULT);
@@ -431,7 +429,7 @@ public class MapEditor extends Screen{
                     cancelRenameMap();
                     break;
                 case KEYPRESS:
-                    if (input.getKey().equals("escape")){
+                    if (input.getKey() == Keys.ESCAPE){
                         back();
                     }
                     if (isRenaming){

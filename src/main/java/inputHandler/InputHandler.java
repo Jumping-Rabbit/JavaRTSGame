@@ -2,9 +2,12 @@ package inputHandler;
 
 import game.Sounds;
 import game.Viewport;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.input.ScrollEvent;
 import utils.NumUtil;
 
 import java.util.ArrayDeque;
+import java.util.HashMap;
 
 public class InputHandler {
     public static final MouseHandler mouseHandler = new MouseHandler();
@@ -43,7 +46,14 @@ public class InputHandler {
 
         public boolean mouseDown() { return isLeftDown; }
 
-        public void handleMouse(javafx.scene.input.MouseEvent e) {
+        public void handleScroll(ScrollEvent e){
+            double mouseX = ((e.getX() - Viewport.getXOffset()) / Viewport.getScale());
+            double mouseY = ((e.getY() - Viewport.getYOffset()) / Viewport.getScale());
+            addInput(new Input(InputType.SCROLL, mouseX, mouseY, (int) Math.copySign(1, e.getDeltaY())));
+            System.out.println(inputs.getLast().getScroll());//i mean this gives a value of 26.666 for my mouse
+        }
+
+        public void handleMouse(MouseEvent e) {
             double mouseX = ((e.getX() - Viewport.getXOffset()) / Viewport.getScale());
             double mouseY = ((e.getY() - Viewport.getYOffset()) / Viewport.getScale());
 
@@ -150,12 +160,16 @@ public class InputHandler {
 //            Map.entry(KeyEvent.VK_RIGHT, "right"),
 //            Map.entry(KeyEvent.VK_ESCAPE, "escape")
 //    );
+        private final static HashMap<String, Keys> stringToKeyMap = new HashMap<>();
+        static{
+            for (Keys key : Keys.values()){
+                stringToKeyMap.put(key.getKeyHandlerString(), key);
+            }
+        }
+
 
         public void handleKeyPress(javafx.scene.input.KeyEvent e) {
-            String keyName = e.getCode().name().toLowerCase();
-            if (keyName.equals("back_space")) keyName = "backspace";
-
-            InputHandler.addInput(new Input(InputType.KEYPRESS, keyName));
+            InputHandler.addInput(new Input(InputType.KEYPRESS, stringToKeyMap.getOrDefault(e.getCode().name().toLowerCase(), Keys.NONE), e.isShiftDown()));
         }
     }
 }

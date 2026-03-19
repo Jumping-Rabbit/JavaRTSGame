@@ -1,8 +1,9 @@
 package game;
 
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 import java.io.*;
 
@@ -67,10 +68,10 @@ public class SettingsManager{
         DisplayModes(String string){
             this.string = string;
         }
-        private String getString(){
+        public String getString(){
             return string;
         }
-        private static DisplayModes fromValue(String givenName) {
+        public static DisplayModes fromValue(String givenName) {
             for (DisplayModes displayMode : values()) {
                 if (displayMode.string.equalsIgnoreCase(givenName)) {
                     return displayMode;
@@ -79,7 +80,7 @@ public class SettingsManager{
             return null;
         }
     }
-    private DisplayModes displayMode = DisplayModes.WINDOWED;
+    private DisplayModes displayMode = DisplayModes.WINDOWED_FULLSCREEN;
     private final Object displayModeLock = new Object();
 
 
@@ -110,10 +111,10 @@ public class SettingsManager{
         GraphicsQuality(String string){
             this.string = string;
         }
-        private String getString(){
+        public String getString(){
             return string;
         }
-        private static GraphicsQuality fromValue(String givenName) {
+        public static GraphicsQuality fromValue(String givenName) {
             for (GraphicsQuality graphicsQuality : values()) {
                 if (graphicsQuality.string.equalsIgnoreCase(givenName)) {
                     return graphicsQuality;
@@ -129,42 +130,35 @@ public class SettingsManager{
 
 
     private void writeSettings(String directory, String key, Object value){
-//        return;
-        JSONParser parser = new JSONParser();
+        var objectMapper = new ObjectMapper();
+        JsonNode root = objectMapper.readTree(new File("resources/settings.json"));
+        JsonNode setting = root.path(directory);
+        ObjectNode objectNode = (ObjectNode) setting;
+        switch(value.getClass().getSimpleName()){
+            case "String" -> objectNode.put(key, value.toString());
+            case "Integer" -> objectNode.put(key, Integer.parseInt(value.toString()));
+            case "Boolean" -> objectNode.put(key, Boolean.parseBoolean(value.toString()));
+        }
         try {
-            Object object = parser.parse(new BufferedReader(new InputStreamReader(getClass().getClassLoader().getResourceAsStream("settings.json"))));
-            JSONObject settings = (JSONObject) object;
-            JSONObject selectedDirectory = (JSONObject) settings.get(directory);
-            selectedDirectory.put(key, value);
-            try (FileWriter file = new FileWriter("settings.json")) {
-                file.write(settings.toJSONString());
-                file.flush();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        } catch (IOException | ParseException e) {
-            throw new RuntimeException(e);
+            objectMapper.writerWithDefaultPrettyPrinter().writeValue(new File("resources/settings.json"), root);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
     public void getSettings(){
-        JSONParser parser = new JSONParser();
-        try {
-            Object object = parser.parse(new BufferedReader(new InputStreamReader(getClass().getClassLoader().getResourceAsStream("settings.json"))));
-            JSONObject settings = (JSONObject) object;
-            JSONObject graphics = (JSONObject) settings.get("graphics");
-            JSONObject audio = (JSONObject) settings.get("audio");
-            setMonitorNum((int)(long)graphics.get("monitorNum"));
-            setDisplayMode(DisplayModes.fromValue(String.valueOf(graphics.get("displayMode"))));
-            setGraphicsQuality(GraphicsQuality.fromValue(String.valueOf(graphics.get("graphicsQuality"))));
-            setAntialiasing((Boolean)graphics.get("antialiasing"));
-            try{setTargetFPS((int)(long)graphics.get("targetFPS"));} finally{};
-            try{SoundManager.setBGMVolume((int)(long)audio.get("BGMVolume"));} finally{};
-            try{SoundManager.setMasterVolume((int)(long)audio.get("masterVolume"));} finally{};
-            try{SoundManager.setSFXVolume((int)(long)audio.get("SFXVolume"));} finally{};
-        } catch (IOException | ParseException e) {
-            throw new RuntimeException(e);
-        }
+        var objectMapper = new ObjectMapper();
+        JsonNode root  = objectMapper.readTree(new File("resources/settings.json"));
+        JsonNode graphics = root.get("graphics");
+        JsonNode audio = root.get("audio");
+        setMonitorNum(graphics.get("monitorNum").asInt());
+        setDisplayMode(DisplayModes.fromValue(String.valueOf(graphics.get("displayMode").asString())));
+        setGraphicsQuality(GraphicsQuality.fromValue(String.valueOf(graphics.get("graphicsQuality").asString())));
+        setAntialiasing(graphics.get("antialiasing").asBoolean());
+        setTargetFPS(graphics.get("targetFPS").asInt());
+        setBGMVolume(audio.get("BGMVolume").asInt());
+        setMasterVolume(audio.get("masterVolume").asInt());
+        setSFXVolume(audio.get("SFXVolume").asInt());
     }
 
     public String getSettingStringValue(String id){
@@ -269,6 +263,7 @@ public class SettingsManager{
     public void setMasterVolume(int volume){
         volume = StrictMath.clamp(volume, minMasterVolume, maxMasterVolume);
         synchronized (masterVolumeLock){
+            masterVolume = volume;
             writeSettings("audio", "masterVolume", volume);
             SoundManager.setMasterVolume(volume);
         }
@@ -282,6 +277,7 @@ public class SettingsManager{
     public void setBGMVolume(int volume){
         volume = StrictMath.clamp(volume, minBGMVolume, maxBGMVolume);
         synchronized (BGMVolumeLock){
+            BGMVolume = volume;
             writeSettings("audio", "BGMVolume", volume);
             SoundManager.setBGMVolume(volume);
         }
@@ -295,6 +291,7 @@ public class SettingsManager{
     public void setSFXVolume(int volume){
         volume = StrictMath.clamp(volume, minSFXVolume, maxSFXVolume);
         synchronized (SFXVolumeLock){
+            SFXVolume = volume;
             writeSettings("audio", "SFXVolume", volume);
             SoundManager.setSFXVolume(volume);
         }
@@ -303,6 +300,7 @@ public class SettingsManager{
         synchronized (SFXVolumeLock) {
             return SFXVolume;
         }
+
     }
 
 

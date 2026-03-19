@@ -1,14 +1,19 @@
 package game.entity.unit;
 
-import game.entity.Effects;
-import game.entity.Entity;
+import game.entity.*;
+import inputHandler.InputType;
 import utils.NumUtil;
-import game.entity.players;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 
 public abstract class Unit extends Entity {
+
+    protected ArrayList<Effects> effects;
+    protected static ArrayList<Abilities> abilities;
+    protected static EnumSet<Tags> tags;
     protected long hp;
+    protected long maxHp;
     protected long armor;
     protected long speed;
     protected long turnSpeed;
@@ -16,7 +21,7 @@ public abstract class Unit extends Entity {
     protected long attackSpeed;//in ticks
     protected long ticksUntilAttack;
     protected players player;
-    protected ArrayList<Effects> effects;
+
     protected UnitState unitState;
     protected long targetX;
     protected long targetY;
@@ -71,4 +76,60 @@ public abstract class Unit extends Entity {
         this.unitState = unitState;
     }
     public abstract Unit copy();
+    public void draw(){
+        drawUtil.startRotation(NumUtil.LTD(lastX), NumUtil.LTD(lastY), NumUtil.LTD(x), NumUtil.LTD(y), NumUtil.LTD(radius), NumUtil.LTD(radius), NumUtil.LTD(lastDirection), NumUtil.LTD(direction));
+        drawUtil.fillImageInterpolate(image, NumUtil.LTD(lastX), NumUtil.LTD(lastY), NumUtil.LTD(radius)*2, NumUtil.LTD(radius)*2, NumUtil.LTD(x), NumUtil.LTD(y));
+        drawUtil.resetRotation();
+    }
+    public void updateOnFrame() {
+//        /*
+        if (!commands.isEmpty()) {
+            for (Command command : commands) {
+                if (command.getInputType() == InputType.RIGHT_CLICK) {
+                    unitState = UnitState.MOVING;
+                    targetX = command.getX() - radius;
+                    targetY = command.getY() - radius;
+                    break;
+                }
+            }
+        } else {
+            unitState = UnitState.IDLE;
+        }
+
+        lastDirection = direction;
+        lastX = x;
+        lastY = y;
+        switch (unitState) {
+            case MOVING:
+                targetDirection = NumUtil.atan2(targetY - y, targetX - x);
+                long delta = targetDirection - direction;
+                long scaled180 = NumUtil.DTL(180);
+                long scaled360 = NumUtil.DTL(360);
+                while (delta <= -scaled180) delta += scaled360;
+                while (delta > scaled180) delta -= scaled360;
+                if (StrictMath.abs(delta) <= turnSpeed) {
+                    direction = targetDirection;
+                } else {
+                    if (delta > 0) direction += turnSpeed;
+                    else direction -= turnSpeed;
+                    if (direction <= -scaled180) direction += scaled360;
+                    if (direction > scaled180) direction -= scaled360;
+                }
+                if (direction == targetDirection) {
+                    long xChange = (long) (speed * NumUtil.cos(direction));
+                    long yChange = (long) (speed * NumUtil.sin(direction));
+                    if (targetX > x ? x + xChange >= targetX : x + xChange <= targetX) x = targetX;
+                    else x += xChange;
+                    if (targetY > y ? y + yChange >= targetY : y + yChange <= targetY) y = targetY;
+                    else y += yChange;
+                    long dx = x - targetX;
+                    long dy = y - targetY;
+                    if ((dx * dx) + (dy * dy) <= (radius * radius)) {
+                        unitState = UnitState.IDLE;
+                        removeCommand();
+                    }
+                }
+                break;
+        }
+    }
 }

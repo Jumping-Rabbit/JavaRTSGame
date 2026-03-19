@@ -2,8 +2,10 @@ package game;
 
 import javafx.scene.text.Font;
 
+import java.io.File;
+
 public enum Fonts{
-    DEFAULT(Font.loadFont(Fonts.class.getResourceAsStream("/fonts/SpaceMono-Regular.ttf"), 12));
+    DEFAULT(Font.loadFont(new File("resources/fonts/SpaceMono-Regular.ttf").toURI().toString(), 12));
     private final Font font;
     Fonts(Font font){
         this.font = font;

@@ -1,7 +1,9 @@
 package game;
 
 import game.screen.*;
+import inputHandler.Input;
 import inputHandler.InputHandler;
+import inputHandler.Keys;
 import javafx.geometry.VPos;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -13,12 +15,8 @@ import utils.NumUtil;
 
 import java.text.DecimalFormat;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static java.lang.StrictMath.*;
 
 
 public class GamePanel extends Canvas {
@@ -89,9 +87,78 @@ public class GamePanel extends Canvas {
 
     public GamePanel() {
         super(0, 0);
+//        for (long i = -NumUtil.DTL(100); i < NumUtil.DTL(100); i+= 10000){
+//            for (long j = -NumUtil.DTL(100); j < NumUtil.DTL(100); j+= 10000){
+//                System.out.println(StrictMath.toDegrees(StrictMath.atan2(NumUtil.DTL(i), NumUtil.DTL(j))) + ":" + NumUtil.LTD(NumUtil.atan2(NumUtil.DTL(i), NumUtil.DTL(j))));
+//            }
+//        }
+//        long startTime = System.currentTimeMillis();
+//        long total = 0;
+//        for (int x = 0; x < 10000;x++){
+//            for (int y = 0; y < 10000;y++) {
+//                total += NumUtil.atan2(NumUtil.DTL(x), NumUtil.DTL(y));
+//            }
+//        }
+//        System.out.println(System.currentTimeMillis()-startTime + ":" + total);
+//        total = 0;
+//        startTime = System.currentTimeMillis();
+//        for (int x = 0; x < 10000;x++){
+//            for (int y = 0; y < 10000;y++) {
+//                total += StrictMath.toDegrees(StrictMath.atan2(NumUtil.DTL(x), NumUtil.DTL(y)));
+//            }
+//        }
+//        System.out.println(System.currentTimeMillis()-startTime + ":" + total);
+//        System.out.println("atan: " + NumUtil.atan2(10000000, 10000000));
 
-        // Bind canvas size to GamePanel size
-
+//
+//
+//        startTime = System.currentTimeMillis();
+//        total = 0;
+//        for (int i = 0; i < 100000000;i++){
+//            total += NumUtil.sin(i);
+//        }
+//        System.out.println("sin" + (System.currentTimeMillis()-startTime) + ":" + total);
+//        total = 0;
+//        startTime = System.currentTimeMillis();
+//        for (int i = 0; i < 100000000;i++){
+//            total += NumUtil.DTL(StrictMath.sin(StrictMath.toRadians(i)));
+//        }
+//        System.out.println(System.currentTimeMillis()-startTime + ":" + total);
+////        System.out.println(NumUtil.sin(90));
+////        System.out.println(NumUtil.DTL(StrictMath.sin(StrictMath.toRadians(90))));
+//
+//
+//        long startTime = System.currentTimeMillis();
+//        long total = 0;
+//        for (int i = 0; i < NumUtil.DTL(1000);i++){
+//            total += NumUtil.sqrt(i);
+//        }
+//        System.out.println((System.currentTimeMillis()-startTime) + ":" + total);
+//        startTime = System.currentTimeMillis();
+//        total = 0;
+//        for (int i = 0; i < NumUtil.DTL(1000);i++){
+//            total += NumUtil.sqrtCached(i);
+//        }
+//        System.out.println(System.currentTimeMillis()-startTime + ":" + total);
+//        startTime = System.currentTimeMillis();
+//        total = 0;
+//        for (int i = 0; i < NumUtil.DTL(1000);i++){
+//            total += NumUtil.sqrtCached2(i);
+//        }
+//        System.out.println(System.currentTimeMillis()-startTime + ":" + total);
+//        System.out.println(NumUtil.sqrtFast(NumUtil.DTL(200)));
+//
+//        total = 0;
+//        startTime = System.currentTimeMillis();
+//        for (int i = 0; i < 100000000;i++){
+//            total += NumUtil.DTL(i);
+//        }
+//        System.out.println(System.currentTimeMillis()-startTime + ":" + total);
+//        for (long i  = -NumUtil.DTL(100); i < NumUtil.DTL(100); i+= 10000){
+//            for (long j  = -NumUtil.DTL(100); j < NumUtil.DTL(100); j+= 10000){
+//                System.out.println(NumUtil.LTD(NumUtil.DTL((StrictMath.toDegrees(StrictMath.atan2(NumUtil.DTL(i), NumUtil.DTL(j)))))) + ":" + NumUtil.LTD(NumUtil.atan2(i, j)));
+//            }
+//        }
         settingsManager = new SettingsManager();
         settingsManager.getSettings();
         drawUtil = new DrawUtil();
@@ -119,14 +186,18 @@ public class GamePanel extends Canvas {
             case GAME:
                 tickScreen = getGame().copy();
                 tickScreen.updateOnFrame();
-                setGame((Game)tickScreen);
+                if (tickScreen.isExit()){
+                    setTitleScreen(new TitleScreen(drawUtil));
+                    setGameStatus(GameStatus.TITLESCREEN);
+                } else {
+                    setGame((Game)tickScreen);
+                }
                 break;
             case TITLESCREEN:
                 tickScreen = getTitleScreen().copy();
                 tickScreen.updateOnFrame();
-                setTitleScreen((TitleScreen)tickScreen);
-                if (getTitleScreen().isExit()){
-                    switch (getTitleScreen().getSelectedButton()){
+                if (tickScreen.isExit()){
+                    switch (((TitleScreen)tickScreen).getSelectedButton()){
                         case MAP_EDITOR:
                             setMapEditor(new MapEditor(drawUtil));
                             setGameStatus(GameStatus.MAP_EDITOR);
@@ -142,8 +213,9 @@ public class GamePanel extends Canvas {
                             break;
                     }
                     getTitleScreen().resetSelections();
+                } else {
+                    setTitleScreen((TitleScreen)tickScreen);
                 }
-
                 break;
             case MAP_EDITOR:
                 tickScreen = getMapEditor().copy();
@@ -162,13 +234,18 @@ public class GamePanel extends Canvas {
                 }
                 break;
         }
+        for (Input input : InputHandler.getInputs()){
+            if (input.getKey() == Keys.N){
+                SoundManager.newBGM();
+            }
+        }
         lastTickTime = System.currentTimeMillis();
     }
 
     public void draw() {
         GraphicsContext gc = this.getGraphicsContext2D();
         gc.setImageSmoothing(false);
-        gc.setFontSmoothingType(FontSmoothingType.LCD);;
+        gc.setFontSmoothingType(FontSmoothingType.LCD);
         drawUtil.setFactor((System.currentTimeMillis()-lastTickTime)/50d);
         drawUtil.setGC(gc);
         gc.clearRect(0, 0, this.getWidth(), this.getHeight());
@@ -196,6 +273,9 @@ public class GamePanel extends Canvas {
         gc.fillText("fps:" + formatString(performanceStorage.getFPS(), "00000.00") + " tps:" + formatString(performanceStorage.getTPS(), "00"), 10, 10);
         gc.fillText( "dt:" + formatString(performanceStorage.getCurrentDT(), "0000.00") + "ms" + " dt1%:" + formatString(performanceStorage.getPeakDT(), "0000.00") + "ms", 10, 20);
         gc.fillText( "ttu:" + formatString(performanceStorage.getTickTimeUsed(), "0000.00") + "%" + " ttu1%:" + formatString(performanceStorage.getTickTimeUsedLow(), "0000.00") + "%" + " late frames:" + performanceStorage.getLateFrames(), 10, 30);
+        gc.setTextAlign(TextAlignment.RIGHT);
+        gc.setTextBaseline(VPos.TOP);
+        gc.fillText("BGM: " + SoundManager.getBgmName(), this.getWidth() - 10, 10);
     }
     class logicThread implements Runnable{
         PerformanceStorage performanceStorage;
@@ -257,10 +337,10 @@ public class GamePanel extends Canvas {
                         javafx.application.Platform.runLater(() -> {
                             try {
                                 draw();
-                                performanceStorage.addDFrame();
-                                performanceStorage.addDrawTimeUsed(currentTime);
                             } finally {
                                 isRendering.set(false);
+                                performanceStorage.addDFrame();
+                                performanceStorage.addDrawTimeUsed(currentTime);
                             }
                         });
                     }

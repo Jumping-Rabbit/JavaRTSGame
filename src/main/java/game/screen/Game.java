@@ -1,11 +1,14 @@
 package game.screen;
 
 import game.GameViewport;
+import game.Replay;
 import game.entity.Command;
 import game.entity.Entity;
 import game.entity.building.Building;
-import game.entity.unit.UnitState;
+import inputHandler.Keys;
 import javafx.geometry.Rectangle2D;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import utils.NumUtil;
 import game.entity.players;
 import game.entity.unit.Unit;
@@ -15,18 +18,13 @@ import utils.DrawUtil;
 import inputHandler.Input;
 import inputHandler.InputHandler;
 import inputHandler.InputType;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import tile.TileManager;
 
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Objects;
-import java.util.concurrent.*;
+
 import static utils.NumUtil.DTL;
 
 public class Game extends Screen {
@@ -44,25 +42,22 @@ public class Game extends Screen {
     ArrayList<Building> buildings;
     ArrayList<Entity> selectedEntities;
     Rectangle2D selectedRectangle = null;
-    ExecutorService updateThreadPool = Executors.newFixedThreadPool(4);
-    ExecutorCompletionService<Void> updateThreadPoolCompletion = new ExecutorCompletionService<>(updateThreadPool);
+    long tickNum;
+//    Entity[] spatialPartitioning = null;//TODO: fix this and put in game init when have the map so it can be sized to the map size
+    //im thinking 128 or 256, but itl only be fast if its in the 10^6 scale so idk what the numbers should be
+
 
     public Game(DrawUtil drawUtil, File map) {
-        JSONParser parser = new JSONParser();
-        Object object;
-        try {
-            object = parser.parse(new FileReader(map.getPath() + "/map.json"));
-        } catch (IOException | ParseException e) {
-            throw new RuntimeException(e);
-        }
-        JSONObject mapJSON = (JSONObject) object;
-        JSONArray playersData = (JSONArray) mapJSON.get("playerData");
+        var objectMapper = new ObjectMapper();
+        JsonNode root= objectMapper.readTree(new File(map.getPath() + "/map.json"));
+        JsonNode playersData = root.path("playerData");
         this(drawUtil, map, (int)StrictMath.floor(StrictMath.random() * playersData.size()));
 
     }
     public Game(DrawUtil drawUtil, File map, int playerNum) {
+        exit = false;
         units = new ArrayList<>();
-        for (int i = 0; i <500; i++){
+        for (int i = 0; i <100; i++){
             units.add(new Marine(drawUtil, (int)(StrictMath.random()*1800), (int)(StrictMath.random()*900), players.BLUE));
         }
         buildings = new ArrayList<>();
@@ -71,18 +66,15 @@ public class Game extends Screen {
 
         tileManager = new TileManager(drawUtil, map);
         this.map = map;
-        JSONParser parser = new JSONParser();
-        try {
-            Object object = parser.parse(new FileReader(map.getPath() + "/map.json"));
-            JSONObject mapJSON = (JSONObject) object;
-            JSONArray playersData = (JSONArray) mapJSON.get("playerData");
-            JSONObject playerData = (JSONObject) playersData.get(playerNum);
-            gameViewport = new GameViewport(DTL(Double.parseDouble(String.valueOf(playerData.get("x")))), DTL(Double.parseDouble(String.valueOf(playerData.get("y")))));
-        } catch (IOException | ParseException e) {
-            throw new RuntimeException(e);
-        }
+        var objectMapper = new ObjectMapper();
+        JsonNode root= objectMapper.readTree(new File(map.getPath() + "/map.json"));
+        JsonNode playersData = root.path("playerData");
+        JsonNode playerData = playersData.get(playerNum);
+        gameViewport = new GameViewport(DTL(Double.parseDouble(String.valueOf(playerData.get("x")))), DTL(Double.parseDouble(String.valueOf(playerData.get("y")))));
         this.drawUtil = drawUtil;
         drawUtil.setGameViewport(gameViewport);
+        tickNum = 0;
+        Replay.newReplay(new File(""));
     }
 
     public Screen copy(){
@@ -98,8 +90,6 @@ public class Game extends Screen {
         tileManager = game.tileManager;
         selectedEntities = new ArrayList<>();
         units = new ArrayList<>();
-        updateThreadPoolCompletion = game.updateThreadPoolCompletion;
-        updateThreadPool = game.updateThreadPool;
         for (Unit unit : game.units){
             Unit newUnit = unit.copy();
             units.add(newUnit);
@@ -108,6 +98,8 @@ public class Game extends Screen {
             }
         }
         buildings = game.buildings;
+        exit = game.exit;
+        tickNum = game.tickNum;
     }
 
     public static double clampOutside(double value) {
@@ -121,8 +113,8 @@ public class Game extends Screen {
     }
 
 
-    private void calculatePhysics() {//TODO: optimise this
-        for (int iter = 0; iter < 10; iter++) {
+    private void calculatePhysics() {//TODO: optimise this wit spacial partitioning or whatever
+        for (int iter = 0; iter < 8; iter++) {
             boolean noCollisions = true;
 
             for (int i = 0; i < units.size(); i++){
@@ -137,15 +129,18 @@ public class Game extends Screen {
                     long x2 = unit2.getX();
                     long y2 = unit2.getY();
                     //bounding box check
+
                     if (!CollisionUtil.RectRectCollision(x1, y1, r1+r1, r1+r1, x2, y2, r2+r2, r2+r2)) {
                         continue;
                     }
+//                    System.out.println("hi");
 
                     //circle check
                     if (CollisionUtil.CircleCircleCollision(x1+r1, y1+r1, r1, x2+r2, y2+r2, r2)) {
                         long dx = x2 - x1;
                         long dy = y2 - y1;
-                        long distSqScaled = (dx * dx) + (dy * dy);
+                        long distSqScaled = dx * dx + dy * dy;
+//                        System.out.println("bye");
 
                         if (distSqScaled == 0) {
                             unit1.changeX(-1);
@@ -153,16 +148,17 @@ public class Game extends Screen {
                             noCollisions = false;
                             continue;
                         }
-
-                        long distance = NumUtil.sqrt(distSqScaled);
+                        long distance = NumUtil.sqrtFast(distSqScaled);
                         if (distance == 0) distance = 1;
 
                         long overlap = (r1+r2) - distance;
+//                        System.out.println("a" + overlap);
 
                         if (overlap > 0) {
                             long halfOverlap = overlap / 2;
                             long moveX = (dx * halfOverlap) / distance;
                             long moveY = (dy * halfOverlap) / distance;
+//                            System.out.println(moveX);
 
                             unit1.changeX(-moveX);
                             unit1.changeY(-moveY);
@@ -171,20 +167,6 @@ public class Game extends Screen {
 
                             noCollisions = false;
                         }
-
-                        // 3. Same-target logic
-//                        if (unit1.getTargetX() == unit2.getTargetX() && unit1.getTargetY() == unit2.getTargetY()) {
-//                            if (unit1.getUnitState() == UnitState.MOVING && unit2.getUnitState() == UnitState.IDLE) {
-//                                long tdx1 = unit1.getTargetX() - x1;
-//                                long tdy1 = unit1.getTargetY() - y1;
-//                                long tdx2 = unit2.getTargetX() - x2;
-//                                long tdy2 = unit2.getTargetY() - y2;
-//
-//                                if ((tdx1 * tdx1 + tdy1 * tdy1) <= (tdx2 * tdx2 + tdy2 * tdy2) + unit2.getCollisionRadius()) {
-//                                    unit1.removeCommand();
-//                                }
-//                            }
-//                        }
                     }
                 }
             }
@@ -198,6 +180,8 @@ public class Game extends Screen {
 
 
     public void updateOnFrame() {
+        Replay.addTick(InputHandler.getInputs(), tickNum);
+        tickNum++;
         for (Input input : InputHandler.getInputs()){
             switch (input.getInputType()) {
                 case LEFT_CLICK:
@@ -225,15 +209,18 @@ public class Game extends Screen {
                     }
                     break;
                 case KEYPRESS:
-                    if (Objects.equals(input.getKey(), "w")){
-                        gameViewport.changeY(-10);
-                    }else if (Objects.equals(input.getKey(), "a")){
-                        gameViewport.changeX(-10);
-                    } else if (Objects.equals(input.getKey(), "s")){
-                        gameViewport.changeY(10);
-                    }else if (Objects.equals(input.getKey(), "d")){
-                        gameViewport.changeX(10);
+                    if (input.getKey() == Keys.ESCAPE){
+                        exit = true;
                     }
+//                    if (input.getKey() == Keys.W){
+//                        gameViewport.changeY(-10);
+//                    }else if (input.getKey() == Keys.A){
+//                        gameViewport.changeX(-10);
+//                    } else if (input.getKey() == Keys.S){
+//                        gameViewport.changeY(10);
+//                    }else if (input.getKey() == Keys.D){
+//                        gameViewport.changeX(10);
+//                    }
                     break;
             }
         }

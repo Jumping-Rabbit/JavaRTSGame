@@ -74,4 +74,7 @@ public class CollisionUtil {
         double distSq = (distX * distX) + (distY * distY);//bounding box check not good becuase calculating the
         return distSq <= r2*r2;//bounding box is about as expensive as just checking it without it
     }
+    public static boolean CircleLineCollision() {
+        return false;//TODO: make this work
+    }
 }

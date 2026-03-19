@@ -205,8 +205,8 @@ public class DrawUtil{
     public void drawString(double x, double y, String string, double size, Fonts font){
         double scale = Viewport.getScale();
         Text text = new Text(string);
-        text.setFont(font.getFont(size));
-        gc.setFont(font.getFont(size));
+        text.setFont(font.getFont(size*scale));
+        gc.setFont(font.getFont(size*scale));
         gc.setTextAlign(TextAlignment.CENTER);
         gc.setTextBaseline(VPos.CENTER);
         if (gameViewport != null){
@@ -218,18 +218,6 @@ public class DrawUtil{
         }
         gc.fillText(string, ((x - Viewport.getX())*scale + Viewport.getXOffset()), ((y - Viewport.getY())*scale + Viewport.getYOffset()));
     }
-//    public void drawStringFill(double x, double y, String string, double width, double fill, double max){
-//        double scale = Viewport.getScale();
-//        Font testFont = new Font("Monospaced", Font.PLAIN, (int)StrictMath.min(width*fill, max));
-//        if (gameViewport != null){
-//            if (!CollisionUtil.RectRectCollision(gameViewport.getX(), gameViewport.getY(), gameViewport.getWidth(), gameViewport.getHeight(), x-(gc.getFontMetrics(testFont).stringWidth(string) / 2f), y, gc.getFontMetrics(testFont).stringWidth(string), testFont.getSize())){
-//                return;
-//            }
-//        }
-//        Font font = new Font("Monospaced", Font.PLAIN, (int)StrictMath.round(StrictMath.min(width*fill, max)*scale));
-//        gc.setFont(font);
-//        gc.drawString(string, (int)StrictMath.round((x * scale + Viewport.getXOffset())- (gc.getFontMetrics(font).stringWidth(string) / 2f)), (int)StrictMath.round(y * scale + Viewport.getYOffset()));
-//    }
 
     public void drawLine(double x1, double y1, double x2, double y2){
         if (gameViewport != null){
@@ -259,6 +247,6 @@ public class DrawUtil{
     }
 
     public void setThickness(double thickness){
-        gc.setLineWidth(thickness);
+        gc.setLineWidth(thickness*Viewport.getScale());
     }
 }
