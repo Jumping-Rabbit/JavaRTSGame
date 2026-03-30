@@ -1,9 +1,11 @@
 package game;
 
+import game.entity.unit.testRace1.Marine;
 import game.screen.*;
 import inputHandler.Input;
 import inputHandler.InputHandler;
 import inputHandler.Keys;
+import javafx.application.Platform;
 import javafx.geometry.VPos;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -11,12 +13,15 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.FontSmoothingType;
 import javafx.scene.text.TextAlignment;
 import utils.DrawUtil;
+import utils.Models;
 import utils.NumUtil;
+import utils.StringAlignment;
 
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 
 public class GamePanel extends Canvas {
@@ -27,9 +32,10 @@ public class GamePanel extends Canvas {
         TITLESCREEN,
         SETTINGS,
         GAME,
-        MAP_EDITOR
+        MAP_EDITOR,
+        START_LOADING
     }
-    private GameStatus gameStatus = GameStatus.TITLESCREEN;
+    private GameStatus gameStatus = GameStatus.START_LOADING;
 
 
     private Thread drawThread;
@@ -40,6 +46,7 @@ public class GamePanel extends Canvas {
 
     private Game game;
     private Screen tickScreen;
+    private LoadingScreen loadingScreen;
 
     private SettingsManager settingsManager;
 
@@ -47,7 +54,7 @@ public class GamePanel extends Canvas {
     private MapEditor mapEditor;
     private Settings settings;
     private PerformanceStorage performanceStorage;
-    volatile double lastTickTime = System.currentTimeMillis();//make atomic
+    volatile AtomicLong lastTickTime = new AtomicLong(System.nanoTime());//make atomic
 
     private synchronized void setGameStatus(GameStatus gameStatus){
         this.gameStatus = gameStatus;
@@ -87,6 +94,7 @@ public class GamePanel extends Canvas {
 
     public GamePanel() {
         super(0, 0);
+//        System.out.println(NumUtil.sqrtFastScaled(90000));
 //        for (long i = -NumUtil.DTL(100); i < NumUtil.DTL(100); i+= 10000){
 //            for (long j = -NumUtil.DTL(100); j < NumUtil.DTL(100); j+= 10000){
 //                System.out.println(StrictMath.toDegrees(StrictMath.atan2(NumUtil.DTL(i), NumUtil.DTL(j))) + ":" + NumUtil.LTD(NumUtil.atan2(NumUtil.DTL(i), NumUtil.DTL(j))));
@@ -162,6 +170,7 @@ public class GamePanel extends Canvas {
         settingsManager = new SettingsManager();
         settingsManager.getSettings();
         drawUtil = new DrawUtil();
+        drawUtil.setGC(this.getGraphicsContext2D());
         titleScreen = new TitleScreen(drawUtil);
         performanceStorage = new PerformanceStorage();
     }
@@ -171,7 +180,34 @@ public class GamePanel extends Canvas {
         logicThread = new Thread(new logicThread(performanceStorage));
         drawThread.start();
         logicThread.start();
-        SoundManager.startBGM();
+        loadingScreen = new LoadingScreen(drawUtil, 4+Models.values().length*36);
+        Thread loader = new Thread(() -> {
+            loadingScreen.addText("init Marine");
+            Marine.init();
+            loadingScreen.increment();
+            loadingScreen.addText("init Sounds");
+            SoundManager.init();
+            loadingScreen.increment();
+            loadingScreen.addText("init NumUtil");
+            NumUtil.init();
+            loadingScreen.increment();
+            loadingScreen.addText("init keyHandler");
+            InputHandler.KeyHandler.init();
+            loadingScreen.increment();
+            DrawUtil.init(loadingScreen);
+            loadingScreen.addText("done");
+
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            setGameStatus(GameStatus.TITLESCREEN);
+            SoundManager.startBGM();
+        });
+        loader.start();
+
+
     }
 
     private String formatString(Double num, String format){
@@ -234,22 +270,27 @@ public class GamePanel extends Canvas {
                 }
                 break;
         }
-        for (Input input : InputHandler.getInputs()){
-            if (input.getKey() == Keys.N){
-                SoundManager.newBGM();
+        if (getGameStatus() != GameStatus.START_LOADING){
+            for (Input input : InputHandler.getInputs()){
+                if (input.getKey() == Keys.N){
+                    SoundManager.newBGM();
+                }
             }
         }
-        lastTickTime = System.currentTimeMillis();
+
+        lastTickTime.set(System.nanoTime());
     }
 
     public void draw() {
         GraphicsContext gc = this.getGraphicsContext2D();
         gc.setImageSmoothing(false);
         gc.setFontSmoothingType(FontSmoothingType.LCD);
-        drawUtil.setFactor((System.currentTimeMillis()-lastTickTime)/50d);
-        drawUtil.setGC(gc);
-        gc.clearRect(0, 0, this.getWidth(), this.getHeight());
+        drawUtil.setFactor((System.nanoTime()-lastTickTime.get())/50000000d);
+//        System.out.println(drawUtil.getFactor());
+//        drawUtil.setGC(gc);
+        drawUtil.clearCanvas();
         drawUtil.fillBackground();
+//        System.out.println("h");
         switch (getGameStatus()){
             case GAME:
                 getGame().draw();
@@ -263,19 +304,16 @@ public class GamePanel extends Canvas {
             case SETTINGS:
                 getSettings().draw();
                 break;
+            case START_LOADING:
+                loadingScreen.draw();
         }
         drawUtil.fillOffsetEdge();
 
-        gc.setFill(Color.WHITE);
-        gc.setFont(Fonts.DEFAULT.getFont(10));
-        gc.setTextAlign(TextAlignment.LEFT);
-        gc.setTextBaseline(VPos.TOP);
-        gc.fillText("fps:" + formatString(performanceStorage.getFPS(), "00000.00") + " tps:" + formatString(performanceStorage.getTPS(), "00"), 10, 10);
-        gc.fillText( "dt:" + formatString(performanceStorage.getCurrentDT(), "0000.00") + "ms" + " dt1%:" + formatString(performanceStorage.getPeakDT(), "0000.00") + "ms", 10, 20);
-        gc.fillText( "ttu:" + formatString(performanceStorage.getTickTimeUsed(), "0000.00") + "%" + " ttu1%:" + formatString(performanceStorage.getTickTimeUsedLow(), "0000.00") + "%" + " late frames:" + performanceStorage.getLateFrames(), 10, 30);
-        gc.setTextAlign(TextAlignment.RIGHT);
-        gc.setTextBaseline(VPos.TOP);
-        gc.fillText("BGM: " + SoundManager.getBgmName(), this.getWidth() - 10, 10);
+        drawUtil.setColor(255, 255, 255);
+        drawUtil.drawString(5, 0, "fps:" + formatString(performanceStorage.getFPS(), "00000.00") + " tps:" + formatString(performanceStorage.getTPS(), "00"), 10, Fonts.DEFAULT, StringAlignment.TOP_LEFT);
+        drawUtil.drawString( 5, 10, "fps1%:" + formatString(performanceStorage.getPeakDT(), "0000.00")+ " fps0.1%:" + formatString(performanceStorage.getPeakPeakDT(), "0000.00"), 10, Fonts.DEFAULT, StringAlignment.TOP_LEFT);
+        drawUtil.drawString( 5, 20, "ttu:" + formatString(performanceStorage.getTickTimeUsed(), "0000.00") + "%" + " ttu1%:" + formatString(performanceStorage.getTickTimeUsedLow(), "0000.00") + "%" + " late frames:" + performanceStorage.getLateFrames(), 10, Fonts.DEFAULT, StringAlignment.TOP_LEFT);
+        drawUtil.drawString(1915, 0, "BGM: " + SoundManager.getBgmName(), 10, Fonts.DEFAULT, StringAlignment.TOP_RIGHT);
     }
     class logicThread implements Runnable{
         PerformanceStorage performanceStorage;
@@ -317,7 +355,6 @@ public class GamePanel extends Canvas {
         @Override
         public void run() {
             long targetTime = System.nanoTime();
-
             while (drawThread != null) {
                 targetFPS = settingsManager.getTargetFPS();
                 long currentTime = System.nanoTime();
@@ -327,14 +364,11 @@ public class GamePanel extends Canvas {
                 } else {
                     targetFrameInterval = (long) (1000000000 / targetFPS);
                 }
-
                 if (!isRendering.get()) {
-
-
                     if (targetFPS <= 0 || currentTime >= targetTime) {
                         targetTime = currentTime + targetFrameInterval;
                         isRendering.set(true);
-                        javafx.application.Platform.runLater(() -> {
+                        Platform.runLater(() -> {
                             try {
                                 draw();
                             } finally {
@@ -344,11 +378,9 @@ public class GamePanel extends Canvas {
                             }
                         });
                     }
+                } else {
+                    Thread.onSpinWait();
                 }
-
-//                if (targetFPS <= 0) {
-//                    Thread.yield();
-//                }
             }
         }
     }
@@ -358,7 +390,6 @@ class PerformanceStorage {
 
     private final AtomicInteger dFrameCount = new AtomicInteger(0);
     private final AtomicInteger tFrameCount = new AtomicInteger(0);
-
 
     private double currentFPS = 0;
     private double currentTPS = 0;
@@ -372,7 +403,7 @@ class PerformanceStorage {
         long delta = now - lastFPSUpdate;
 
         if (delta >= 500000000L) {
-            this.currentFPS = (dFrameCount.getAndSet(0) / (delta/500000000d))*2;
+            this.currentFPS = (dFrameCount.getAndSet(0) / (delta / 500000000d)) * 2;
             lastFPSUpdate = now;
         }
     }
@@ -382,7 +413,7 @@ class PerformanceStorage {
         long now = System.nanoTime();
         long delta = now - lastTPSUpdate;
         if (delta >= 500000000L) {
-            currentTPS = (tFrameCount.getAndSet(0) / (delta/500000000d))*2;
+            currentTPS = (tFrameCount.getAndSet(0) / (delta / 500000000d)) * 2;
             lastTPSUpdate = now;
         }
     }
@@ -392,65 +423,72 @@ class PerformanceStorage {
 
     private volatile double currentTTU = 0;
     private volatile double peakTTU = 0;
-    private final ArrayList<Double> ttuHistory = new ArrayList<>();
+
+    private final double[] ttuHistory = new double[100];
+    private int ttuIndex = 0;
+    private int ttuCount = 0;
+
+    private final double[] dtHistory = new double[1000];
+    private int dtIndex = 0;
+    private int dtCount = 0;
+
+    private volatile double peakDT = 0;
+    private volatile double peakPeakDT = 0;
 
     public void addTickTimeUsed(long startNano) {
         long duration = System.nanoTime() - startNano;
         double percent = (duration / 50000000.0) * 100.0;
         this.currentTTU = percent;
-        synchronized(ttuHistory) {
-            ttuHistory.add(percent);
-            if (ttuHistory.size() > 100) {
-                ttuHistory.removeFirst();
-            }
+        synchronized (ttuHistory) {
+            ttuHistory[ttuIndex] = percent;
+            ttuIndex = (ttuIndex + 1) % 100;
+            if (ttuCount < 100) ttuCount++;
             double max = 0;
-            for (Double d : ttuHistory) {
-                if (d > max) max = d;
+            for (int i = 0; i < ttuCount; i++) {
+                if (ttuHistory[i] > max) max = ttuHistory[i];
             }
             this.peakTTU = max;
         }
-        synchronized(dtHistory) {
-            peakDT = dtHistory.stream()
-                    .sorted(Comparator.reverseOrder())
-                    .limit(Math.max(1, StrictMath.round(dtHistory.size() / 100d)))
-                    .mapToDouble(d -> d)
-                    .average()
-                    .orElse(0.0);
+
+        synchronized (dtHistory) {
+            if (dtCount > 0) {
+                double[] sortedCopy = new double[dtCount];
+                System.arraycopy(dtHistory, 0, sortedCopy, 0, dtCount);
+                java.util.Arrays.sort(sortedCopy);
+
+                int limit1 = Math.max(1, (int) Math.round(dtCount / 100.0));
+                double sum1 = 0;
+                for (int i = dtCount - 1; i >= dtCount - limit1; i--) {
+                    sum1 += sortedCopy[i];
+                }
+                this.peakDT = sum1 / limit1;
+
+                int limit01 = Math.max(1, (int) Math.round(dtCount / 1000.0));
+                double sum01 = 0;
+                for (int i = dtCount - 1; i >= dtCount - limit01; i--) {
+                    sum01 += sortedCopy[i];
+                }
+                this.peakPeakDT = sum01 / limit01;
+            }
         }
     }
+
     public double getTickTimeUsed() { return currentTTU; }
     public double getTickTimeUsedLow() { return peakTTU; }
 
-
-    private volatile double currentDT = 0;
-    private volatile double peakDT = 0;
-
-    private final ArrayList<Double> dtHistory = new ArrayList<>();
-
     public void addDrawTimeUsed(long startNano) {
-        double dt = (System.nanoTime() - startNano) / 1000000d;
-
-        this.currentDT = dt;
-
-        synchronized(dtHistory) {
-            dtHistory.add(dt);
+        double dt = (double) (System.nanoTime() - startNano);
+        synchronized (dtHistory) {
+            dtHistory[dtIndex] = dt;
+            dtIndex = (dtIndex + 1) % 1000;
+            if (dtCount < 1000) dtCount++;
         }
     }
 
-    public double getCurrentDT() { return currentDT; }
-    public double getPeakDT() { return peakDT; }
-
-
-
-
+    public double getPeakDT() { return 1_000_000_000.0 / peakDT; }
+    public double getPeakPeakDT() { return 1_000_000_000.0 / peakPeakDT; }
 
     private final AtomicInteger lateFrames = new AtomicInteger(0);
-
-    public void addLateFrame() {
-        lateFrames.incrementAndGet();
-    }
-
-    public int getLateFrames() {
-        return lateFrames.get();
-    }
+    public void addLateFrame() { lateFrames.incrementAndGet(); }
+    public int getLateFrames() { return lateFrames.get(); }
 }

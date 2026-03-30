@@ -1,0 +1,36 @@
+{
+  "0" : [ ],
+  "1" : [ ],
+  "2" : [ ],
+  "3" : [ ],
+  "4" : [ {
+    "inputType" : "LEFT_CLICK",
+    "x" : 848.0,
+    "y" : 675.0,
+    "startX" : 0.0,
+    "startY" : 0.0,
+    "scroll" : 0,
+    "shift" : false,
+    "key" : "none"
+  }, {
+    "inputType" : "LEFT_CLICK",
+    "x" : 678.6666666666666,
+    "y" : 641.0,
+    "startX" : 0.0,
+    "startY" : 0.0,
+    "scroll" : 0,
+    "shift" : false,
+    "key" : "none"
+  } ],
+  "5" : [ {
+    "inputType" : "LEFT_CLICK",
+    "x" : 755.3333333333334,
+    "y" : 281.6666666666667,
+    "startX" : 0.0,
+    "startY" : 0.0,
+    "scroll" : 0,
+    "shift" : false,
+    "key" : "none"
+  } ],
+  "6" : [ ]
+}

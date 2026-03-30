@@ -4,10 +4,10 @@ import game.Sounds;
 import game.Viewport;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
-import utils.NumUtil;
 
 import java.util.ArrayDeque;
 import java.util.HashMap;
+import java.util.Map;
 
 public class InputHandler {
     public static final MouseHandler mouseHandler = new MouseHandler();
@@ -50,7 +50,6 @@ public class InputHandler {
             double mouseX = ((e.getX() - Viewport.getXOffset()) / Viewport.getScale());
             double mouseY = ((e.getY() - Viewport.getYOffset()) / Viewport.getScale());
             addInput(new Input(InputType.SCROLL, mouseX, mouseY, (int) Math.copySign(1, e.getDeltaY())));
-            System.out.println(inputs.getLast().getScroll());//i mean this gives a value of 26.666 for my mouse
         }
 
         public void handleMouse(MouseEvent e) {
@@ -82,62 +81,6 @@ public class InputHandler {
                 }
             }
         }
-//    private double pressedX;
-//    private double pressedY;
-//    private static boolean isLeftDown = false;
-//
-//    protected boolean mouseDown(){
-//        return isLeftDown;
-//    }
-//
-//    @Override
-//    public void mouseClicked(MouseEvent e){
-//        if (e.getButton() == MouseEvent.BUTTON1){
-//            InputHandler.addInput(new Input(InputType.LEFT_CLICK, (e.getX() - Viewport.viewport.getXOffset())/Viewport.viewport.getScale(), (e.getY() - Viewport.viewport.getYOffset())/Viewport.viewport.getScale()));
-//        }
-//    }
-//
-//    @Override
-//    public void mouseMoved(MouseEvent e) {
-//        InputHandler.addInput(new Input(InputType.MOVE, (e.getX() - Viewport.viewport.getXOffset())/Viewport.viewport.getScale(), (e.getY() - Viewport.viewport.getYOffset())/Viewport.viewport.getScale()));
-//    }
-//
-//    @Override
-//    public void mousePressed(MouseEvent e){
-//        if (e.getButton() == MouseEvent.BUTTON1){
-//            isLeftDown = true;
-//        }
-//
-//        pressedX = (e.getX() - Viewport.viewport.getXOffset())/Viewport.viewport.getScale();
-//        pressedY = (e.getY() - Viewport.viewport.getYOffset())/Viewport.viewport.getScale();
-//    }
-//
-//    @Override
-//    public void mouseReleased(MouseEvent e){
-//        if (e.getButton() == MouseEvent.BUTTON1) {
-//            isLeftDown = false;
-//        }
-//        if (e.getButton() == MouseEvent.BUTTON2){
-//            InputHandler.addInput(new Input(InputType.MIDDLE_CLICK, (e.getX() - Viewport.viewport.getXOffset())/Viewport.viewport.getScale(), (e.getY() - Viewport.viewport.getYOffset())/Viewport.viewport.getScale()));
-//        } else if (e.getButton() == MouseEvent.BUTTON3){
-//            InputHandler.addInput(new Input(InputType.RIGHT_CLICK, (e.getX() - Viewport.viewport.getXOffset())/Viewport.viewport.getScale(), (e.getY() - Viewport.viewport.getYOffset())/Viewport.viewport.getScale()));
-//        }
-//    }
-//
-//
-//    @Override
-//    public void mouseDragged(MouseEvent e) {
-//        if (isLeftDown){
-//            InputHandler.addInput(new Input(InputType.DRAG, pressedX, pressedY, (e.getX() - Viewport.viewport.getXOffset())/Viewport.viewport.getScale(), (e.getY() - Viewport.viewport.getYOffset())/Viewport.viewport.getScale()));
-//        }
-//    }
-//
-//    @Override
-//    public void mouseWheelMoved(MouseWheelEvent e) {
-//        InputHandler.addInput(new Input(InputType.SCROLL, (e.getX() - Viewport.viewport.getXOffset())/Viewport.viewport.getScale(), (e.getY() - Viewport.viewport.getYOffset())/Viewport.viewport.getScale(), e.getWheelRotation()));
-//    }
-
-
     }
 
 
@@ -147,24 +90,13 @@ public class InputHandler {
                 "1", "2", "3", "4", "5", "6", "7", "8", "9", "0",
                 "shift", "control", "enter", "backspace", "space", "up", "right", "down", "left", "escape"};
 
-
-//    private static final Map<Integer, String> SPECIAL_KEYS = Map.ofEntries(
-//            Map.entry(KeyEvent.VK_SHIFT, "shift"),
-//            Map.entry(KeyEvent.VK_CONTROL, "control"),
-//            Map.entry(KeyEvent.VK_ENTER, "enter"),
-//            Map.entry(KeyEvent.VK_SPACE, "space"),
-//            Map.entry(KeyEvent.VK_BACK_SPACE, "backspace"),
-//            Map.entry(KeyEvent.VK_UP, "up"),
-//            Map.entry(KeyEvent.VK_DOWN, "down"),
-//            Map.entry(KeyEvent.VK_LEFT, "left"),
-//            Map.entry(KeyEvent.VK_RIGHT, "right"),
-//            Map.entry(KeyEvent.VK_ESCAPE, "escape")
-//    );
-        private final static HashMap<String, Keys> stringToKeyMap = new HashMap<>();
-        static{
+        private final static Map<String, Keys> stringToKeyMap = new HashMap<>();
+        public static void init(){
+            long startTime = System.nanoTime();
             for (Keys key : Keys.values()){
                 stringToKeyMap.put(key.getKeyHandlerString(), key);
             }
+            System.out.println("keyHandler map time: " + (System.nanoTime()-startTime)/1000000d);
         }
 
 

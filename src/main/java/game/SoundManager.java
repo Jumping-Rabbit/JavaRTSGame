@@ -32,7 +32,8 @@ public class SoundManager{
     private static ArrayList<String> bgms = new ArrayList<>();
     private static MediaPlayer bgmPlayer = null;
     private static AtomicBoolean newBGM = new AtomicBoolean(false);
-    static{
+    public static void init(){
+        long startTime = System.nanoTime();
         Path root = Paths.get("resources/sounds/bgm");
         try (Stream<Path> paths = Files.walk(root)) {
             paths.filter(Files::isRegularFile)
@@ -48,6 +49,7 @@ public class SoundManager{
         } catch (IOException e) {
             e.printStackTrace();
         }
+        System.out.println("SoundManager get BGM time: " + (System.nanoTime()-startTime)/1000000d);
     }
     private static void setVolume(){
         if (bgmPlayer != null){

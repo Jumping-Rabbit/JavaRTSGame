@@ -9,6 +9,7 @@ import utils.CollisionUtil;
 import utils.DrawUtil;
 import inputHandler.Input;
 import inputHandler.InputHandler;
+import utils.StringAlignment;
 
 import java.awt.*;
 import java.io.*;
@@ -359,7 +360,7 @@ public class MapEditor extends Screen{
 //        }
 
         for (Buttons button : Buttons.values()) {
-            drawUtil.drawRect(button.getRectangle2D());
+            drawUtil.strokeRect(button.getRectangle2D());
             if (button == Buttons.RENAME_MAP && directory != null){
 //                JSONParser parser = new JSONParser();
 //                try {
@@ -371,9 +372,9 @@ public class MapEditor extends Screen{
 //                }
                 continue;
             } else if (button == Buttons.HEIGHT_COUNTER){
-                drawUtil.drawString(button.getRectangle2D().getMinX() + button.getRectangle2D().getWidth() / 2, button.getRectangle2D().getMinY() + button.getRectangle2D().getHeight() / 2, String.valueOf(height), 20, Fonts.DEFAULT);
+                drawUtil.drawString(button.getRectangle2D().getMinX() + button.getRectangle2D().getWidth() / 2, button.getRectangle2D().getMinY() + button.getRectangle2D().getHeight() / 2, String.valueOf(height), 20, Fonts.DEFAULT, StringAlignment.CENTER_MIDDLE);
             }
-            drawUtil.drawString(button.getRectangle2D().getMinX() + button.getRectangle2D().getWidth() / 2, button.getRectangle2D().getMinY() + button.getRectangle2D().getHeight() / 2, button.getName(), 20, Fonts.DEFAULT);
+            drawUtil.drawString(button.getRectangle2D().getMinX() + button.getRectangle2D().getWidth() / 2, button.getRectangle2D().getMinY() + button.getRectangle2D().getHeight() / 2, button.getName(), 20, Fonts.DEFAULT, StringAlignment.CENTER_MIDDLE);
         }
     }
 

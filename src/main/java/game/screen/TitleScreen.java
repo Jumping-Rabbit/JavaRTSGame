@@ -2,6 +2,7 @@ package game.screen;
 
 
 import game.Fonts;
+import game.Launcher;
 import game.Main;
 import inputHandler.Keys;
 import javafx.geometry.Rectangle2D;
@@ -11,6 +12,7 @@ import utils.CollisionUtil;
 import utils.DrawUtil;
 import inputHandler.Input;
 import inputHandler.InputHandler;
+import utils.StringAlignment;
 
 import java.io.File;
 import java.io.FileReader;
@@ -138,7 +140,7 @@ public class TitleScreen extends Screen{
                 case LEFT_CLICK:
                     if (closing){
                         if (CollisionUtil.RectPointCollision(exitButton, input.getX(), input.getY())){
-                            Main.close();
+                            Launcher.close();
                         } else{
                             closing = false;
                         }
@@ -220,7 +222,6 @@ public class TitleScreen extends Screen{
     }
 
     public void draw() {
-        drawUtil.disableGameViewport();
         drawUtil.setColor(75, 75, 75);
         drawUtil.fillRect(0, 0, 1920, 100);
 
@@ -230,13 +231,13 @@ public class TitleScreen extends Screen{
             if (button == selectedButton){
                 continue;
             }
-            drawUtil.drawRect(button.getRectangle());
-            drawUtil.drawString(button.getRectangle().getMinX() + button.getRectangle().getWidth()/2, 50, button.getName(), 40, Fonts.DEFAULT);
+            drawUtil.strokeRect(button.getRectangle());
+            drawUtil.drawString(button.getRectangle().getMinX() + button.getRectangle().getWidth()/2, 50, button.getName(), 40, Fonts.DEFAULT, StringAlignment.CENTER_MIDDLE);
         }
 
         drawUtil.setColor(0, 255, 255);
-        drawUtil.drawRect(selectedButton.getRectangle());
-        drawUtil.drawString(selectedButton.getRectangle().getMinX() + selectedButton.getRectangle().getWidth()/2, 50, selectedButton.getName(), 40,Fonts.DEFAULT);
+        drawUtil.strokeRect(selectedButton.getRectangle());
+        drawUtil.drawString(selectedButton.getRectangle().getMinX() + selectedButton.getRectangle().getWidth()/2, 50, selectedButton.getName(), 40,Fonts.DEFAULT, StringAlignment.CENTER_MIDDLE);
 
         switch (selectedButton){
             case HOME:
@@ -263,8 +264,8 @@ public class TitleScreen extends Screen{
             drawUtil.setColor(150, 150, 150);
             drawUtil.fillRect(exitButton);
             drawUtil.setColor(255, 255, 255);
-            drawUtil.drawString(960, 450, "close program?", 50, Fonts.DEFAULT);
-            drawUtil.drawString(960, 570, "close", 50, Fonts.DEFAULT);
+            drawUtil.drawString(960, 450, "close program?", 50, Fonts.DEFAULT, StringAlignment.CENTER_MIDDLE);
+            drawUtil.drawString(960, 570, "close", 50, Fonts.DEFAULT, StringAlignment.CENTER_MIDDLE);
         }
     }
     private void drawHome(DrawUtil drawUtil){
@@ -293,9 +294,9 @@ public class TitleScreen extends Screen{
             } else {
                 drawUtil.setColor(0, 150, 255);
             }
-            drawUtil.drawRect(50,(i - start)*100 + 150, 1000, 80);
+            drawUtil.strokeRect(50,(i - start)*100 + 150, 1000, 80);
             if (!customMaps.isEmpty()){
-                drawUtil.drawString(525, (i - start)*100 + 200, customMapsName.get(i), 40, Fonts.DEFAULT);
+                drawUtil.drawString(525, (i - start)*100 + 200, customMapsName.get(i), 40, Fonts.DEFAULT, StringAlignment.CENTER_MIDDLE);
             }
         }
     }
@@ -322,8 +323,8 @@ public class TitleScreen extends Screen{
             } else {
                 drawUtil.setColor(0, 150, 255);
             }
-            drawUtil.drawRect(50,(i - start)*100 + 150, 1000, 80);
-            drawUtil.drawString(525, (i - start)*100 + 200, replaysName.get(i), 40, Fonts.DEFAULT);
+            drawUtil.strokeRect(50,(i - start)*100 + 150, 1000, 80);
+            drawUtil.drawString(525, (i - start)*100 + 200, replaysName.get(i), 40, Fonts.DEFAULT, StringAlignment.CENTER_MIDDLE);
 
         }
     }

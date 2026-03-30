@@ -7,6 +7,8 @@ import utils.NumUtil;
 import java.util.ArrayList;
 import java.util.EnumSet;
 
+import static utils.NumUtil.LTD;
+
 public abstract class Unit extends Entity {
 
     protected ArrayList<Effects> effects;
@@ -29,11 +31,24 @@ public abstract class Unit extends Entity {
     private Long newX;
     private Long newY;
     protected Entity attackTarget;
+
+    protected Unit(int id) {
+        super(id);
+    }
+
+    public Unit() {
+        super();
+    }
+
+
     public long getX(){
         return x;
     }
     public long getY(){
         return y;
+    }
+    public long getZ(){
+        return z;
     }
     public long getTargetX(){
         return targetX;
@@ -55,18 +70,29 @@ public abstract class Unit extends Entity {
             newY += change;
         }
     }
+    public void changeXImmediate(long change){
+        x += change;
+    }
+    public void changeYImmediate(long change){
+        y += change;
+    }
     public void tick(){
         if (newX != null){
             x = newX;
+            newX = null;
         }
         if (newY != null){
             y = newY;
+            newY = null;
         }
     }
     public long getLastX(){
         return lastX;
     }
     public long getLastY(){
+        return lastY;
+    }
+    public long getLastZ(){
         return lastY;
     }
     public UnitState getUnitState(){
@@ -77,18 +103,15 @@ public abstract class Unit extends Entity {
     }
     public abstract Unit copy();
     public void draw(){
-        drawUtil.startRotation(NumUtil.LTD(lastX), NumUtil.LTD(lastY), NumUtil.LTD(x), NumUtil.LTD(y), NumUtil.LTD(radius), NumUtil.LTD(radius), NumUtil.LTD(lastDirection), NumUtil.LTD(direction));
-        drawUtil.fillImageInterpolate(image, NumUtil.LTD(lastX), NumUtil.LTD(lastY), NumUtil.LTD(radius)*2, NumUtil.LTD(radius)*2, NumUtil.LTD(x), NumUtil.LTD(y));
-        drawUtil.resetRotation();
+        drawUtil.drawModelInterpolateGame(model, LTD(x), LTD(y), LTD(z), LTD(lastX), LTD(lastY), LTD(lastZ), LTD(direction), LTD(lastDirection));
     }
     public void updateOnFrame() {
-//        /*
         if (!commands.isEmpty()) {
             for (Command command : commands) {
                 if (command.getInputType() == InputType.RIGHT_CLICK) {
                     unitState = UnitState.MOVING;
-                    targetX = command.getX() - radius;
-                    targetY = command.getY() - radius;
+                    targetX = command.getX() - model.getScaledHalfWidth();
+                    targetY = command.getY() - model.getScaledHalfWidth();
                     break;
                 }
             }
@@ -124,7 +147,7 @@ public abstract class Unit extends Entity {
                     else y += yChange;
                     long dx = x - targetX;
                     long dy = y - targetY;
-                    if ((dx * dx) + (dy * dy) <= (radius * radius)) {
+                    if ((dx * dx) + (dy * dy) <= (model.getScaledHalfWidth() * model.getScaledHalfWidth())) {
                         unitState = UnitState.IDLE;
                         removeCommand();
                     }

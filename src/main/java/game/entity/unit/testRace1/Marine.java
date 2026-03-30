@@ -3,6 +3,7 @@ package game.entity.unit.testRace1;
 import game.entity.Command;
 import game.entity.Tags;
 import javafx.scene.image.Image;
+import utils.Models;
 import utils.NumUtil;
 import game.entity.players;
 import game.entity.unit.Unit;
@@ -16,20 +17,23 @@ import java.util.EnumSet;
 import java.util.Set;
 
 public class Marine extends Unit {
-    static {
-        image = new Image(new File("resources/units/testRace1/marine/blueMarine.png").toURI().toString());
-        radius = NumUtil.DTL(20);
-        collisionRadius = NumUtil.DTL(25);
+    public static void init(){
+        long startTime = System.nanoTime();
         hasCollision = true;
         validCommandTypes = new ArrayList<>();
         validCommandTypes.add(InputType.RIGHT_CLICK);
         tags = EnumSet.of(Tags.LIGHT, Tags.BIOLOGICAL, Tags.RANGED);
+        model = Models.vanguardMarine;
+        System.out.println("Marine init time: " + (System.nanoTime()-startTime)/1000000d);
     }
     public Marine(DrawUtil drawUtil, long x, long y, players player){
+        super();
         this.player = player;
         this.drawUtil = drawUtil;
         this.x = NumUtil.DTL(x);
         this.y = NumUtil.DTL(y);
+        this.z = 0;
+        lastZ = 0;
         lastX = NumUtil.DTL(x);
         lastY = NumUtil.DTL(y);
         hp = NumUtil.DTL(40);
@@ -49,12 +53,15 @@ public class Marine extends Unit {
     }
 
     private Marine(Marine marine){
+        super(marine.id);
         player = marine.player;
         drawUtil = marine.drawUtil;
         x = marine.x;
         y = marine.y;
+        z = marine.z;
         lastX = marine.x;
         lastY = marine.y;
+        lastZ = marine.z;
         hp = marine.hp;
         armor = marine.armor;
         speed = marine.speed;

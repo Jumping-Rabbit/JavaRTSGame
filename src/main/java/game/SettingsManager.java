@@ -212,13 +212,13 @@ public class SettingsManager{
             synchronized (displayModeLock) {
                 switch (displayMode) {
                     case WINDOWED:
-                        Main.setWindowed();
+                        Launcher.setWindowed();
                         break;
                     case WINDOWED_FULLSCREEN:
-                        Main.setWindowedBorderless(this.monitorNum);
+                        Launcher.setWindowedBorderless(this.monitorNum);
                         break;
                     case FULLSCREEN:
-                        Main.setFullscreen(monitorNum);
+                        Launcher.setFullscreen(monitorNum);
                         break;
                 }
             }
@@ -239,16 +239,16 @@ public class SettingsManager{
             writeSettings("graphics", "displayMode", displayMode.string);
             switch (displayMode){
                 case WINDOWED:
-                    Main.setWindowed();
+                    Launcher.setWindowed();
                     break;
                 case WINDOWED_FULLSCREEN:
                     synchronized (monitorNumLock){
-                        Main.setWindowedBorderless(this.monitorNum);
+                        Launcher.setWindowedBorderless(this.monitorNum);
                     }
                     break;
                 case FULLSCREEN:
                     synchronized (monitorNumLock){
-                        Main.setFullscreen(monitorNum);
+                        Launcher.setFullscreen(monitorNum);
                     }
                     break;
             }

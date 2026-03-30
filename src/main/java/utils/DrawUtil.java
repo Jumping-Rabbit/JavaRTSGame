@@ -1,24 +1,47 @@
 package utils;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import game.Fonts;
 import game.GameViewport;
 import game.Viewport;
+import game.screen.LoadingScreen;
 import javafx.geometry.Rectangle2D;
 import javafx.geometry.VPos;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
+import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Polygon;
+import javafx.scene.shape.Shape3D;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
 
 public class DrawUtil{
     private GraphicsContext gc;
     GameViewport gameViewport;
     double factor = 0;
 
+    private static EnumMap<Models, WritableImage[]> modelMap;
+
+    private static final ObjectMapper mapper = new ObjectMapper();
+
+    public static void init(LoadingScreen loadingScreen){
+        long startTime = System.nanoTime();
+        modelMap = ModelLoaderUtil.calculateModelImages(loadingScreen);
+        System.out.println("parse model time: " + (System.nanoTime() - startTime)/1000000d);
+    }
+
+
     public synchronized void setFactor(double factor){
-        this.factor = factor;
+        this.factor = StrictMath.clamp(factor, 0, 1);;
     }
     public synchronized double getFactor(){
         return factor;
@@ -28,20 +51,15 @@ public class DrawUtil{
         this.gameViewport = gameViewport;
     }
 
-    public void disableGameViewport(){
-        gameViewport = null;
-    }
-
     public void setGC(GraphicsContext gc){
         this.gc = gc;
     }
-
     public GraphicsContext getGC(){
         return gc;
     }
 
+
     public void startRotation(double x1, double y1, double x2, double y2, double xOffset, double yOffset, double direction1, double direction2){
-        factor = StrictMath.clamp(factor, 0, 1);
         double x;
         double y;
         double scale = Viewport.getScale();
@@ -51,7 +69,7 @@ public class DrawUtil{
         } else {
             x = (NumUtil.interpolate(x1, x2, factor) - Viewport.getX() + xOffset)*scale + Viewport.getXOffset();
             y = (NumUtil.interpolate(y1, y2, factor) - Viewport.getY() + yOffset)*scale + Viewport.getYOffset();
-         }
+        }
         rotate(x, y, NumUtil.interpolate(direction1, direction2, factor));
     }
 
@@ -60,11 +78,11 @@ public class DrawUtil{
         gc.translate(x, y);
         gc.rotate(rotation);
         gc.translate(-x, -y);
-
     }
     public void resetRotation(){
         gc.restore();
     }
+
 
     public void setColor(int r, int g, int b){
         gc.setFill(Color.rgb(r, g, b));
@@ -79,144 +97,129 @@ public class DrawUtil{
         gc.setStroke(color);
     }
 
+    public void setThickness(double thickness){
+        gc.setLineWidth(thickness*Viewport.getScale());
+    }
+
+
+
     public void fillRect(double x, double y, double width, double height) {
-        if (gameViewport != null){
-             if (!CollisionUtil.RectRectCollision(gameViewport.getX(), gameViewport.getY(), gameViewport.getWidth(), gameViewport.getHeight(), x, y, width, height)){
-                 return;
-             }
-        }
         double scale = Viewport.getScale();
-        gc.fillRect((int)StrictMath.round((x-Viewport.getX())*scale + Viewport.getXOffset()), (int)StrictMath.round((y-Viewport.getY())*scale + Viewport.getYOffset()), (int)StrictMath.round(width*scale), (int)StrictMath.round(height*scale));
+        gc.fillRect((x-Viewport.getX())*scale + Viewport.getXOffset(), (y-Viewport.getY())*scale + Viewport.getYOffset(), width*scale, height*scale);
     }
 
-    public void fillRectInterpolate(double x1, double y1, double width, double height, double x2, double y2, double direction1, double direction2) {
-        factor = StrictMath.clamp(factor, 0, 1);
-        double x = x2 * factor + x1 * (1 - factor);
-        double y = y2 * factor + y1 * (1 - factor);
-        double scale = Viewport.getScale();
-        if (gameViewport != null){
-            if (!CollisionUtil.RectRectCollision(gameViewport.getX(), gameViewport.getY(), gameViewport.getWidth(), gameViewport.getHeight(), x, y, width, height)){
-                return;
-            }
-            gc.fillRect((int)StrictMath.round(((x-gameViewport.getX())-Viewport.getX())*scale + Viewport.getXOffset()), (int)StrictMath.round(((y-gameViewport.getY())-Viewport.getY())*scale + Viewport.getYOffset()), (int)StrictMath.round(width*scale), (int)StrictMath.round(height*scale));
+    public void fillRect(Rectangle2D rect){
+        fillRect(rect.getMinX(), rect.getMinY(), rect.getWidth(), rect.getHeight());
+    }
+
+    public void fillRectGame(double x, double y, double width, double height){
+        if (!CollisionUtil.RectRectCollision(gameViewport.getX(), gameViewport.getY(), gameViewport.getWidth(), gameViewport.getHeight(), x, y, width, height)){
             return;
         }
-//        rotate(x + width/2, y + height/2, direction2 * factor + direction1 * (1 - factor));
-        gc.fillRect((int)StrictMath.round((x-Viewport.getX())*scale + Viewport.getXOffset()), (int)StrictMath.round((y-Viewport.getY())*scale + Viewport.getYOffset()), (int)StrictMath.round(width*scale), (int)StrictMath.round(height*scale));
-//        resetRotation();
+        fillRect(x, y, width, height);
     }
 
-    public void fillRoundRectInterpolate(double x1, double y1, double width, double height, double edge, double x2, double y2, double direction1, double direction2) {
-        factor = StrictMath.clamp(factor, 0, 1);
-        double x = x2 * factor + x1 * (1 - factor);
-        double y = y2 * factor + y1 * (1 - factor);
-        double scale = Viewport.getScale();
-        if (gameViewport != null){
-            if (!CollisionUtil.RectRectCollision(gameViewport.getX(), gameViewport.getY(), gameViewport.getWidth(), gameViewport.getHeight(), x, y, width, height)){
-                return;
-            }
-            gc.fillRoundRect((int)StrictMath.round((x-gameViewport.getX()-Viewport.getX())*scale + Viewport.getXOffset()), (int)StrictMath.round((y-gameViewport.getY()-Viewport.getY())*scale + Viewport.getYOffset()), (int)StrictMath.round(width*scale), (int)StrictMath.round(height*scale), (int)StrictMath.round(edge*scale), (int)StrictMath.round(edge*scale));
+    public void fillRectInterpolate(double xCurrent, double yCurrent, double xLast, double yLast, double width, double height) {
+        double x = NumUtil.interpolate(xCurrent, xLast, factor);
+        double y = NumUtil.interpolate(yCurrent, yLast, factor);
+        fillRect(x, y, width, height);
+    }
+
+    public void fillRectInterpolateGame(double xCurrent, double yCurrent, double xLast, double yLast, double width, double height) {
+        double x = NumUtil.interpolate(xCurrent, xLast, factor);
+        double y = NumUtil.interpolate(yCurrent, yLast, factor);
+        if (!CollisionUtil.RectRectCollision(gameViewport.getX(), gameViewport.getY(), gameViewport.getWidth(), gameViewport.getHeight(), x, y, width, height)){
             return;
         }
-
-//        rotate(x + width/2, y + height/2, direction2 * factor + direction1 * (1 - factor));
-        gc.fillRoundRect((int)StrictMath.round((x-Viewport.getX())*scale + Viewport.getXOffset()), (int)StrictMath.round((y-Viewport.getY())*scale + Viewport.getYOffset()), (int)StrictMath.round(width*scale), (int)StrictMath.round(height*scale), (int)StrictMath.round(edge*scale), (int)StrictMath.round(edge*scale));
-//        resetRotation();
+        fillRect(x-gameViewport.getX(), y-gameViewport.getY(), width, height);
     }
 
-
-    public void drawRect(double x, double y, double width, double height) {
-        if (gameViewport != null){
-            if (!CollisionUtil.RectRectCollision(gameViewport.getX(), gameViewport.getY(), gameViewport.getWidth(), gameViewport.getHeight(), x, y, width, height)){
-                return;
-            }
-        }
+    public void strokeRect(double x, double y, double width, double height) {
         double scale = Viewport.getScale();
-        gc.strokeRect((int)StrictMath.round((x-Viewport.getX())*scale + Viewport.getXOffset()), (int)StrictMath.round((y-Viewport.getY())*scale + Viewport.getYOffset()), (int)StrictMath.round(width*scale), (int)StrictMath.round(height*scale));
+        gc.strokeRect((x-Viewport.getX())*scale + Viewport.getXOffset(), (y-Viewport.getY())*scale + Viewport.getYOffset(), width*scale, height*scale);
     }
 
-    public void drawRect(Rectangle2D rectangle) {
-        drawRect(rectangle.getMinX(), rectangle.getMinY(), rectangle.getWidth(), rectangle.getHeight());
+    public void strokeRect(Rectangle2D rect){
+        strokeRect(rect.getMinX(), rect.getMinY(), rect.getWidth(), rect.getHeight());
     }
 
-
-    public void fillRect(Rectangle2D rectangle) {
-        if (gameViewport != null){
-            if (!CollisionUtil.RectRectCollision(gameViewport.getX(), gameViewport.getY(), gameViewport.getWidth(), gameViewport.getHeight(), rectangle.getMinX(), rectangle.getMinY(), rectangle.getWidth(), rectangle.getHeight())){
-                return;
-            }
+    public void strokeRectGame(double x, double y, double width, double height){
+        if (!CollisionUtil.RectRectCollision(gameViewport.getX(), gameViewport.getY(), gameViewport.getWidth(), gameViewport.getHeight(), x, y, width, height)){
+            return;
         }
-        double scale = Viewport.getScale();
-        gc.fillRect((int)StrictMath.round((rectangle.getMinX()-Viewport.getX())*scale + Viewport.getXOffset()), (int)StrictMath.round((rectangle.getMinY()-Viewport.getY())*scale + Viewport.getYOffset()), (int)StrictMath.round(rectangle.getWidth()*scale), (int)StrictMath.round(rectangle.getHeight()*scale));
+        strokeRect(x, y, width, height);
     }
 
 
     public void fillCircle(double x, double y, double radius) {
-        if (gameViewport != null){
-            if (!CollisionUtil.RectCircleCollision(x, y, radius, gameViewport.getX(), gameViewport.getY(), gameViewport.getWidth(), gameViewport.getHeight())){
-                return;
-            }
-        }
         double scale = Viewport.getScale();
-        gc.fillOval((int)StrictMath.round((x-Viewport.getX())*scale + Viewport.getXOffset()), (int)StrictMath.round((y-Viewport.getY())*scale + Viewport.getYOffset()), (int)StrictMath.round(radius*2*scale), (int)StrictMath.round(radius*2*scale));
+        gc.fillOval((x-Viewport.getX())*scale + Viewport.getXOffset(), (y-Viewport.getY())*scale + Viewport.getYOffset(), radius*2*scale, radius*2*scale);
     }
-    public void fillCircleInterpolate(double x1, double y1, double radius, double x2, double y2) {
-        factor = StrictMath.clamp(factor, 0, 1);
-        double x = x2 * factor + x1 * (1 - factor);
-        double y = y2 * factor + y1 * (1 - factor);
-        double scale = Viewport.getScale();
-
-        if (gameViewport != null){
-            if (!CollisionUtil.RectCircleCollision(x, y, radius, gameViewport.getX(), gameViewport.getY(), gameViewport.getWidth(), gameViewport.getHeight())){
-                return;
-            }
-            gc.fillOval((x-gameViewport.getX() - Viewport.getX())*scale + Viewport.getXOffset(), (y-gameViewport.getY()-Viewport.getY())*scale + Viewport.getYOffset(), (radius*2*scale), (radius*2*scale));
+    public void fillCircleGame(double x, double y, double radius) {
+        if (!CollisionUtil.RectCircleCollision(x, y, radius, gameViewport.getX(), gameViewport.getY(), gameViewport.getWidth(), gameViewport.getHeight())){
             return;
         }
-//        rotate(x + radius, y + radius, direction2 * factor + direction1 * (1 - factor));
-        gc.fillOval(((x - Viewport.getX())*scale + Viewport.getXOffset()), ((y-Viewport.getY())*scale + Viewport.getYOffset()), (radius*2*scale), (radius*2*scale));
-//        resetRotation();
+        fillCircle(x-gameViewport.getX(), y - gameViewport.getY(), radius);
+    }
+    public void fillCircleInterpolate(double xCurrent, double yCurrent, double xLast, double yLast, double radius) {
+        double x = NumUtil.interpolate(xCurrent, xLast, factor);
+        double y = NumUtil.interpolate(yCurrent, yLast, factor);
+        double scale = Viewport.getScale();
+        fillCircle(x, y, radius);
+    }
+    public void fillCircleInterpolateGame(double xCurrent, double yCurrent, double xLast, double yLast, double radius) {
+        double x = NumUtil.interpolate(xCurrent, xLast, factor);
+        double y = NumUtil.interpolate(yCurrent, yLast, factor);
+        if (!CollisionUtil.RectCircleCollision(x, y, radius, gameViewport.getX(), gameViewport.getY(), gameViewport.getWidth(), gameViewport.getHeight())){
+            return;
+        }
+        fillCircle(x-gameViewport.getX(), y-gameViewport.getY(), radius);
     }
 
     public void fillImage(Image image, double x, double y, double width, double height) {
-        if (gameViewport != null){
-            if (!CollisionUtil.RectRectCollision(gameViewport.getX(), gameViewport.getY(), gameViewport.getWidth(), gameViewport.getHeight(), x, y, width, height)){
-                return;
-            }
-        }
         double scale = Viewport.getScale();
-        gc.drawImage(image, (x-Viewport.getX()*scale + Viewport.getXOffset()), (y-Viewport.getY()*scale + Viewport.getYOffset()), (width*scale), (height*scale));
+        gc.drawImage(image, ((x-Viewport.getX())*scale + Viewport.getXOffset()), ((y-Viewport.getY())*scale + Viewport.getYOffset()), (width*scale), (height*scale));
     }
-    public void fillImageInterpolate(Image image, double x1, double y1, double width, double height, double x2, double y2) {
-        factor = StrictMath.clamp(factor, 0, 1);
-        double x = x2 * factor + x1 * (1 - factor);
-        double y = y2 * factor + y1 * (1 - factor);
-        double scale = Viewport.getScale();
-        if (gameViewport != null){
-            if (!CollisionUtil.RectRectCollision(gameViewport.getX(), gameViewport.getY(), gameViewport.getWidth(), gameViewport.getHeight(), x, y, width, height)){
-                return;
-            }
-            gc.drawImage(image, (x-gameViewport.getX() - Viewport.getX())*scale + Viewport.getXOffset(), (y-gameViewport.getY() - Viewport.getY())*scale + Viewport.getYOffset(), scale*width, scale*height);
+    public void fillImageGame(Image image, double x, double y, double width, double height) {
+        if (!CollisionUtil.RectRectCollision(gameViewport.getX(), gameViewport.getY(), gameViewport.getWidth(), gameViewport.getHeight(), x, y, width, height)){
             return;
         }
-        gc.drawImage(image, ((x - Viewport.getX())*scale + Viewport.getXOffset()), ((y - Viewport.getY())*scale + Viewport.getYOffset()), (width*scale), (height*scale));
+        fillImage(image, x-gameViewport.getX(), y-gameViewport.getY(), width, height);
+    }
+    public void fillImageInterpolate(Image image, double xCurrent, double yCurrent, double xLast, double yLast, double width, double height) {
+        double x = NumUtil.interpolate(xCurrent, xLast, factor);
+        double y = NumUtil.interpolate(yCurrent, yLast, factor);
+        double scale = Viewport.getScale();
+        fillImage(image, x, y, width, height);
+    }
+    public void fillImageInterpolateGame(Image image, double xCurrent, double yCurrent, double xLast, double yLast, double width, double height) {
+        double x = NumUtil.interpolate(xCurrent, xLast, factor);
+        double y = NumUtil.interpolate(yCurrent, yLast, factor);
+        if (!CollisionUtil.RectRectCollision(gameViewport.getX(), gameViewport.getY(), gameViewport.getWidth(), gameViewport.getHeight(), x, y, width, height)){
+            return;
+        }
+        fillImage(image, x-gameViewport.getX(), y-gameViewport.getY(), width, height);
     }
 
-    public void drawString(double x, double y, String string, double size, Fonts font){
+    public void drawString(double x, double y, String string, double size, Fonts font, StringAlignment alignment){
+        double scale = Viewport.getScale();
+        gc.setFont(font.getFont(size*scale));
+        gc.setTextAlign(alignment.getTextAlignment());
+        gc.setTextBaseline(alignment.getVPos());
+        gc.fillText(string, ((x - Viewport.getX())*scale + Viewport.getXOffset()), ((y - Viewport.getY())*scale + Viewport.getYOffset()));
+    }
+
+    public void drawStringGame(double x, double y, String string, double size, Fonts font, StringAlignment alignment){
         double scale = Viewport.getScale();
         Text text = new Text(string);
         text.setFont(font.getFont(size*scale));
         gc.setFont(font.getFont(size*scale));
-        gc.setTextAlign(TextAlignment.CENTER);
-        gc.setTextBaseline(VPos.CENTER);
-        if (gameViewport != null){
-            if (!CollisionUtil.RectRectCollision(gameViewport.getX(), gameViewport.getY(), gameViewport.getWidth(), gameViewport.getHeight(), x-(text.getBoundsInLocal().getWidth() / 2f), y, text.getBoundsInLocal().getWidth(), text.getBoundsInLocal().getHeight())){
-                return;
-            }
-            gc.fillText(string, (x-gameViewport.getX() - Viewport.getX())*scale + Viewport.getXOffset(), (y-gameViewport.getY() - Viewport.getY())*scale + Viewport.getYOffset());
+        gc.setTextAlign(alignment.getTextAlignment());
+        gc.setTextBaseline(alignment.getVPos());
+        if (!CollisionUtil.RectRectCollision(gameViewport.getX(), gameViewport.getY(), gameViewport.getWidth(), gameViewport.getHeight(), x-(text.getBoundsInLocal().getWidth() / 2f), y, text.getBoundsInLocal().getWidth(), text.getBoundsInLocal().getHeight())){
             return;
         }
-        gc.fillText(string, ((x - Viewport.getX())*scale + Viewport.getXOffset()), ((y - Viewport.getY())*scale + Viewport.getYOffset()));
+        drawString(x-gameViewport.getX(), y-gameViewport.getY(), string, size, font, alignment);
     }
 
     public void drawLine(double x1, double y1, double x2, double y2){
@@ -227,6 +230,25 @@ public class DrawUtil{
         }
         double scale = Viewport.getScale();
         gc.strokeLine(x1*scale + Viewport.getXOffset(), y1*scale + Viewport.getYOffset(), x2*scale + Viewport.getXOffset(), y2*scale + Viewport.getYOffset());
+    }
+    public void drawModelGame(Models modelKey, double x, double y, double z, double direction) {
+        if (!CollisionUtil.RectRectCollision(gameViewport.getX(), gameViewport.getY(), gameViewport.getWidth(), gameViewport.getHeight(), x, y, modelKey.getWidth(), modelKey.getWidth())){
+            return;
+        }
+//        System.out.println(StrictMath.floorMod(StrictMath.round(direction), 360));
+        double scale = Viewport.getScale();
+        WritableImage model = modelMap.get(modelKey)[StrictMath.floorMod(StrictMath.round(direction), 360)/10];
+        double imageSize = ModelLoaderUtil.getImageSize();
+        double halfImageSize = ModelLoaderUtil.getHalfImageSize();
+        gc.drawImage(model, ((x-halfImageSize-Viewport.getX()+modelKey.getHalfWidth())*scale + Viewport.getXOffset()), ((y-halfImageSize-Viewport.getY()-modelKey.getHalfHeight()-modelKey.getHalfWidth())*scale + Viewport.getYOffset()), imageSize*scale, imageSize*scale);
+    }
+    public void drawModelInterpolateGame(Models modelKey, double xCurrent, double yCurrent, double zCurrent, double xLast, double yLast, double zLast, double directionCurrent, double directionLast) {
+        drawModelGame(modelKey, NumUtil.interpolate(xCurrent, xLast, factor), NumUtil.interpolate(yCurrent, yLast, factor), NumUtil.interpolate(zCurrent, zLast, factor), NumUtil.interpolate(directionCurrent, directionLast, factor));
+    }
+
+
+    public void clearCanvas(){
+        gc.clearRect(0, 0, gc.getCanvas().getWidth(), gc.getCanvas().getHeight());
     }
 
     public void fillBackground(){
@@ -246,7 +268,4 @@ public class DrawUtil{
         gc.fillRect(0, 1080*scale + Viewport.getYOffset(), 1920*scale + (Viewport.getXOffset()*2), Viewport.getYOffset()*2);
     }
 
-    public void setThickness(double thickness){
-        gc.setLineWidth(thickness*Viewport.getScale());
-    }
 }
