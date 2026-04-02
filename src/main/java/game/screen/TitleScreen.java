@@ -27,6 +27,7 @@ public class TitleScreen extends Screen {
     private int selectedIndex = 0;
     private boolean closing = false;
     private DrawUtil drawUtil;
+
     public TitleScreen(DrawUtil drawUtil) {
         this.drawUtil = drawUtil;
     }

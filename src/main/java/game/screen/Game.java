@@ -13,7 +13,6 @@ import inputHandler.InputHandler;
 import inputHandler.InputType;
 import inputHandler.Keys;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import javafx.geometry.Rectangle2D;
@@ -82,6 +81,7 @@ public class Game extends Screen {
         cellHeads.defaultReturnValue(-1);
 //        unitsById = new Int2ObjectOpenHashMap<>();
     }
+
     private Game(Game game) {
         selectedRectangle = game.selectedRectangle;
         map = game.map;

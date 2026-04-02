@@ -27,8 +27,6 @@ public abstract class Entity {
     protected DrawUtil drawUtil;
     protected ArrayList<Command> commands = new ArrayList<>();
 
-    public abstract Entity copy();
-
     public Entity() {
         id = idNum;
         idNum++;
@@ -37,6 +35,8 @@ public abstract class Entity {
     protected Entity(int id) {
         this.id = id;
     }
+
+    public abstract Entity copy();
 
     public long getX() {
         return x;

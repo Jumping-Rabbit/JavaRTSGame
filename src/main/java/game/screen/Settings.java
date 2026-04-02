@@ -18,10 +18,12 @@ public class Settings extends Screen {
     private GraphicsButtons currentGraphicsSetting = GraphicsButtons.GRAPHICS_QUALITY;
     private AudioButtons currentAudioSetting = AudioButtons.MASTER_VOLUME;
     private SettingsManager settingsManager;
+
     public Settings(DrawUtil drawUtil, SettingsManager settingsManager) {
         this.drawUtil = drawUtil;
         this.settingsManager = settingsManager;
     }
+
     public Settings(Settings settings) {
         drawUtil = settings.drawUtil;
         isEditing = settings.isEditing;

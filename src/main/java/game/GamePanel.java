@@ -45,6 +45,7 @@ public class GamePanel extends Canvas {
     private MapEditor mapEditor;
     private Settings settings;
     private PerformanceStorage performanceStorage;
+
     public GamePanel() {
         super(0, 0);
 //        System.out.println(NumUtil.sqrtFastScaled(90000));
