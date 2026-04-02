@@ -1,19 +1,16 @@
 package utils;
 
-import game.SettingsManager;
-
 public enum Models {
     vanguardMarine;
 
-    private double width;
-    private double height;
-    private double halfWidth;
-    private double halfHeight;
-    private long scaledWidth;
-    private long scaledHeight;
-    private long scaledHalfWidth;
-    private long scaledHalfHeight;
-
+    private static double width;
+    private static double height;
+    private static double halfWidth;
+    private static double halfHeight;
+    private static long scaledWidth;
+    private static long scaledHeight;
+    private static long scaledHalfWidth;
+    private static long scaledHalfHeight;
 
 
     public static Models fromValue(String givenName) {
@@ -25,11 +22,12 @@ public enum Models {
         return null;
     }
 
-    public double getWidth(){
+    public double getWidth() {
         return width;
     }
-    public void setWidth(double width){
-        this.width = width;
+
+    public static void setWidth(double width) {
+        Models.width = width;
     }
 
     public double getHeight() {
@@ -44,8 +42,8 @@ public enum Models {
         return halfWidth;
     }
 
-    public void setHalfWidth(double halfWidth) {
-        this.halfWidth = halfWidth;
+    public static void setHalfWidth(double halfWidth) {
+        Models.halfWidth = halfWidth;
     }
 
     public double getHalfHeight() {
@@ -53,15 +51,15 @@ public enum Models {
     }
 
     public void setHalfHeight(double halfHeight) {
-        this.halfHeight = halfHeight;
+        Models.halfHeight = halfHeight;
     }
 
     public long getScaledWidth() {
         return scaledWidth;
     }
 
-    public void setScaledWidth(long scaledWidth) {
-        this.scaledWidth = scaledWidth;
+    public static void setScaledWidth(long scaledWidth) {
+        Models.scaledWidth = scaledWidth;
     }
 
     public long getScaledHeight() {
@@ -69,15 +67,15 @@ public enum Models {
     }
 
     public void setScaledHeight(long scaledHeight) {
-        this.scaledHeight = scaledHeight;
+        Models.scaledHeight = scaledHeight;
     }
 
     public long getScaledHalfWidth() {
         return scaledHalfWidth;
     }
 
-    public void setScaledHalfWidth(long scaledHalfWidth) {
-        this.scaledHalfWidth = scaledHalfWidth;
+    public static void setScaledHalfWidth(long scaledHalfWidth) {
+        Models.scaledHalfWidth = scaledHalfWidth;
     }
 
     public long getScaledHalfHeight() {
@@ -85,6 +83,6 @@ public enum Models {
     }
 
     public void setScaledHalfHeight(long scaledHalfHeight) {
-        this.scaledHalfHeight = scaledHalfHeight;
+        Models.scaledHalfHeight = scaledHalfHeight;
     }
 }

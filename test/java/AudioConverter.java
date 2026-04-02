@@ -11,7 +11,6 @@ public class AudioConverter {
 
         try (Stream<Path> paths = Files.walk(sourceRootDir)) {
             paths.filter(Files::isRegularFile)
-                    // Check specifically for the double extension
                     .filter(p -> p.toString().toLowerCase().endsWith(".mp3.mpeg"))
                     .forEach(sourcePath -> {
                         Path relativePath = sourceRootDir.relativize(sourcePath);

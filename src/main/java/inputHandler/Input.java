@@ -13,7 +13,7 @@ public class Input {
     private final int scrollAmount;
     private boolean isShiftHeld;
 
-    public Input(InputType inputType, double x, double y){
+    public Input(InputType inputType, double x, double y) {
         this.inputType = inputType;
         this.x = x;
         this.y = y;
@@ -23,7 +23,8 @@ public class Input {
         scrollAmount = 0;
         isShiftHeld = false;
     }
-    public Input(InputType inputType, double startX, double startY, double x, double y){
+
+    public Input(InputType inputType, double startX, double startY, double x, double y) {
         this.inputType = inputType;
         this.startX = startX;
         this.startY = startY;
@@ -34,7 +35,7 @@ public class Input {
         isShiftHeld = false;
     }
 
-    public Input(InputType inputType, Keys key, boolean isShiftHeld){
+    public Input(InputType inputType, Keys key, boolean isShiftHeld) {
         this.inputType = inputType;
         this.key = key;
         startX = 0;
@@ -44,7 +45,8 @@ public class Input {
         scrollAmount = 0;
         this.isShiftHeld = isShiftHeld;
     }
-    public Input(InputType inputType, double x, double y, int scrollAmount){
+
+    public Input(InputType inputType, double x, double y, int scrollAmount) {
         this.inputType = inputType;
         key = Keys.NONE;
         startX = 0;
@@ -55,7 +57,7 @@ public class Input {
         isShiftHeld = false;
     }
 
-    public double getStartX(){
+    public double getStartX() {
         return startX;
     }
 
@@ -63,7 +65,7 @@ public class Input {
         return startY;
     }
 
-    public double getX(){
+    public double getX() {
         return x;
     }
 
@@ -83,7 +85,7 @@ public class Input {
         return inputType;
     }
 
-    public boolean getIsShiftHeld(){
+    public boolean getIsShiftHeld() {
         return isShiftHeld;
     }
 }

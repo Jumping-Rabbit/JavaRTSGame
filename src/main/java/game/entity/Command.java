@@ -7,28 +7,34 @@ public class Command {
     long y;
     String button;
     InputType inputType;
-    public Command (String button){
+
+    public Command(String button) {
         this.button = button;
         inputType = InputType.KEYPRESS;
         x = 0;
         y = 0;
     }
-    public Command (InputType inputType, long x, long y){
+
+    public Command(InputType inputType, long x, long y) {
         this.button = "";
         this.x = x;
         this.y = y;
         this.inputType = inputType;
     }
-    public String getButton(){
+
+    public String getButton() {
         return button;
     }
-    public long getX(){
+
+    public long getX() {
         return x;
     }
-    public long getY(){
+
+    public long getY() {
         return y;
     }
-    public InputType getInputType(){
+
+    public InputType getInputType() {
         return inputType;
     }
 }

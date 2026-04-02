@@ -19,13 +19,14 @@ public class Replay {
     private static File file;
     private static ObjectMapper objectMapper = new ObjectMapper();
     private static JsonNode root;
-    public static void newReplay(File map){
+
+    public static void newReplay(File map) {
         LocalDateTime time = LocalDateTime.now();
         String directory = "resources/replays/" + DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss").format(time);//use -SSSSSSSSS for nanosecs
-        try{
+        try {
             Files.createDirectories(Paths.get(directory));
             //add map file
-        }catch(IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
@@ -34,9 +35,10 @@ public class Replay {
         objectMapper.writerWithDefaultPrettyPrinter().writeValue(file, objectMapper.createObjectNode());
         root = objectMapper.readTree(file);
     }
-    public static void addTick(ArrayDeque<Input> inputs, long tickNum){
+
+    public static void addTick(ArrayDeque<Input> inputs, long tickNum) {
         ArrayNode newTick = objectMapper.createArrayNode();
-        for (Input input : inputs){
+        for (Input input : inputs) {
             ObjectNode node = objectMapper.createObjectNode();
             node.put("inputType", input.getInputType().toString());
             node.put("x", input.getX());
@@ -56,11 +58,13 @@ public class Replay {
             e.printStackTrace();
         }
     }
-    public static void openReplay(File file){
+
+    public static void openReplay(File file) {
         Replay.file = file;
         root = objectMapper.readTree(file);
     }
-    public static ArrayList<Input> getTick(){
+
+    public static ArrayList<Input> getTick() {
         return null;
     }
 }

@@ -1,15 +1,12 @@
 package game;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-
 public class GameViewport {
-    private long viewportX;
-    private long viewportY;
     private final long viewportWidth;
     private final long viewportHeight;
+    private long viewportX;
+    private long viewportY;
     private long scale;
+
     public GameViewport(long x, long y) {
         viewportX = x;
         viewportY = y;
@@ -34,11 +31,11 @@ public class GameViewport {
         this.viewportY = viewportY;
     }
 
-    public void changeX(long change){
+    public void changeX(long change) {
         viewportX += change;
     }
 
-    public void changeY(long change){
+    public void changeY(long change) {
         viewportY += change;
     }
 
@@ -54,7 +51,7 @@ public class GameViewport {
         return scale;
     }
 
-    public void setScale(long scale){
+    public void setScale(long scale) {
         this.scale = scale;
     }
 

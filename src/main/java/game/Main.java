@@ -2,11 +2,8 @@ package game;
 
 import javafx.application.Application;
 
-import java.io.OutputStream;
-import java.io.PrintStream;
-
-public class Main{
-    public static void main(String[] args){//this class is just here to make the javafx native warnings shut up
+public class Main {
+    public static void main(String[] args) {//this class is just here to make the javafx native warnings shut up
         System.setProperty("prism.order", "d3d,es2,sw");//try to use the best one
 
 //        System.setProperty("prism.verbose", "true");//for testing
@@ -28,7 +25,7 @@ public class Main{
 //        PrintStream originalErr = System.err;
 //        Systebm.setErr(new PrintStream(OutputStream.nullOutputStream()));
 //        try {
-            Application.launch(Launcher.class, args);
+        Application.launch(Launcher.class, args);
 //        } finally {
 //            System.setErr(originalErr);
 //        }

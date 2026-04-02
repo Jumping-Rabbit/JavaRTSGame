@@ -2,17 +2,17 @@ package game;
 
 
 public class Viewport {
-    private static double viewportX = 0;
-    private static double viewportY = 0;
     private static final double viewportWidth = 1920;
     private static final double viewportHeight = 1080;
+    private static double viewportX = 0;
+    private static double viewportY = 0;
     private static double scale;
     private static double xOffset;
     private static double yOffset;
 //    public static final Viewport viewport = new Viewport();
 
 
-    public static void calculateViewport(double windowWidth, double windowHeight){
+    public static void calculateViewport(double windowWidth, double windowHeight) {
         double windowWidthScale = windowWidth / 1920d;
         double windowHeightScale = windowHeight / 1080d;
         scale = StrictMath.min(windowWidthScale, windowHeightScale);

@@ -11,9 +11,9 @@ import static utils.NumUtil.LTD;
 
 public abstract class Unit extends Entity {
 
-    protected ArrayList<Effects> effects;
     protected static ArrayList<Abilities> abilities;
     protected static EnumSet<Tags> tags;
+    protected ArrayList<Effects> effects;
     protected long hp;
     protected long maxHp;
     protected long armor;
@@ -28,9 +28,9 @@ public abstract class Unit extends Entity {
     protected long targetX;
     protected long targetY;
     protected long targetDirection;
+    protected Entity attackTarget;
     private Long newX;
     private Long newY;
-    protected Entity attackTarget;
 
     protected Unit(int id) {
         super(id);
@@ -41,70 +41,61 @@ public abstract class Unit extends Entity {
     }
 
 
-    public long getX(){
-        return x;
-    }
-    public long getY(){
-        return y;
-    }
-    public long getZ(){
-        return z;
-    }
-    public long getTargetX(){
+    public long getTargetX() {
         return targetX;
     }
-    public long getTargetY(){
+
+    public long getTargetY() {
         return targetY;
     }
-    public void changeX(long change){
-        if (newX == null){
-            newX = x+change;
+
+    public void changeX(long change) {
+        if (newX == null) {
+            newX = x + change;
         } else {
             newX += change;
         }
     }
-    public void changeY(long change){
-        if (newY == null){
-            newY = y+change;
+
+    public void changeY(long change) {
+        if (newY == null) {
+            newY = y + change;
         } else {
             newY += change;
         }
     }
-    public void changeXImmediate(long change){
+
+    public void changeXImmediate(long change) {
         x += change;
     }
-    public void changeYImmediate(long change){
+
+    public void changeYImmediate(long change) {
         y += change;
     }
-    public void tick(){
-        if (newX != null){
+
+    public void tick() {
+        if (newX != null) {
             x = newX;
             newX = null;
         }
-        if (newY != null){
+        if (newY != null) {
             y = newY;
             newY = null;
         }
     }
-    public long getLastX(){
-        return lastX;
-    }
-    public long getLastY(){
-        return lastY;
-    }
-    public long getLastZ(){
-        return lastY;
-    }
-    public UnitState getUnitState(){
+
+    public UnitState getUnitState() {
         return unitState;
     }
-    public void setUnitState(UnitState unitState){
+
+    public void setUnitState(UnitState unitState) {
         this.unitState = unitState;
     }
-    public abstract Unit copy();
-    public void draw(){
+
+    public void draw() {
         drawUtil.drawModelInterpolateGame(model, LTD(x), LTD(y), LTD(z), LTD(lastX), LTD(lastY), LTD(lastZ), LTD(direction), LTD(lastDirection));
     }
+
     public void updateOnFrame() {
         if (!commands.isEmpty()) {
             for (Command command : commands) {

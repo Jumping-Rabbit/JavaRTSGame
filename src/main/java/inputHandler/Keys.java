@@ -56,23 +56,28 @@ public enum Keys {
     private final String string;
     private final KeyType type;
     private final String keyHandlerString;
-    Keys(String string, KeyType keyType, String keyHandlerString){
+
+    Keys(String string, KeyType keyType, String keyHandlerString) {
         this.string = string;
         type = keyType;
         this.keyHandlerString = keyHandlerString;
     }
-    public String getString(){
+
+    public String getString() {
         return string;
     }
-    public String getKeyHandlerString(){
+
+    public String getKeyHandlerString() {
         return keyHandlerString;
     }
-    public KeyType getType(){
+
+    public KeyType getType() {
         return type;
     }
-    public Keys fromValue(String value){
-        for (Keys key : Keys.values()){
-            if (value.equals(key.getString())){
+
+    public Keys fromValue(String value) {
+        for (Keys key : Keys.values()) {
+            if (value.equals(key.getString())) {
                 return key;
             }
         }

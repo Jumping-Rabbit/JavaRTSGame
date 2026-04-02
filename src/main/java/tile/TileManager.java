@@ -1,8 +1,8 @@
 package tile;
 
-import utils.DrawUtil;
-import game.screen.Game;
 import game.Viewport;
+import game.screen.Game;
+import utils.DrawUtil;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -14,7 +14,7 @@ public class TileManager {
     Game game;
     DrawUtil drawUtil;
     Tile[] tile;
-    int [][] currentMapNum;
+    int[][] currentMapNum;
     int mapWidth;
     int mapHeight;
     BufferedImage[] tiles;
@@ -70,7 +70,7 @@ public class TileManager {
         double viewportY = Viewport.getY();
         for (int x = 0; x < mapWidth; x++) {
             for (int y = 0; y < mapHeight; y++) {
-                g2.drawImage(tile[currentMapNum[y][x]].image, (int)(((x*32) - viewportX)*scale), (int)(((y*32) - viewportY)*scale), (int)(32*scale), (int)(32*scale), null);
+                g2.drawImage(tile[currentMapNum[y][x]].image, (int) (((x * 32) - viewportX) * scale), (int) (((y * 32) - viewportY) * scale), (int) (32 * scale), (int) (32 * scale), null);
             }
         }
     }

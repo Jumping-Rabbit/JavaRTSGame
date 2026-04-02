@@ -11,7 +11,7 @@ public enum players {
         this.color = color;
     }
 
-    public Color getColor(){
+    public Color getColor() {
         return color;
     }
 

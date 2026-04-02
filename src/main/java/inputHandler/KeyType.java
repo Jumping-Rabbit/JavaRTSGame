@@ -1,6 +1,6 @@
 package inputHandler;
 
-public enum KeyType{
+public enum KeyType {
     LETTER,
     NUMBER,
     SPECIAL

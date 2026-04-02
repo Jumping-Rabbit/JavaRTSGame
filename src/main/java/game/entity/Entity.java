@@ -1,18 +1,22 @@
 package game.entity;
 
-import javafx.scene.image.Image;
-import utils.DrawUtil;
 import inputHandler.InputType;
+import utils.DrawUtil;
 import utils.Models;
 import utils.NumUtil;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 
 public abstract class Entity {
+    public static final Comparator<Entity> Y_COMPARATOR = (e1, e2) -> Long.compare(e1.getY(), e2.getY());
+    protected static boolean hasCollision;
+    protected static Models model;
+    protected static ArrayList<InputType> validCommandTypes = new ArrayList<>();
     private static int idNum = 0;
     final public int id;
     public int nextInCell = -1;
-    protected long x;//first 8 digit is decimal
+    protected long x;//first 4 digit is decimal
     protected long y;
     protected long z;
     protected long lastX;
@@ -20,54 +24,87 @@ public abstract class Entity {
     protected long lastZ;
     protected long direction;
     protected long lastDirection;
-    protected static boolean hasCollision;
     protected DrawUtil drawUtil;
-    protected static Models model;
+    protected ArrayList<Command> commands = new ArrayList<>();
 
-    public Models getModel(){
-        return model;
-    }
+    public abstract Entity copy();
 
-    public Entity(){
+    public Entity() {
         id = idNum;
         idNum++;
     }
-    protected Entity(int id){
+
+    protected Entity(int id) {
         this.id = id;
     }
 
+    public long getX() {
+        return x;
+    }
+
+    public long getY() {
+        return y;
+    }
+
+    public long getZ() {
+        return z;
+    }
+
+    public long getLastX() {
+        return lastX;
+    }
+
+    public long getLastY() {
+        return lastY;
+    }
+
+    public long getLastZ() {
+        return lastY;
+    }
+
+    public Models getModel() {
+        return model;
+    }
+
     public abstract void draw();
+
     public abstract void updateOnFrame();
-    protected ArrayList<Command> commands = new ArrayList<>();
-    protected static ArrayList<InputType> validCommandTypes = new ArrayList<>();
-    public void clearCommands(){
+
+    public void clearCommands() {
         commands.clear();
     }
-    public void removeCommand(){
-        if (!commands.isEmpty()){
+
+    public void removeCommand() {
+        if (!commands.isEmpty()) {
             commands.removeFirst();
         }
     }
-    public void addCommand(Command command){
-        if (validCommandTypes.contains(command.getInputType())){
+
+    public void addCommand(Command command) {
+        if (validCommandTypes.contains(command.getInputType())) {
             commands.add(command);
         }
     }
-    public void drawSelectedRing(){
+
+    public void drawSelectedRing() {
         drawUtil.setColor(0, 255, 0, 0.2);
-        drawUtil.fillCircleInterpolate(NumUtil.LTD(x)-10, NumUtil.LTD(y)-10, NumUtil.LTD(lastX)-10, NumUtil.LTD(lastY)-10, model.getHalfWidth()+10);
+        drawUtil.fillCircleInterpolateGame(NumUtil.LTD(x) - 2, NumUtil.LTD(y) - 2, NumUtil.LTD(lastX) - 2, NumUtil.LTD(lastY) - 2, model.getHalfWidth() + 2);
     }
-    public long getRadius(){
+
+    public long getRadius() {
         return model.getScaledHalfWidth();
     }
-    public long getCollisionRadius(){
-        return model.getScaledHalfWidth()+model.getScaledHalfWidth()/2;
+
+    public long getCollisionRadius() {
+        return (long) (model.getScaledHalfWidth() * 1.5);
     }
-    public long getDiameter(){
+
+    public long getDiameter() {
         return model.getScaledWidth();
     }
-    public long getCollisionDiameter(){
-        return model.getScaledWidth()+model.getScaledWidth()/2;
+
+    public long getCollisionDiameter() {
+        return (long) (model.getScaledWidth() * 1.5);
     }
 
 }

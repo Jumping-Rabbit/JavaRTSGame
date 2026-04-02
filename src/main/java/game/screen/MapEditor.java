@@ -1,27 +1,24 @@
 package game.screen;
 
 import game.Fonts;
-import inputHandler.KeyType;
+import inputHandler.Input;
+import inputHandler.InputHandler;
 import inputHandler.Keys;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.image.Image;
 import utils.CollisionUtil;
 import utils.DrawUtil;
-import inputHandler.Input;
-import inputHandler.InputHandler;
 import utils.StringAlignment;
 
-import java.awt.*;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Objects;
 
-public class MapEditor extends Screen{
+public class MapEditor extends Screen {
     private String directory;
     private boolean isRenaming;
     private String newName;
@@ -39,27 +36,19 @@ public class MapEditor extends Screen{
 
     private boolean exit = false;
 
-    public boolean isExit(){
-        if (exit){
-            exit = false;
-            return true;
-        }
-        return false;
-    }
-
     public MapEditor(DrawUtil drawUtil) {
         this.drawUtil = drawUtil;
         tileIndex = 0;
     }
 
-    private MapEditor(MapEditor mapEditor){
+    private MapEditor(MapEditor mapEditor) {
         directory = mapEditor.directory;
         isRenaming = mapEditor.isRenaming;
         newName = mapEditor.newName;
 
-        tileMap = (ArrayList<ArrayList<Integer>>)mapEditor.tileMap.clone();
-        heightMap = (ArrayList<ArrayList<Integer>>)mapEditor.heightMap.clone();
-        tiles = (ArrayList<Image>)mapEditor.tiles.clone();
+        tileMap = (ArrayList<ArrayList<Integer>>) mapEditor.tileMap.clone();
+        heightMap = (ArrayList<ArrayList<Integer>>) mapEditor.heightMap.clone();
+        tiles = (ArrayList<Image>) mapEditor.tiles.clone();
         units = new ArrayList<>();
         buildings = new ArrayList<>();
         objects = new ArrayList<>();
@@ -70,67 +59,38 @@ public class MapEditor extends Screen{
         exit = mapEditor.exit;
     }
 
-    public Screen copy(){
+    public boolean isExit() {
+        if (exit) {
+            exit = false;
+            return true;
+        }
+        return false;
+    }
+
+    public Screen copy() {
         return new MapEditor(this);
     }
 
-    public enum Buttons {
-        RENAME_MAP(new Rectangle2D(1570, 20, 330, 60), "rename map"),
-
-        OPEN(new Rectangle2D(1570, 100, 150, 60), "open"),
-        NEW(new Rectangle2D(1750, 100, 150, 60), "new"),
-
-        SAVE_AS(new Rectangle2D(1750, 180, 150, 60), "save as"),
-
-        INCREASE_HEIGHT(new Rectangle2D(1570, 180, 50, 60), "^"),
-        HEIGHT_COUNTER(new Rectangle2D(1620, 180, 50, 60), ""),
-        DECREASE_HEIGHT(new Rectangle2D(1670, 180, 50, 60), "⌄"),
-
-
-        IMPORT_TILE(new Rectangle2D(1750, 260, 150, 60), "import main.tile"),
-        IMPORT_UNIT(new Rectangle2D(1570, 260, 150, 60), "import unit"),
-
-        IMPORT_OBJECT(new Rectangle2D(1570, 340, 200, 60), "import object"),
-        IMPORT_BUILDING(new Rectangle2D(1570, 420, 200, 60), "import building"),
-        BACK(new Rectangle2D(1800, 340, 100, 140), "back");
-
-        private final Rectangle2D rectangle;
-        private final String name;
-
-        Buttons(Rectangle2D rectangle, String name) {
-            this.rectangle = rectangle;
-            this.name = name;
-        }
-
-        private String getName() {
-            return name;
-        }
-
-        private Rectangle2D getRectangle2D() {
-            return rectangle;
-        }
-    }
-
-    private void saveMap(){
+    private void saveMap() {
 
     }
 
-    private void saveMapAs(){
+    private void saveMapAs() {
 
     }
 
-    private void newMap(){
+    private void newMap() {
         LocalDateTime time = LocalDateTime.now();
         directory = "res/map/custom/" + DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss").format(time);//use -SSSSSSSSS for nanosecs
 //        name = String.format("res/map/custom/%d-%d-%d-%d-%d-%d-%d", );
 //        name = "res/map/custom/" + time.getYear()+"-"+time.getMonthValue()+"-"+time.getDayOfMonth()+"-"+time.getHour()+"-"+time.getMinute()+"-"+time.getSecond()+"-"+time.getNano();
-        try{
+        try {
             Files.createDirectories(Paths.get(directory));
             Files.createDirectories(Paths.get(directory + "/units"));
             Files.createDirectories(Paths.get(directory + "/buildings"));
             Files.createDirectories(Paths.get(directory + "/objects"));
             Files.createDirectories(Paths.get(directory + "/tiles"));
-        }catch(IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
 //        JSONObject map = new JSONObject();
@@ -164,6 +124,19 @@ public class MapEditor extends Screen{
 //            e.printStackTrace();
 //        }
 
+    }
+
+    private File[] openFolder(String[] files) {
+//        try {
+//            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        JFileChooser chooser = new JFileChooser();
+//        chooser.setMultiSelectionEnabled(true);
+//        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+//        return getFile(chooser, files);
+        return null;
     }
 
 //    private File[] getFile(JFileChooser chooser, String[] files) {
@@ -231,20 +204,7 @@ public class MapEditor extends Screen{
 //        return null;
 //    }
 
-    private File[] openFolder(String[] files){
-//        try {
-//            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//        JFileChooser chooser = new JFileChooser();
-//        chooser.setMultiSelectionEnabled(true);
-//        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-//        return getFile(chooser, files);
-        return null;
-    }
-
-    private File[] openFile(String file){
+    private File[] openFile(String file) {
 //        try {
 //            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 //        } catch (Exception e) {
@@ -257,22 +217,22 @@ public class MapEditor extends Screen{
         return null;
     }
 
-    private void openMap(){
+    private void openMap() {
 //        SwingUtilities.invokeLater(() -> {
 //            directory = openFolder(new String[]{"buildings", "map.json", "objects", "units"})[0].getPath();
 //        });
     }
 
-    private void startRenameMap(){
+    private void startRenameMap() {
         isRenaming = true;
     }
 
-    private void cancelRenameMap(){
+    private void cancelRenameMap() {
         isRenaming = false;
     }
 
-    private void renameMap(Keys key){
-        if (directory == null){
+    private void renameMap(Keys key) {
+        if (directory == null) {
             return;
         }
 //        JSONParser parser = new JSONParser();
@@ -297,10 +257,10 @@ public class MapEditor extends Screen{
 //        }
     }
 
-    private void importTile(){
+    private void importTile() {
     }
 
-    private void importUnit(){
+    private void importUnit() {
 //        SwingUtilities.invokeLater(() -> {
 //            for (File file : openFolder(new String[]{"image.png", "stats.json"})){
 //                units.add(file);
@@ -308,7 +268,7 @@ public class MapEditor extends Screen{
 //        });
     }
 
-    private void importBuilding(){
+    private void importBuilding() {
 //        SwingUtilities.invokeLater(() -> {
 //            for (File file : openFolder(new String[]{"image.png", "stats.json"})){
 //                buildings.add(file);
@@ -316,7 +276,7 @@ public class MapEditor extends Screen{
 //        });
     }
 
-    private void importObject(){
+    private void importObject() {
 //        SwingUtilities.invokeLater(() -> {
 //            for (File file : openFolder(new String[]{"image.png", "stats.json"})){
 //                objects.add(file);
@@ -324,18 +284,17 @@ public class MapEditor extends Screen{
 //        });
     }
 
-    private void back(){
+    private void back() {
         exit = true;
     }
 
-    private void increaseHeight(){
-        height = StrictMath.min(height+1, 9);
+    private void increaseHeight() {
+        height = StrictMath.min(height + 1, 9);
     }
 
-    private void decreaseHeight(){
-        height = StrictMath.max(height-1, 0);
+    private void decreaseHeight() {
+        height = StrictMath.max(height - 1, 0);
     }
-
 
     public void draw() {
         drawUtil.setThickness(5);
@@ -361,7 +320,7 @@ public class MapEditor extends Screen{
 
         for (Buttons button : Buttons.values()) {
             drawUtil.strokeRect(button.getRectangle2D());
-            if (button == Buttons.RENAME_MAP && directory != null){
+            if (button == Buttons.RENAME_MAP && directory != null) {
 //                JSONParser parser = new JSONParser();
 //                try {
 //                    Object object = parser.parse(new FileReader(directory + "/map.json"));
@@ -371,7 +330,7 @@ public class MapEditor extends Screen{
 //                    throw new RuntimeException(e);
 //                }
                 continue;
-            } else if (button == Buttons.HEIGHT_COUNTER){
+            } else if (button == Buttons.HEIGHT_COUNTER) {
                 drawUtil.drawString(button.getRectangle2D().getMinX() + button.getRectangle2D().getWidth() / 2, button.getRectangle2D().getMinY() + button.getRectangle2D().getHeight() / 2, String.valueOf(height), 20, Fonts.DEFAULT, StringAlignment.CENTER_MIDDLE);
             }
             drawUtil.drawString(button.getRectangle2D().getMinX() + button.getRectangle2D().getWidth() / 2, button.getRectangle2D().getMinY() + button.getRectangle2D().getHeight() / 2, button.getName(), 20, Fonts.DEFAULT, StringAlignment.CENTER_MIDDLE);
@@ -380,13 +339,13 @@ public class MapEditor extends Screen{
 
     public void updateOnFrame() {
         for (Input input : InputHandler.getInputs()) {
-            switch (input.getInputType()){
+            switch (input.getInputType()) {
                 case LEFT_CLICK:
                     for (Buttons button : Buttons.values()) {
                         if (CollisionUtil.RectPointCollision(button.getRectangle2D(), input.getX(), input.getY())) {
-                            switch (button){
+                            switch (button) {
                                 case RENAME_MAP:
-                                    if (isRenaming){
+                                    if (isRenaming) {
                                         cancelRenameMap();
                                     } else {
                                         startRenameMap();
@@ -430,13 +389,50 @@ public class MapEditor extends Screen{
                     cancelRenameMap();
                     break;
                 case KEYPRESS:
-                    if (input.getKey() == Keys.ESCAPE){
+                    if (input.getKey() == Keys.ESCAPE) {
                         back();
                     }
-                    if (isRenaming){
+                    if (isRenaming) {
                         renameMap(input.getKey());
                     }
             }
+        }
+    }
+
+    public enum Buttons {
+        RENAME_MAP(new Rectangle2D(1570, 20, 330, 60), "rename map"),
+
+        OPEN(new Rectangle2D(1570, 100, 150, 60), "open"),
+        NEW(new Rectangle2D(1750, 100, 150, 60), "new"),
+
+        SAVE_AS(new Rectangle2D(1750, 180, 150, 60), "save as"),
+
+        INCREASE_HEIGHT(new Rectangle2D(1570, 180, 50, 60), "^"),
+        HEIGHT_COUNTER(new Rectangle2D(1620, 180, 50, 60), ""),
+        DECREASE_HEIGHT(new Rectangle2D(1670, 180, 50, 60), "⌄"),
+
+
+        IMPORT_TILE(new Rectangle2D(1750, 260, 150, 60), "import main.tile"),
+        IMPORT_UNIT(new Rectangle2D(1570, 260, 150, 60), "import unit"),
+
+        IMPORT_OBJECT(new Rectangle2D(1570, 340, 200, 60), "import object"),
+        IMPORT_BUILDING(new Rectangle2D(1570, 420, 200, 60), "import building"),
+        BACK(new Rectangle2D(1800, 340, 100, 140), "back");
+
+        private final Rectangle2D rectangle;
+        private final String name;
+
+        Buttons(Rectangle2D rectangle, String name) {
+            this.rectangle = rectangle;
+            this.name = name;
+        }
+
+        private String getName() {
+            return name;
+        }
+
+        private Rectangle2D getRectangle2D() {
+            return rectangle;
         }
     }
 }
