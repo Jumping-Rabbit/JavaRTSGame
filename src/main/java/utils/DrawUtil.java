@@ -22,9 +22,7 @@ public class DrawUtil {
     private GraphicsContext gc;
 
     public static void init(LoadingScreen loadingScreen) {
-        long startTime = System.nanoTime();
         modelMap = ModelLoaderUtil.calculateModelImages(loadingScreen);
-        System.out.println("parse model time: " + (System.nanoTime() - startTime) / 1000000d);
     }
 
     public synchronized double getFactor() {
@@ -235,7 +233,8 @@ public class DrawUtil {
         }
 //        System.out.println(StrictMath.floorMod(StrictMath.round(direction), 360));
         double scale = Viewport.getScale();
-        WritableImage model = modelMap.get(modelKey)[((int) (direction * 0.044)) & 15];
+//        WritableImage model = modelMap.get(modelKey)[((int) (direction * 0.044)) & 15];
+        WritableImage model = modelMap.get(modelKey)[(int) (StrictMath.floorMod((int) (direction+11.25), 360)/22.5)];
         double imageSize = model.getWidth();//ModelLoaderUtil.getImageSize();
         double halfImageSize = model.getWidth() / 2;//ModelLoaderUtil.getHalfImageSize();
         double modelWidth = modelKey.getWidth();

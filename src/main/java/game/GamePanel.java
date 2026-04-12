@@ -2,6 +2,7 @@ package game;
 
 import game.entity.unit.vanguard.Marine;
 import game.screen.*;
+import inputHandler.Actions;
 import inputHandler.Input;
 import inputHandler.InputHandler;
 import inputHandler.Keys;
@@ -9,16 +10,14 @@ import javafx.application.Platform;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.text.FontSmoothingType;
-import utils.DrawUtil;
-import utils.Models;
-import utils.NumUtil;
-import utils.StringAlignment;
+import utils.*;
 
 import java.text.DecimalFormat;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.logging.Logger;
 
 
 public class GamePanel extends Canvas {
@@ -174,27 +173,47 @@ public class GamePanel extends Canvas {
         logicThread = new Thread(new logicThread(performanceStorage));
         drawThread.start();
         logicThread.start();
-        loadingScreen = new LoadingScreen(drawUtil, 4 + Models.values().length * 16);
+        loadingScreen = new LoadingScreen(drawUtil, 6 + Models.values().length * 16);
         Thread loader = new Thread(() -> {
+            loadingScreen.addText("init Logger");
+            long startTime = System.nanoTime();
+            LoggerUtil.init();
+            System.out.println("logger time: " + (System.nanoTime()-startTime)/1000000000d);
+            loadingScreen.increment();
             loadingScreen.addText("init Marine");
+            startTime = System.nanoTime();
             Marine.init();
+            System.out.println("marine time: " + (System.nanoTime()-startTime)/1000000000d);
             loadingScreen.increment();
             loadingScreen.addText("init Sounds");
+            startTime = System.nanoTime();
             SoundManager.init();
+            System.out.println("sound time: " + (System.nanoTime()-startTime)/1000000000d);
             loadingScreen.increment();
             loadingScreen.addText("init NumUtil");
+            startTime = System.nanoTime();
             NumUtil.init();
+            System.out.println("numUtil time: " + (System.nanoTime()-startTime)/1000000000d);
             loadingScreen.increment();
             loadingScreen.addText("init keyHandler");
+            startTime = System.nanoTime();
             InputHandler.KeyHandler.init();
+            System.out.println("keyHandler time: " + (System.nanoTime()-startTime)/1000000000d);
             loadingScreen.increment();
+            loadingScreen.addText("init actions");
+            startTime = System.nanoTime();
+            Actions.init();
+            System.out.println("actions time: " + (System.nanoTime()-startTime)/1000000000d);
+            loadingScreen.increment();
+            startTime = System.nanoTime();
             DrawUtil.init(loadingScreen);
+            System.out.println("drawUtil time: " + (System.nanoTime()-startTime)/1000000000d);
             loadingScreen.addText("done");
 
             try {
                 Thread.sleep(500);
             } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+                LoggerUtil.logError(e);
             }
             setGameStatus(GameStatus.TITLESCREEN);
             SoundManager.startBGM();
@@ -266,7 +285,7 @@ public class GamePanel extends Canvas {
         }
         if (getGameStatus() != GameStatus.START_LOADING) {
             for (Input input : InputHandler.getInputs()) {
-                if (input.getKey() == Keys.N) {
+                if (input.getAction() == Actions.CHANGE_BGM) {
                     SoundManager.newBGM();
                 }
             }
@@ -394,7 +413,6 @@ public class GamePanel extends Canvas {
 }
 
 class PerformanceStorage {
-
     private final AtomicInteger dFrameCount = new AtomicInteger(0);
     private final AtomicInteger tFrameCount = new AtomicInteger(0);
     private final double[] ttuHistory = new double[100];
@@ -412,6 +430,7 @@ class PerformanceStorage {
     private int dtCount = 0;
     private volatile double peakDT = 0;
     private volatile double peakPeakDT = 0;
+    private int loggerCooldown = 20;
 
     public void addDFrame() {
         dFrameCount.incrementAndGet();
@@ -431,6 +450,10 @@ class PerformanceStorage {
         if (delta >= 500000000L) {
             currentTPS = (tFrameCount.getAndSet(0) / (delta / 500000000d)) * 2;
             lastTPSUpdate = now;
+        }
+        loggerCooldown--;
+        if (loggerCooldown <= 0){
+            LoggerUtil.logPerformance(getFPS(), getPeakDT(), getPeakPeakDT(), getTPS(), getTickTimeUsed(), getTickTimeUsedLow(), getLateFrames());
         }
     }
 

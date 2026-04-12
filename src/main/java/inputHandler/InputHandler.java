@@ -56,7 +56,7 @@ public class InputHandler {
         public void handleScroll(ScrollEvent e) {
             double mouseX = ((e.getX() - Viewport.getXOffset()) / Viewport.getScale());
             double mouseY = ((e.getY() - Viewport.getYOffset()) / Viewport.getScale());
-            addInput(new Input(InputType.SCROLL, mouseX, mouseY, (int) Math.copySign(1, e.getDeltaY())));
+            addInput(new Input(InputType.SCROLL, mouseX, mouseY, (int) Math.copySign(1, e.getDeltaY()), e.isShiftDown()));
         }
 
         public void handleMouse(MouseEvent e) {
@@ -78,7 +78,7 @@ public class InputHandler {
                         case MIDDLE -> InputType.MIDDLE_CLICK;
                         default -> InputType.LEFT_CLICK;
                     };
-                    InputHandler.addInput(new Input(type, mouseX, mouseY));
+                    InputHandler.addInput(new Input(type, mouseX, mouseY, e.isShiftDown()));
                 }
                 if (e.getButton() == javafx.scene.input.MouseButton.PRIMARY) {
                     isLeftDown = false;
@@ -87,7 +87,7 @@ public class InputHandler {
                 ;
             } else if (e.getEventType() == javafx.scene.input.MouseEvent.MOUSE_DRAGGED) {
                 if (isLeftDown) {
-                    InputHandler.addInput(new Input(InputType.DRAG, pressedX, pressedY, mouseX, mouseY));
+                    InputHandler.addInput(new Input(InputType.DRAG, pressedX, pressedY, mouseX, mouseY, e.isShiftDown()));
                     dragged = true;
                 }
             }
@@ -103,16 +103,14 @@ public class InputHandler {
                 "shift", "control", "enter", "backspace", "space", "up", "right", "down", "left", "escape"};
 
         public static void init() {
-            long startTime = System.nanoTime();
             for (Keys key : Keys.values()) {
                 stringToKeyMap.put(key.getKeyHandlerString(), key);
             }
-            System.out.println("keyHandler map time: " + (System.nanoTime() - startTime) / 1000000d);
         }
 
 
         public void handleKeyPress(javafx.scene.input.KeyEvent e) {
-            InputHandler.addInput(new Input(InputType.KEYPRESS, stringToKeyMap.getOrDefault(e.getCode().name().toLowerCase(), Keys.NONE), e.isShiftDown()));
+            InputHandler.addInput(new Input(InputType.KEYPRESS, Actions.getAction(stringToKeyMap.getOrDefault(e.getCode().name().toLowerCase(), Keys.NONE)), stringToKeyMap.getOrDefault(e.getCode().name().toLowerCase(), Keys.NONE), e.isShiftDown()));
         }
     }
 }

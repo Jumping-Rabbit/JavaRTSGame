@@ -63,16 +63,15 @@ public class Marine extends Unit {
         targetX = marine.targetX;
         targetY = marine.targetY;
         commands = marine.commands;
+        isSelected = marine.isSelected;
     }
 
     public static void init() {
-        long startTime = System.nanoTime();
         hasCollision = true;
         validCommandTypes = new ArrayList<>();
         validCommandTypes.add(InputType.RIGHT_CLICK);
         tags = EnumSet.of(Tags.LIGHT, Tags.BIOLOGICAL, Tags.RANGED);
         model = Models.vanguardMarine;
-        System.out.println("Marine init time: " + (System.nanoTime() - startTime) / 1000000d);
     }
 
     @Override

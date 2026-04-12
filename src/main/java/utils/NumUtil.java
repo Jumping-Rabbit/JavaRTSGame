@@ -36,12 +36,10 @@ public class NumUtil {
     }
 
     public static void init() {
-        long startTime = System.nanoTime();
         for (int i = 0; i < CACHE_SIZE; i++) {
             double angleInDegrees = i / INDEX_SCALE / SCALER;
             SIN_CACHE[i] = StrictMath.sin(StrictMath.toRadians(angleInDegrees));
         }
-        System.out.println("NumUtil cache time: " + (System.nanoTime() - startTime) / 1000000d);
     }
 
     public static double sin(long scaledDegrees) {

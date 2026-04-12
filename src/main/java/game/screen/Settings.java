@@ -2,10 +2,7 @@ package game.screen;
 
 import game.Fonts;
 import game.SettingsManager;
-import inputHandler.Input;
-import inputHandler.InputHandler;
-import inputHandler.KeyType;
-import inputHandler.Keys;
+import inputHandler.*;
 import javafx.geometry.Rectangle2D;
 import utils.CollisionUtil;
 import utils.DrawUtil;
@@ -59,10 +56,10 @@ public class Settings extends Screen {
             switch (input.getInputType()) {
                 case KEYPRESS:
                     if (isEditing) {
-                        if (input.getKey() == Keys.ESCAPE) {
+                        if (input.getAction() == Actions.BACK) {
                             isEditing = false;
                             break;
-                        } else if (input.getKey() == Keys.ENTER) {
+                        } else if (input.getAction() == Actions.CONFIRM) {
                             isEditing = false;
                             break;
                         }
@@ -80,12 +77,12 @@ public class Settings extends Screen {
                                 }
                                 break;
                             case BOOLEAN:
-                                if (input.getKey() == Keys.W || input.getKey() == Keys.A || input.getKey() == Keys.S || input.getKey() == Keys.D) {
+                                if (input.getAction() == Actions.UP || input.getAction() == Actions.DOWN || input.getAction() == Actions.LEFT || input.getAction() == Actions.RIGHT) {
                                     settingsManager.setSetting(currentSetting, settingsManager.getSettingStringValue(currentSetting).equals("true") ? "false" : "true");
                                 }
                                 break;
                             case STRING:
-                                if (input.getKey() == Keys.W || input.getKey() == Keys.A || input.getKey() == Keys.S || input.getKey() == Keys.D) {
+                                if (input.getAction() == Actions.UP || input.getAction() == Actions.DOWN || input.getAction() == Actions.LEFT || input.getAction() == Actions.RIGHT) {
                                     switch (currentSetting) {
                                         case "graphicsQuality":
                                             settingsManager.setSetting(currentSetting, SettingsManager.GraphicsQuality.values()[(SettingsManager.GraphicsQuality.fromValue(settingsManager.getSettingStringValue(currentSetting)).ordinal() + 1) % SettingsManager.GraphicsQuality.values().length].getString());
@@ -100,7 +97,7 @@ public class Settings extends Screen {
                         }
                         break;
                     }
-                    if (input.getKey() == Keys.A || input.getKey() == Keys.LEFT) {
+                    if (input.getAction() == Actions.LEFT) {
                         Buttons oldButton = currentSection;
                         currentSection = Buttons.values()[(currentSection.ordinal() - 1) >= 0 ? (currentSection.ordinal() - 1) : (Buttons.values().length - 1)];
                         if (currentSection != oldButton) {
@@ -108,14 +105,14 @@ public class Settings extends Screen {
                             currentAudioSetting = AudioButtons.MASTER_VOLUME;
                         }
                         break;
-                    } else if (input.getKey() == Keys.D || input.getKey() == Keys.RIGHT) {
+                    } else if (input.getAction() == Actions.RIGHT) {
                         Buttons oldButton = currentSection;
                         currentSection = Buttons.values()[(currentSection.ordinal() + 1) % Buttons.values().length];
                         if (currentSection != oldButton) {
                             currentGraphicsSetting = GraphicsButtons.GRAPHICS_QUALITY;
                             currentAudioSetting = AudioButtons.MASTER_VOLUME;
                         }
-                    } else if (input.getKey() == Keys.W) {
+                    } else if (input.getAction() == Actions.UP) {
                         switch (currentSection) {
                             case GRAPHICS:
                                 currentGraphicsSetting = GraphicsButtons.values()[(currentGraphicsSetting.ordinal() - 1) >= 0 ? (currentGraphicsSetting.ordinal() - 1) : (GraphicsButtons.values().length - 1)];
@@ -124,7 +121,7 @@ public class Settings extends Screen {
                                 currentAudioSetting = AudioButtons.values()[(currentAudioSetting.ordinal() - 1) >= 0 ? (currentAudioSetting.ordinal() - 1) : (AudioButtons.values().length - 1)];
                                 break;
                         }
-                    } else if (input.getKey() == Keys.S) {
+                    } else if (input.getAction() == Actions.DOWN) {
                         switch (currentSection) {
                             case GRAPHICS:
                                 currentGraphicsSetting = GraphicsButtons.values()[(currentGraphicsSetting.ordinal() + 1) % GraphicsButtons.values().length];
@@ -133,9 +130,9 @@ public class Settings extends Screen {
                                 currentAudioSetting = AudioButtons.values()[(currentAudioSetting.ordinal() + 1) % AudioButtons.values().length];
                                 break;
                         }
-                    } else if (input.getKey() == Keys.ESCAPE) {
+                    } else if (input.getAction() == Actions.BACK) {
                         exit = true;
-                    } else if (input.getKey() == Keys.ENTER) {
+                    } else if (input.getAction() == Actions.CONFIRM) {
                         if (currentSection == Buttons.EXIT) {
                             exit = true;
                             break;

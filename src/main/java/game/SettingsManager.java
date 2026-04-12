@@ -3,6 +3,7 @@ package game;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ObjectNode;
+import utils.LoggerUtil;
 
 import java.io.File;
 
@@ -45,7 +46,7 @@ public class SettingsManager {
         try {
             objectMapper.writerWithDefaultPrettyPrinter().writeValue(new File("resources/settings.json"), root);
         } catch (Exception e) {
-            e.printStackTrace();
+            LoggerUtil.logError(e);
         }
     }
 

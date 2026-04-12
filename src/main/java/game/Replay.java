@@ -5,6 +5,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
+import utils.LoggerUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,7 +28,7 @@ public class Replay {
             Files.createDirectories(Paths.get(directory));
             //add map file
         } catch (IOException e) {
-            e.printStackTrace();
+            LoggerUtil.logError(e);
         }
 
         file = new File(directory + "/replay.json");
@@ -55,7 +56,7 @@ public class Replay {
         try {
             objectMapper.writerWithDefaultPrettyPrinter().writeValue(file, root);
         } catch (Exception e) {
-            e.printStackTrace();
+            LoggerUtil.logError(e);
         }
     }
 

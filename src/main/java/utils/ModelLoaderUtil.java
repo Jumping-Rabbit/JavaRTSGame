@@ -29,21 +29,31 @@ public class ModelLoaderUtil {
         EnumMap<Models, WritableImage[]> modelsMap = new EnumMap<>(Models.class);
         for (Models modelKey : Models.values()) {
             loadingScreen.addText("Loading Models: " + modelKey);
-            loadWidth(modelKey.toString());
+            loadModelSize(modelKey.toString());
             modelsMap.put(modelKey, loadPng(modelKey.toString(), loadingScreen));
         }
         return modelsMap;
     }
 
-    private static void loadWidth(String modelName) {
+    private static void loadModelSize(String modelName) {
         File configFile = new File("resources/models/" + modelName + "/modelConfig.json");
 
         JsonNode root = objectMapper.readTree(configFile);
         double width = root.path("width").asInt(0);
-        Models.setWidth(width);
-        Models.setHalfWidth(width);
-        Models.setScaledWidth(NumUtil.DTL(width));
-        Models.setScaledHalfWidth(NumUtil.DTL(width / 2));
+        double boundingOffset = root.path("boundingOffset").asInt(0);
+        Models model = Models.valueOf(modelName);
+        model.setWidth(width);
+        model.setHalfWidth(width/2);
+        model.setScaledWidth(NumUtil.DTL(width));
+        model.setScaledHalfWidth(NumUtil.DTL(width / 2));
+        model.setBoundingRadius(width/2*1.41);
+        model.setBoundingDiameter(width*1.41);
+        model.setBoundingRadiusScaled(NumUtil.DTL(width/2*1.41));
+        model.setBoundingDiameterScaled(NumUtil.DTL(width*1.41));
+        model.setBoundingDiff((width/2*1.41)-(width/2));
+        model.setBoundingDiffScaled(NumUtil.DTL((width/2*1.41)-(width/2)));
+        model.setBoundingOffset(boundingOffset);
+        model.setBoundingOffsetScaled(NumUtil.DTL(boundingOffset));
     }
 
     private static WritableImage[] loadPng(String modelName, LoadingScreen loadingScreen) {
@@ -66,7 +76,7 @@ public class ModelLoaderUtil {
             try {
                 latch.await();
             } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+                LoggerUtil.logError(e);
             }
         }
         return images;

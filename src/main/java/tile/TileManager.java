@@ -3,6 +3,7 @@ package tile;
 import game.Viewport;
 import game.screen.Game;
 import utils.DrawUtil;
+import utils.LoggerUtil;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -60,7 +61,7 @@ public class TileManager {
 
 
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            LoggerUtil.logError(e);
         }
     }
 

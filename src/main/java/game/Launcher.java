@@ -7,6 +7,7 @@ import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import utils.LoggerUtil;
 
 
 public class Launcher extends Application {
@@ -14,6 +15,7 @@ public class Launcher extends Application {
     private static Scene scene;
 
     public static void close() {
+        LoggerUtil.flush();
         Platform.exit();
         System.exit(0);
     }

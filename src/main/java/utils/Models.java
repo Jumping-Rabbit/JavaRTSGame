@@ -3,14 +3,22 @@ package utils;
 public enum Models {
     vanguardMarine;
 
-    private static double width;
-    private static double height;
-    private static double halfWidth;
-    private static double halfHeight;
-    private static long scaledWidth;
-    private static long scaledHeight;
-    private static long scaledHalfWidth;
-    private static long scaledHalfHeight;
+    private double width;
+    private double height;
+    private double halfWidth;
+    private double halfHeight;
+    private long scaledWidth;
+    private long scaledHeight;
+    private long scaledHalfWidth;
+    private long scaledHalfHeight;
+    private double boundingRadius;
+    private double boundingDiameter;
+    private long boundingRadiusScaled;
+    private long boundingDiameterScaled;
+    private double boundingDiff;
+    private long boundingDiffScaled;
+    private double boundingOffset;
+    private long boundingOffsetScaled;
 
 
     public static Models fromValue(String givenName) {
@@ -22,12 +30,44 @@ public enum Models {
         return null;
     }
 
+    public double getBoundingRadius() {
+        return boundingRadius;
+    }
+
+    public void setBoundingRadius(double boundingRadius) {
+        this.boundingRadius = boundingRadius;
+    }
+
+    public double getBoundingDiameter() {
+        return boundingDiameter;
+    }
+
+    public void setBoundingDiameter(double boundingDiameter) {
+        this.boundingDiameter = boundingDiameter;
+    }
+
+    public long getBoundingRadiusScaled() {
+        return boundingRadiusScaled;
+    }
+
+    public void setBoundingRadiusScaled(long boundingRadiusScaled) {
+        this.boundingRadiusScaled = boundingRadiusScaled;
+    }
+
+    public long getBoundingDiameterScaled() {
+        return boundingDiameterScaled;
+    }
+
+    public void setBoundingDiameterScaled(long boundingDiameterScaled) {
+        this.boundingDiameterScaled = boundingDiameterScaled;
+    }
+
     public double getWidth() {
         return width;
     }
 
-    public static void setWidth(double width) {
-        Models.width = width;
+    public void setWidth(double width) {
+        this.width = width;
     }
 
     public double getHeight() {
@@ -42,8 +82,8 @@ public enum Models {
         return halfWidth;
     }
 
-    public static void setHalfWidth(double halfWidth) {
-        Models.halfWidth = halfWidth;
+    public void setHalfWidth(double halfWidth) {
+        this.halfWidth = halfWidth;
     }
 
     public double getHalfHeight() {
@@ -51,15 +91,15 @@ public enum Models {
     }
 
     public void setHalfHeight(double halfHeight) {
-        Models.halfHeight = halfHeight;
+        this.halfHeight = halfHeight;
     }
 
     public long getScaledWidth() {
         return scaledWidth;
     }
 
-    public static void setScaledWidth(long scaledWidth) {
-        Models.scaledWidth = scaledWidth;
+    public void setScaledWidth(long scaledWidth) {
+        this.scaledWidth = scaledWidth;
     }
 
     public long getScaledHeight() {
@@ -67,15 +107,15 @@ public enum Models {
     }
 
     public void setScaledHeight(long scaledHeight) {
-        Models.scaledHeight = scaledHeight;
+        this.scaledHeight = scaledHeight;
     }
 
     public long getScaledHalfWidth() {
         return scaledHalfWidth;
     }
 
-    public static void setScaledHalfWidth(long scaledHalfWidth) {
-        Models.scaledHalfWidth = scaledHalfWidth;
+    public void setScaledHalfWidth(long scaledHalfWidth) {
+        this.scaledHalfWidth = scaledHalfWidth;
     }
 
     public long getScaledHalfHeight() {
@@ -83,6 +123,38 @@ public enum Models {
     }
 
     public void setScaledHalfHeight(long scaledHalfHeight) {
-        Models.scaledHalfHeight = scaledHalfHeight;
+        this.scaledHalfHeight = scaledHalfHeight;
+    }
+
+    public double getBoundingDiff() {
+        return boundingDiff;
+    }
+
+    public void setBoundingDiff(double boundingDiff) {
+        this.boundingDiff = boundingDiff;
+    }
+
+    public long getBoundingDiffScaled() {
+        return boundingDiffScaled;
+    }
+
+    public void setBoundingDiffScaled(long boundingDiffScaled) {
+        this.boundingDiffScaled = boundingDiffScaled;
+    }
+
+    public double getBoundingOffset() {
+        return boundingOffset;
+    }
+
+    public void setBoundingOffset(double boundingOffset) {
+        this.boundingOffset = boundingOffset;
+    }
+
+    public long getBoundingOffsetScaled() {
+        return boundingOffsetScaled;
+    }
+
+    public void setBoundingOffsetScaled(long boundingOffsetScaled) {
+        this.boundingOffsetScaled = boundingOffsetScaled;
     }
 }

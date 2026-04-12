@@ -2,6 +2,7 @@ package game;
 
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
+import utils.LoggerUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,7 +29,6 @@ public class SoundManager {
     private static AtomicBoolean newBGM = new AtomicBoolean(false);
 
     public static void init() {
-        long startTime = System.nanoTime();
         Path root = Paths.get("resources/sounds/bgm");
         try (Stream<Path> paths = Files.walk(root)) {
             paths.filter(Files::isRegularFile)
@@ -42,9 +42,8 @@ public class SoundManager {
                         }
                     });
         } catch (IOException e) {
-            e.printStackTrace();
+            LoggerUtil.logError(e);
         }
-        System.out.println("SoundManager get BGM time: " + (System.nanoTime() - startTime) / 1000000d);
     }
 
     private static void setVolume() {
@@ -112,7 +111,7 @@ public class SoundManager {
                 }
 
             } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+                LoggerUtil.logError(e);
             }
         }
     }

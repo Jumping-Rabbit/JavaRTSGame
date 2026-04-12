@@ -75,9 +75,9 @@ public enum Keys {
         return type;
     }
 
-    public Keys fromValue(String value) {
+    public static Keys fromValue(String value) {
         for (Keys key : Keys.values()) {
-            if (value.equals(key.getString())) {
+            if (value.equalsIgnoreCase(key.string)) {
                 return key;
             }
         }

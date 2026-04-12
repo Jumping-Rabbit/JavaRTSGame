@@ -7,7 +7,7 @@ public class Main {
         System.setProperty("prism.order", "d3d,es2,sw");//try to use the best one
 
 //        System.setProperty("prism.verbose", "true");//for testing
-        //        System.setProperty("prism.poolstats", "true");
+//        System.setProperty("prism.poolstats", "true");
 
         System.setProperty("prism.vsync", "false");
         System.setProperty("prism.multisample", "false");
@@ -22,8 +22,11 @@ public class Main {
         System.setProperty("glass.win.uiScale", "1.0");
         System.setProperty("glass.macosx.uiScale", "1.0");
 
+
+        System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism", String.valueOf(Math.max(1, Runtime.getRuntime().availableProcessors() - 2)));
+
 //        PrintStream originalErr = System.err;
-//        Systebm.setErr(new PrintStream(OutputStream.nullOutputStream()));
+//        System.setErr(new PrintStream(OutputStream.nullOutputStream()));
 //        try {
         Application.launch(Launcher.class, args);
 //        } finally {

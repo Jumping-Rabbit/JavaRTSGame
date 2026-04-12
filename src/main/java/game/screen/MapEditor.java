@@ -1,6 +1,7 @@
 package game.screen;
 
 import game.Fonts;
+import inputHandler.Actions;
 import inputHandler.Input;
 import inputHandler.InputHandler;
 import inputHandler.Keys;
@@ -8,6 +9,7 @@ import javafx.geometry.Rectangle2D;
 import javafx.scene.image.Image;
 import utils.CollisionUtil;
 import utils.DrawUtil;
+import utils.LoggerUtil;
 import utils.StringAlignment;
 
 import java.io.File;
@@ -91,7 +93,7 @@ public class MapEditor extends Screen {
             Files.createDirectories(Paths.get(directory + "/objects"));
             Files.createDirectories(Paths.get(directory + "/tiles"));
         } catch (IOException e) {
-            e.printStackTrace();
+            LoggerUtil.logError(e);
         }
 //        JSONObject map = new JSONObject();
 //        map.put("name", directory.substring(directory.lastIndexOf("/") + 1));
@@ -389,7 +391,7 @@ public class MapEditor extends Screen {
                     cancelRenameMap();
                     break;
                 case KEYPRESS:
-                    if (input.getKey() == Keys.ESCAPE) {
+                    if (input.getAction() == Actions.BACK) {
                         back();
                     }
                     if (isRenaming) {

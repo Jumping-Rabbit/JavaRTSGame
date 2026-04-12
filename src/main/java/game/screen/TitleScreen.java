@@ -3,6 +3,7 @@ package game.screen;
 
 import game.Fonts;
 import game.Launcher;
+import inputHandler.Actions;
 import inputHandler.Input;
 import inputHandler.InputHandler;
 import inputHandler.Keys;
@@ -66,24 +67,24 @@ public class TitleScreen extends Screen {
         for (Input input : InputHandler.getInputs()) {
             switch (input.getInputType()) {
                 case KEYPRESS:
-                    if (input.getKey() == Keys.A || input.getKey() == Keys.LEFT) {
+                    if (input.getAction() == Actions.LEFT) {
                         Buttons oldButton = selectedButton;
                         selectedButton = Buttons.values()[(selectedButton.ordinal() - 1) >= 0 ? (selectedButton.ordinal() - 1) : (Buttons.values().length - 1)];
                         if (selectedButton != oldButton) {
                             selectedIndex = 0;
                         }
-                    } else if (input.getKey() == Keys.D || input.getKey() == Keys.RIGHT) {
+                    } else if (input.getAction() == Actions.RIGHT) {
                         Buttons oldButton = selectedButton;
                         selectedButton = Buttons.values()[(selectedButton.ordinal() + 1) % Buttons.values().length];
                         if (selectedButton != oldButton) {
                             selectedIndex = 0;
                         }
-                    } else if (input.getKey() == Keys.W) {
+                    } else if (input.getAction() == Actions.UP) {
                         selectedIndex--;
                         if (selectedIndex < 0) {
                             selectedIndex = 0;
                         }
-                    } else if (input.getKey() == Keys.S) {
+                    } else if (input.getAction() == Actions.DOWN) {
                         selectedIndex++;
                         switch (selectedButton) {
                             case CUSTOM:
@@ -97,13 +98,13 @@ public class TitleScreen extends Screen {
                                 }
                                 break;
                         }
-                    } else if (input.getKey() == Keys.ENTER) {
+                    } else if (input.getAction() == Actions.CONFIRM) {
                         switch (selectedButton) {
                             case CUSTOM, REPLAYS:
                                 exit = true;
                                 break;
                         }
-                    } else if (input.getKey() == Keys.ESCAPE) {
+                    } else if (input.getAction() == Actions.BACK) {
                         closing = !closing;
                     }
                     break;

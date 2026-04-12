@@ -26,6 +26,15 @@ public abstract class Entity {
     protected long lastDirection;
     protected DrawUtil drawUtil;
     protected ArrayList<Command> commands = new ArrayList<>();
+    protected boolean isSelected = false;
+
+    public void setIsSelected(boolean isSelected){
+        this.isSelected = isSelected;
+    }
+
+    public boolean isSelected(){
+        return isSelected;
+    }
 
     public Entity() {
         id = idNum;
@@ -62,6 +71,18 @@ public abstract class Entity {
         return lastY;
     }
 
+    public void setX(long x){
+        this.x = x;
+    }
+
+    public void setY(long y){
+        this.y = y;
+    }
+
+    public void setZ(long z){
+        this.z = z;
+    }
+
     public Models getModel() {
         return model;
     }
@@ -88,7 +109,8 @@ public abstract class Entity {
 
     public void drawSelectedRing() {
         drawUtil.setColor(0, 255, 0, 0.2);
-        drawUtil.fillCircleInterpolateGame(NumUtil.LTD(x) - 2, NumUtil.LTD(y) - 2, NumUtil.LTD(lastX) - 2, NumUtil.LTD(lastY) - 2, model.getHalfWidth() + 2);
+        double offset = model.getBoundingDiff()+model.getBoundingOffset();
+        drawUtil.fillCircleInterpolateGame(NumUtil.LTD(x) + offset-2, NumUtil.LTD(y) - offset-2, NumUtil.LTD(lastX) + offset-2, NumUtil.LTD(lastY) - offset-2, model.getBoundingRadius()+2);
     }
 
     public long getRadius() {
@@ -96,7 +118,7 @@ public abstract class Entity {
     }
 
     public long getCollisionRadius() {
-        return (long) (model.getScaledHalfWidth() * 1.5);
+        return model.getBoundingRadiusScaled();
     }
 
     public long getDiameter() {
@@ -104,7 +126,7 @@ public abstract class Entity {
     }
 
     public long getCollisionDiameter() {
-        return (long) (model.getScaledWidth() * 1.5);
+        return model.getBoundingDiameterScaled();
     }
 
 }

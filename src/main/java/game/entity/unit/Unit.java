@@ -121,6 +121,7 @@ public abstract class Unit extends Entity {
                 long scaled360 = NumUtil.DTL(360);
                 while (delta <= -scaled180) delta += scaled360;
                 while (delta > scaled180) delta -= scaled360;
+//                System.out.println(delta);
                 if (StrictMath.abs(delta) <= turnSpeed) {
                     direction = targetDirection;
                 } else {

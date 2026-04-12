@@ -9,34 +9,38 @@ public class Input {
     private final double startY;
     private final double x;
     private final double y;
+    private final Actions action;
     private final Keys key;
     private final int scrollAmount;
     private boolean isShiftHeld;
 
-    public Input(InputType inputType, double x, double y) {
+    public Input(InputType inputType, double x, double y, boolean isShiftHeld) {//mouse click
         this.inputType = inputType;
         this.x = x;
         this.y = y;
         startX = 0;
         startY = 0;
+        action = Actions.NONE;
         key = Keys.NONE;
         scrollAmount = 0;
-        isShiftHeld = false;
+        this.isShiftHeld = isShiftHeld;
     }
 
-    public Input(InputType inputType, double startX, double startY, double x, double y) {
+    public Input(InputType inputType, double startX, double startY, double x, double y, boolean isShiftHeld) {//drag
         this.inputType = inputType;
         this.startX = startX;
         this.startY = startY;
         this.x = x;
         this.y = y;
+        action = Actions.NONE;
         key = Keys.NONE;
         scrollAmount = 0;
-        isShiftHeld = false;
+        this.isShiftHeld = isShiftHeld;
     }
 
-    public Input(InputType inputType, Keys key, boolean isShiftHeld) {
+    public Input(InputType inputType, Actions action, Keys key, boolean isShiftHeld) {//type
         this.inputType = inputType;
+        this.action = action;
         this.key = key;
         startX = 0;
         startY = 0;
@@ -46,15 +50,16 @@ public class Input {
         this.isShiftHeld = isShiftHeld;
     }
 
-    public Input(InputType inputType, double x, double y, int scrollAmount) {
+    public Input(InputType inputType, double x, double y, int scrollAmount, boolean isShiftHeld) {
         this.inputType = inputType;
+        action = Actions.NONE;
         key = Keys.NONE;
         startX = 0;
         startY = 0;
         this.x = x;
         this.y = y;
         this.scrollAmount = scrollAmount;
-        isShiftHeld = false;
+        this.isShiftHeld = isShiftHeld;
     }
 
     public double getStartX() {
@@ -73,7 +78,11 @@ public class Input {
         return y;
     }
 
-    public Keys getKey() {
+    public Actions getAction() {
+        return action;
+    }
+
+    public Keys getKey(){
         return key;
     }
 

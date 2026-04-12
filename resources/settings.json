@@ -1,14 +1,14 @@
 {
-  "graphics": {
-    "monitorNum": 0,
-    "targetFPS": 12000,
-    "graphicsQuality": "high",
-    "antialiasing": true,
-    "displayMode": "windowed"
+  "graphics" : {
+    "monitorNum" : 0,
+    "targetFPS" : 12000,
+    "graphicsQuality" : "high",
+    "antialiasing" : true,
+    "displayMode" : "windowed"
   },
-  "audio": {
-    "masterVolume": 50,
-    "BGMVolume": 0,
-    "SFXVolume": 10
+  "audio" : {
+    "masterVolume" : 0,
+    "BGMVolume" : 0,
+    "SFXVolume" : 10
   }
 }
