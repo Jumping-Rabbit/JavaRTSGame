@@ -231,9 +231,19 @@ public class DrawUtil {
         if (!CollisionUtil.RectRectCollision(gameViewport.getX(), gameViewport.getY(), gameViewport.getWidth(), gameViewport.getHeight(), x, y, modelKey.getWidth(), modelKey.getWidth())) {
             return;
         }
-//        System.out.println(StrictMath.floorMod(StrictMath.round(direction), 360));
+        x-= gameViewport.getX();
+        y-= gameViewport.getY();
+        drawModel(modelKey, x, y, z, direction);
+    }
+
+    public void drawModelGameCulled(Models modelKey, double x, double y, double z, double direction) {
+        x-= gameViewport.getX();
+        y-= gameViewport.getY();
+        drawModel(modelKey, x, y, z, direction);
+    }
+
+    public void drawModel(Models modelKey, double x, double y, double z, double direction) {
         double scale = Viewport.getScale();
-//        WritableImage model = modelMap.get(modelKey)[((int) (direction * 0.044)) & 15];
         WritableImage model = modelMap.get(modelKey)[(int) (StrictMath.floorMod((int) (direction+11.25), 360)/22.5)];
         double imageSize = model.getWidth();//ModelLoaderUtil.getImageSize();
         double halfImageSize = model.getWidth() / 2;//ModelLoaderUtil.getHalfImageSize();
@@ -243,6 +253,9 @@ public class DrawUtil {
 
     public void drawModelInterpolateGame(Models modelKey, double xCurrent, double yCurrent, double zCurrent, double xLast, double yLast, double zLast, double directionCurrent, double directionLast) {
         drawModelGame(modelKey, NumUtil.interpolate(xCurrent, xLast, factor), NumUtil.interpolate(yCurrent, yLast, factor), NumUtil.interpolate(zCurrent, zLast, factor), NumUtil.interpolate(directionCurrent, directionLast, factor));
+    }
+    public void drawModelInterpolateGameCulled(Models modelKey, double xCurrent, double yCurrent, double zCurrent, double xLast, double yLast, double zLast, double directionCurrent, double directionLast) {
+        drawModelGameCulled(modelKey, NumUtil.interpolate(xCurrent, xLast, factor), NumUtil.interpolate(yCurrent, yLast, factor), NumUtil.interpolate(zCurrent, zLast, factor), NumUtil.interpolate(directionCurrent, directionLast, factor));
     }
 
 

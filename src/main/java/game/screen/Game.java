@@ -58,8 +58,8 @@ public class Game extends Screen {
     public Game(DrawUtil drawUtil, File map, int playerNum) {
         exit = false;
         units = new ArrayList<>();
-        for (int i = 0; i < 100000; i++) {
-            units.add(new Marine(drawUtil, (int) (StrictMath.random() * 19200), (int) (StrictMath.random() * 10800), players.BLUE));
+        for (int i = 0; i < 20000; i++) {
+            units.add(new Marine(drawUtil, (int) (StrictMath.random() * 7680), (int) (StrictMath.random() * 4320), players.BLUE));
         }
         buildings = new ArrayList<>();
         selectedEntities = new ArrayList<>();
@@ -80,7 +80,7 @@ public class Game extends Screen {
         this.drawUtil = drawUtil;
         drawUtil.setGameViewport(gameViewport);
         tickNum = 0;
-        Replay.newReplay(new File(""));
+        Replay.newReplay(map);
         cellHeads = new Long2IntOpenHashMap();
         cellHeads.defaultReturnValue(-1);
 //        unitsById = new Int2ObjectOpenHashMap<>();
@@ -216,15 +216,15 @@ public class Game extends Screen {
                     if (input.getAction() == Actions.BACK) {
                         exit = true;
                     }
-//                    if (input.getKey() == Keys.W){
-//                        gameViewport.changeY(-10);
-//                    }else if (input.getKey() == Keys.A){
-//                        gameViewport.changeX(-10);
-//                    } else if (input.getKey() == Keys.S){
-//                        gameViewport.changeY(10);
-//                    }else if (input.getKey() == Keys.D){
-//                        gameViewport.changeX(10);
-//                    }
+                    if (input.getAction() == Actions.UP){
+                        gameViewport.changeY(-10);
+                    }else if (input.getAction() == Actions.LEFT){
+                        gameViewport.changeX(-10);
+                    } else if (input.getAction() == Actions.DOWN){
+                        gameViewport.changeY(10);
+                    }else if (input.getAction() == Actions.RIGHT){
+                        gameViewport.changeX(10);
+                    }
                     break;
             }
         }

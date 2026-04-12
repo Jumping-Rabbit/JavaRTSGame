@@ -93,7 +93,7 @@ public abstract class Unit extends Entity {
     }
 
     public void draw() {
-        drawUtil.drawModelInterpolateGame(model, LTD(x), LTD(y), LTD(z), LTD(lastX), LTD(lastY), LTD(lastZ), LTD(direction), LTD(lastDirection));
+        drawUtil.drawModelInterpolateGameCulled(model, LTD(x), LTD(y), LTD(z), LTD(lastX), LTD(lastY), LTD(lastZ), LTD(direction), LTD(lastDirection));
     }
 
     public void updateOnFrame() {

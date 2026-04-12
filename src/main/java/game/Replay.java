@@ -1,6 +1,7 @@
 package game;
 
 import inputHandler.Input;
+import org.apache.commons.io.FileUtils;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ArrayNode;
@@ -32,7 +33,11 @@ public class Replay {
         }
 
         file = new File(directory + "/replay.json");
-        //make the json file in the files
+        try {
+            FileUtils.copyDirectory(map, new File(directory));
+        } catch (IOException e) {
+            LoggerUtil.logError(e);
+        }
         objectMapper.writerWithDefaultPrettyPrinter().writeValue(file, objectMapper.createObjectNode());
         root = objectMapper.readTree(file);
     }
