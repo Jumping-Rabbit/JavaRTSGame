@@ -46,14 +46,14 @@ public class ModelLoaderUtil {
         model.setHalfWidth(width/2);
         model.setScaledWidth(NumUtil.DTL(width));
         model.setScaledHalfWidth(NumUtil.DTL(width / 2));
-        model.setBoundingRadius(width/2*1.41);
-        model.setBoundingDiameter(width*1.41);
-        model.setBoundingRadiusScaled(NumUtil.DTL(width/2*1.41));
-        model.setBoundingDiameterScaled(NumUtil.DTL(width*1.41));
-        model.setBoundingDiff((width/2*1.41)-(width/2));
-        model.setBoundingDiffScaled(NumUtil.DTL((width/2*1.41)-(width/2)));
-        model.setBoundingOffset(boundingOffset);
-        model.setBoundingOffsetScaled(NumUtil.DTL(boundingOffset));
+        model.setBoundingRadius(width/2*1.41*1.2);
+        model.setBoundingDiameter(width*1.41*1.2);
+        model.setBoundingRadiusScaled((long)(NumUtil.DTL(width/2*1.41)*1.2));
+        model.setBoundingDiameterScaled((long)(NumUtil.DTL(width*1.41)*1.2));
+        model.setBoundingDiff((width/2*1.41)-(width/2)*1.2);
+        model.setBoundingDiffScaled((long)(NumUtil.DTL((width/2*1.41)-(width/2))*1.2));
+        model.setBoundingOffset(boundingOffset*1.2);
+        model.setBoundingOffsetScaled((long)(NumUtil.DTL(boundingOffset)*1.2));
     }
 
     private static WritableImage[] loadPng(String modelName, LoadingScreen loadingScreen) {

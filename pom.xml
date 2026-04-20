@@ -74,6 +74,7 @@
             <artifactId>jackson-databind</artifactId>
             <version>3.1.0</version>
         </dependency>
+
     </dependencies>
 
     <build>
@@ -94,8 +95,16 @@
                 <configuration>
                     <mainClass>game.MainApp</mainClass>
                     <options>
-
                         <option>--enable-native-access=ALL-UNNAMED</option>
+
+                        <option>-XX:+UseZGC</option>
+                        <option>-XX:+ZGenerational</option>
+                        <option>-Xms512m</option>
+                        <option>-Xmx4G</option>
+                        <option>-XX:+UseStringDeduplication</option>
+                        <option>-XX:-OmitStackTraceInFastThrow</option>
+
+                        <option>-XX:+PrintCommandLineFlags</option>
                     </options>
                 </configuration>
             </plugin>

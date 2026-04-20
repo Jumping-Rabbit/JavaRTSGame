@@ -15,6 +15,14 @@ public class NumUtil {
         return StrictMath.round(num * 10000.0);
     }
 
+    public static double unScale(double num){
+        return num / 10000.0;
+    }
+
+    public static long scale(long num){
+            return StrictMath.round(num * 10000.0);
+    }
+
     public static double interpolate(double current, double last, double factor) {
         double value;
         if (current != last) {

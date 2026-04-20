@@ -27,10 +27,9 @@ public class TitleScreen extends Screen {
     private ArrayList<String> replaysName = new ArrayList<>();
     private int selectedIndex = 0;
     private boolean closing = false;
-    private DrawUtil drawUtil;
 
-    public TitleScreen(DrawUtil drawUtil) {
-        this.drawUtil = drawUtil;
+
+    public TitleScreen() {
     }
 
     private TitleScreen(TitleScreen titleScreen) {//copy constructor
@@ -39,7 +38,6 @@ public class TitleScreen extends Screen {
         replays = new ArrayList<>(Arrays.asList(new File("resources/replays").listFiles()));
         selectedIndex = titleScreen.selectedIndex;
         exit = titleScreen.exit;
-        drawUtil = titleScreen.drawUtil;
         closing = titleScreen.closing;
     }
 
@@ -193,62 +191,55 @@ public class TitleScreen extends Screen {
     }
 
     public void draw() {
-        drawUtil.setColor(75, 75, 75);
-        drawUtil.fillRect(0, 0, 1920, 100);
+        DrawUtil.fillRect(0, 0, 1920, 100, 0x4B4B4BFF);
 
-        drawUtil.setThickness(5);
-        drawUtil.setColor(0, 150, 255);
+        DrawUtil.setThickness(5);
         for (Buttons button : Buttons.values()) {
             if (button == selectedButton) {
                 continue;
             }
-            drawUtil.strokeRect(button.getRectangle());
-            drawUtil.drawString(button.getRectangle().getMinX() + button.getRectangle().getWidth() / 2, 50, button.getName(), 40, Fonts.DEFAULT, StringAlignment.CENTER_MIDDLE);
+            DrawUtil.strokeRect(button.getRectangle(), 0x0096FFFF, 5);
+            DrawUtil.fillText(button.getName(), button.getRectangle().getMinX() + button.getRectangle().getWidth() / 2, 50, Fonts.DEFAULT, 40, StringAlignment.CENTER_MIDDLE, 0xFFFFFFFF);
         }
 
-        drawUtil.setColor(0, 255, 255);
-        drawUtil.strokeRect(selectedButton.getRectangle());
-        drawUtil.drawString(selectedButton.getRectangle().getMinX() + selectedButton.getRectangle().getWidth() / 2, 50, selectedButton.getName(), 40, Fonts.DEFAULT, StringAlignment.CENTER_MIDDLE);
+        DrawUtil.strokeRect(selectedButton.getRectangle(), 0x00FFFFFF, 5);
+        DrawUtil.fillText(selectedButton.getName(), selectedButton.getRectangle().getMinX() + selectedButton.getRectangle().getWidth() / 2, 50, Fonts.DEFAULT, 40, StringAlignment.CENTER_MIDDLE, 0xFFFFFFFF);
 
         switch (selectedButton) {
             case HOME:
-                drawHome(drawUtil);
+                drawHome();
                 break;
             case CAMPAIGN:
-                drawCampaign(drawUtil);
+                drawCampaign();
                 break;
             case CUSTOM:
-                drawCustom(drawUtil);
+                drawCustom();
                 break;
             case MAP_EDITOR:
-                drawMapEditor(drawUtil);
+                drawMapEditor();
                 break;
             case REPLAYS:
-                drawReplays(drawUtil);
+                drawReplays();
                 break;
         }
         if (closing) {
-            drawUtil.setColor(0, 0, 0, 0.33);
-            drawUtil.fillRect(0, 0, 1920, 1080);
-            drawUtil.setColor(100, 100, 100);
-            drawUtil.fillRect(620, 390, 680, 300);
-            drawUtil.setColor(150, 150, 150);
-            drawUtil.fillRect(exitButton);
-            drawUtil.setColor(255, 255, 255);
-            drawUtil.drawString(960, 450, "close program?", 50, Fonts.DEFAULT, StringAlignment.CENTER_MIDDLE);
-            drawUtil.drawString(960, 570, "close", 50, Fonts.DEFAULT, StringAlignment.CENTER_MIDDLE);
+            DrawUtil.fillRect(0, 0, 1920, 1080, 0x00000054);
+            DrawUtil.fillRect(620, 390, 680, 300, 0x646464FF);
+            DrawUtil.fillRect(exitButton, 0x969696FF);
+            DrawUtil.fillText("close program?", 960, 450, Fonts.DEFAULT, 50, StringAlignment.CENTER_MIDDLE, 0xFFFFFFFF);
+            DrawUtil.fillText("close", 960, 570, Fonts.DEFAULT, 50, StringAlignment.CENTER_MIDDLE, 0xFFFFFFFF);
         }
     }
 
-    private void drawHome(DrawUtil drawUtil) {
+    private void drawHome() {
 
     }
 
-    private void drawCampaign(DrawUtil drawUtil) {
+    private void drawCampaign() {
 
     }
 
-    private void drawCustom(DrawUtil drawUtil) {
+    private void drawCustom() {
         if (customMaps.isEmpty()) {
             return;
         }
@@ -261,25 +252,27 @@ public class TitleScreen extends Screen {
             start = selectedIndex - 4;
         }
         for (int i = start; i < StrictMath.min(start + 9, customMaps.size()); i++) {//prevent error when custom maps size is less than 9
-            drawUtil.setColor(0, 0, 0);
-            drawUtil.fillRect(50, (i - start) * 100 + 150, 1000, 80);
+            DrawUtil.fillRect(50, (i - start) * 100 + 150, 1000, 80, 0x000000FF);
             if (i == selectedIndex) {
-                drawUtil.setColor(0, 255, 255);
+                DrawUtil.strokeRect(50, (i - start) * 100 + 150, 1000, 80, 0x00FFFFFF, 5);
+                if (!customMaps.isEmpty()) {
+                    DrawUtil.fillText(customMapsName.get(i),525, (i - start) * 100 + 200,  Fonts.DEFAULT , 40, StringAlignment.CENTER_MIDDLE, 0x00FFFFFF);
+                }
             } else {
-                drawUtil.setColor(0, 150, 255);
+                DrawUtil.strokeRect(50, (i - start) * 100 + 150, 1000, 80, 0x0096FFFF, 5);
+                if (!customMaps.isEmpty()) {
+                    DrawUtil.fillText(customMapsName.get(i),525, (i - start) * 100 + 200,  Fonts.DEFAULT , 40, StringAlignment.CENTER_MIDDLE, 0x0096FFFF);
+                }
             }
-            drawUtil.strokeRect(50, (i - start) * 100 + 150, 1000, 80);
-            if (!customMaps.isEmpty()) {
-                drawUtil.drawString(525, (i - start) * 100 + 200, customMapsName.get(i), 40, Fonts.DEFAULT, StringAlignment.CENTER_MIDDLE);
-            }
+
         }
     }
 
-    private void drawMapEditor(DrawUtil drawUtil) {
+    private void drawMapEditor() {
 
     }
 
-    private void drawReplays(DrawUtil drawUtil) {
+    private void drawReplays() {
         if (replays.isEmpty()) {
             return;
         }
@@ -292,15 +285,15 @@ public class TitleScreen extends Screen {
             start = selectedIndex - 4;
         }
         for (int i = start; i < start + 9; i++) {
-            drawUtil.setColor(0, 0, 0);
-            drawUtil.fillRect(50, (i - start) * 100 + 150, 1000, 80);
+            DrawUtil.fillRect(50, (i - start) * 100 + 150, 1000, 80, 0x000000FF);
             if (i == selectedIndex) {
-                drawUtil.setColor(0, 255, 255);
+                DrawUtil.strokeRect(50, (i - start) * 100 + 150, 1000, 80, 0x00FFFFFF, 5);
+                DrawUtil.fillText(replaysName.get(i), 525, (i - start) * 100 + 200, Fonts.DEFAULT, 40, StringAlignment.CENTER_MIDDLE, 0x00FFFFFF);
             } else {
-                drawUtil.setColor(0, 150, 255);
+                DrawUtil.strokeRect(50, (i - start) * 100 + 150, 1000, 80, 0x0096FFFF, 5);
+                DrawUtil.fillText(replaysName.get(i), 525, (i - start) * 100 + 200, Fonts.DEFAULT, 40, StringAlignment.CENTER_MIDDLE, 0x0096FFFF);
             }
-            drawUtil.strokeRect(50, (i - start) * 100 + 150, 1000, 80);
-            drawUtil.drawString(525, (i - start) * 100 + 200, replaysName.get(i), 40, Fonts.DEFAULT, StringAlignment.CENTER_MIDDLE);
+
 
         }
     }

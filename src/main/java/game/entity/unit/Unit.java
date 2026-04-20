@@ -1,7 +1,9 @@
 package game.entity.unit;
 
 import game.entity.*;
+import game.screen.Game;
 import inputHandler.InputType;
+import utils.DrawUtil;
 import utils.NumUtil;
 
 import java.util.ArrayList;
@@ -14,9 +16,8 @@ public abstract class Unit extends Entity {
     protected static ArrayList<Abilities> abilities;
     protected static EnumSet<Tags> tags;
     protected ArrayList<Effects> effects;
-    protected long hp;
-    protected long maxHp;
     protected long armor;
+    protected static long maxHp;
     protected long speed;
     protected long turnSpeed;
     protected long damage;
@@ -31,6 +32,15 @@ public abstract class Unit extends Entity {
     protected Entity attackTarget;
     private Long newX;
     private Long newY;
+
+    @Override
+    public EnumSet<Tags> getTags(){
+        return tags;
+    }
+    @Override
+    public long getMaxHp(){
+        return maxHp;
+    }
 
     protected Unit(int id) {
         super(id);
@@ -93,7 +103,7 @@ public abstract class Unit extends Entity {
     }
 
     public void draw() {
-        drawUtil.drawModelInterpolateGameCulled(model, LTD(x), LTD(y), LTD(z), LTD(lastX), LTD(lastY), LTD(lastZ), LTD(direction), LTD(lastDirection));
+        DrawUtil.Game.fillModelScaled(model, x, lastX, y, lastY, z, lastZ, direction, lastDirection);
     }
 
     public void updateOnFrame() {

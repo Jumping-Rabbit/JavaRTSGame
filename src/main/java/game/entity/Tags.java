@@ -7,5 +7,6 @@ public enum Tags {
     BIOLOGICAL,
     MECHANICAL,
     MELEE,
-    RANGED
+    RANGED,
+    INVULNERABLE
 }

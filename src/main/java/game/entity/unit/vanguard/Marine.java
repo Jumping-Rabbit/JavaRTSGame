@@ -14,17 +14,18 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 
 public class Marine extends Unit {
-    public Marine(DrawUtil drawUtil, long x, long y, players player) {
+    public Marine(long x, long y, players player) {
         super();
-        this.player = player;
-        this.drawUtil = drawUtil;
+
         this.x = NumUtil.DTL(x);
         this.y = NumUtil.DTL(y);
         this.z = 0;
+
         lastZ = 0;
         lastX = NumUtil.DTL(x);
         lastY = NumUtil.DTL(y);
-        hp = NumUtil.DTL(40);
+        this.player = player;
+        hp = NumUtil.DTL(Math.random()*40);
         armor = NumUtil.DTL(1);
         speed = NumUtil.DTL(10);
         turnSpeed = NumUtil.DTL(100);
@@ -39,7 +40,6 @@ public class Marine extends Unit {
     private Marine(Marine marine) {
         super(marine.id);
         player = marine.player;
-        drawUtil = marine.drawUtil;
         x = marine.x;
         y = marine.y;
         z = marine.z;
@@ -72,6 +72,7 @@ public class Marine extends Unit {
         validCommandTypes.add(InputType.RIGHT_CLICK);
         tags = EnumSet.of(Tags.LIGHT, Tags.BIOLOGICAL, Tags.RANGED);
         model = Models.vanguardMarine;
+        maxHp = NumUtil.DTL(40);
     }
 
     @Override

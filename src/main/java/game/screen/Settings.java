@@ -9,20 +9,17 @@ import utils.DrawUtil;
 import utils.StringAlignment;
 
 public class Settings extends Screen {
-    private DrawUtil drawUtil;
     private boolean isEditing = false;
     private Buttons currentSection = Buttons.GRAPHICS;
     private GraphicsButtons currentGraphicsSetting = GraphicsButtons.GRAPHICS_QUALITY;
     private AudioButtons currentAudioSetting = AudioButtons.MASTER_VOLUME;
     private SettingsManager settingsManager;
 
-    public Settings(DrawUtil drawUtil, SettingsManager settingsManager) {
-        this.drawUtil = drawUtil;
+    public Settings(SettingsManager settingsManager) {
         this.settingsManager = settingsManager;
     }
 
     public Settings(Settings settings) {
-        drawUtil = settings.drawUtil;
         isEditing = settings.isEditing;
         currentSection = settings.currentSection;
         currentGraphicsSetting = settings.currentGraphicsSetting;
@@ -200,63 +197,63 @@ public class Settings extends Screen {
     }
 
     public void draw() {
-        drawUtil.setColor(75, 75, 75);
-        drawUtil.fillRect(0, 0, 1920, 100);
-        drawUtil.setThickness(5);
+        DrawUtil.setColor(0x4B4B4BFF);
+        DrawUtil.fillRect(0, 0, 1920, 100, 0x4B4B4BFF);
+        DrawUtil.setThickness(5);
         for (Buttons button : Buttons.values()) {
             if (button == currentSection) {
-                drawUtil.setColor(0, 255, 255);
+                DrawUtil.strokeRect(button.getRectangle(), 0x00FFFFFF, 5);
+                DrawUtil.fillText(button.getName(), button.getRectangle().getMinX() + button.getRectangle().getWidth() / 2, 50, Fonts.DEFAULT, 40, StringAlignment.CENTER_MIDDLE, 0x00FFFFFF);
             } else {
-                drawUtil.setColor(0, 150, 255);
+                DrawUtil.strokeRect(button.getRectangle(), 0x0096FFFF, 5);
+                DrawUtil.fillText(button.getName(), button.getRectangle().getMinX() + button.getRectangle().getWidth() / 2, 50, Fonts.DEFAULT, 40, StringAlignment.CENTER_MIDDLE, 0x0096FFFF);
             }
-            drawUtil.strokeRect(button.getRectangle());
-            drawUtil.drawString(button.getRectangle().getMinX() + button.getRectangle().getWidth() / 2, 50, button.getName(), 40, Fonts.DEFAULT, StringAlignment.CENTER_MIDDLE);
+
         }
         switch (currentSection) {
             case GRAPHICS:
                 for (GraphicsButtons button : GraphicsButtons.values()) {
                     if (button == currentGraphicsSetting) {
-                        drawUtil.setColor(0, 255, 255);
+                        DrawUtil.strokeRect(button.getRectangle(), 0x00FFFFFF, 5);
+                        DrawUtil.fillText(button.getName(), button.getRectangle().getMinX() + button.getRectangle().getWidth() / 5, button.getRectangle().getMinY() + button.getRectangle().getHeight() / 2, Fonts.DEFAULT, 40, StringAlignment.CENTER_MIDDLE, 0x00FFFFFF);
+                        DrawUtil.fillText(settingsManager.getSettingStringValue(button.getSetting().getId()), button.getRectangle().getMinX() + (button.getRectangle().getWidth() / 5) * 4, button.getRectangle().getMinY() + button.getRectangle().getHeight() / 2, Fonts.DEFAULT, 40, StringAlignment.CENTER_MIDDLE, 0x00FFFFFF);
                     } else {
-                        drawUtil.setColor(0, 150, 255);
+                        DrawUtil.strokeRect(button.getRectangle(), 0x0096FFFF, 5);
+                        DrawUtil.fillText(button.getName(), button.getRectangle().getMinX() + button.getRectangle().getWidth() / 5, button.getRectangle().getMinY() + button.getRectangle().getHeight() / 2, Fonts.DEFAULT, 40, StringAlignment.CENTER_MIDDLE, 0x0096FFFF);
+                        DrawUtil.fillText(settingsManager.getSettingStringValue(button.getSetting().getId()), button.getRectangle().getMinX() + (button.getRectangle().getWidth() / 5) * 4, button.getRectangle().getMinY() + button.getRectangle().getHeight() / 2, Fonts.DEFAULT, 40, StringAlignment.CENTER_MIDDLE, 0x0096FFFF);
                     }
-                    drawUtil.strokeRect(button.getRectangle());
-                    drawUtil.drawString(button.getRectangle().getMinX() + button.getRectangle().getWidth() / 5, button.getRectangle().getMinY() + button.getRectangle().getHeight() / 2, button.getName(), 40, Fonts.DEFAULT, StringAlignment.CENTER_MIDDLE);
-                    drawUtil.drawString(button.getRectangle().getMinX() + (button.getRectangle().getWidth() / 5) * 4, button.getRectangle().getMinY() + button.getRectangle().getHeight() / 2, settingsManager.getSettingStringValue(button.getSetting().getId()), 40, Fonts.DEFAULT, StringAlignment.CENTER_MIDDLE);
+
                 }
                 break;
             case AUDIO:
                 for (AudioButtons button : AudioButtons.values()) {
                     if (button == currentAudioSetting) {
-                        drawUtil.setColor(0, 255, 255);
+                        DrawUtil.strokeRect(button.getRectangle(), 0x00FFFFFF, 5);
+                        DrawUtil.fillText(button.getName(), button.getRectangle().getMinX() + button.getRectangle().getWidth() / 5, button.getRectangle().getMinY() + button.getRectangle().getHeight() / 2, Fonts.DEFAULT, 40, StringAlignment.CENTER_MIDDLE, 0x00FFFFFF);
+                        DrawUtil.fillText(settingsManager.getSettingStringValue(button.getSetting().getId()), button.getRectangle().getMinX() + (button.getRectangle().getWidth() / 5) * 4, button.getRectangle().getMinY() + button.getRectangle().getHeight() / 2, Fonts.DEFAULT, 40, StringAlignment.CENTER_MIDDLE, 0x00FFFFFF);
                     } else {
-                        drawUtil.setColor(0, 150, 255);
+                        DrawUtil.strokeRect(button.getRectangle(), 0x0096FFFF, 5);
+                        DrawUtil.fillText(button.getName(), button.getRectangle().getMinX() + button.getRectangle().getWidth() / 5, button.getRectangle().getMinY() + button.getRectangle().getHeight() / 2, Fonts.DEFAULT, 40, StringAlignment.CENTER_MIDDLE, 0x0096FFFF);
+                        DrawUtil.fillText(settingsManager.getSettingStringValue(button.getSetting().getId()), button.getRectangle().getMinX() + (button.getRectangle().getWidth() / 5) * 4, button.getRectangle().getMinY() + button.getRectangle().getHeight() / 2, Fonts.DEFAULT, 40, StringAlignment.CENTER_MIDDLE, 0x0096FFFF);
                     }
-                    drawUtil.strokeRect(button.getRectangle());
-                    drawUtil.drawString(button.getRectangle().getMinX() + button.getRectangle().getWidth() / 5, button.getRectangle().getMinY() + button.getRectangle().getHeight() / 2, button.getName(), 40, Fonts.DEFAULT, StringAlignment.CENTER_MIDDLE);
-                    drawUtil.drawString(button.getRectangle().getMinX() + (button.getRectangle().getWidth() / 5) * 4, button.getRectangle().getMinY() + button.getRectangle().getHeight() / 2, settingsManager.getSettingStringValue(button.getSetting().getId()), 40, Fonts.DEFAULT, StringAlignment.CENTER_MIDDLE);
+
                 }
                 break;
         }
         if (isEditing) {
-            drawUtil.setColor(0, 0, 0, 0.33);
-            drawUtil.fillRect(0, 0, 1920, 1080);
+            DrawUtil.fillRect(0, 0, 1920, 1080, 0x00000054);
             switch (currentSection) {
                 case GRAPHICS:
-                    drawUtil.setColor(50, 50, 50);
-                    drawUtil.fillRect(currentGraphicsSetting.getRectangle());
-                    drawUtil.setColor(0, 255, 255);
-                    drawUtil.strokeRect(currentGraphicsSetting.getRectangle());
-                    drawUtil.drawString(currentGraphicsSetting.getRectangle().getMinX() + currentGraphicsSetting.getRectangle().getWidth() / 5, currentGraphicsSetting.getRectangle().getMinY() + currentGraphicsSetting.getRectangle().getHeight() / 2, currentGraphicsSetting.getName(), 40, Fonts.DEFAULT, StringAlignment.CENTER_MIDDLE);
-                    drawUtil.drawString(currentGraphicsSetting.getRectangle().getMinX() + (currentGraphicsSetting.getRectangle().getWidth() / 5) * 4, currentGraphicsSetting.getRectangle().getMinY() + currentGraphicsSetting.getRectangle().getHeight() / 2, settingsManager.getSettingStringValue(currentGraphicsSetting.getSetting().getId()), 40, Fonts.DEFAULT, StringAlignment.CENTER_MIDDLE);
+                    DrawUtil.fillRect(currentGraphicsSetting.getRectangle(), 0x323232FF);
+                    DrawUtil.strokeRect(currentGraphicsSetting.getRectangle(), 0x00FFFFFF, 5);
+                    DrawUtil.fillText(currentGraphicsSetting.getName(), currentGraphicsSetting.getRectangle().getMinX() + currentGraphicsSetting.getRectangle().getWidth() / 5, currentGraphicsSetting.getRectangle().getMinY() + currentGraphicsSetting.getRectangle().getHeight() / 2, Fonts.DEFAULT, 40, StringAlignment.CENTER_MIDDLE, 0x00FFFFFF);
+                    DrawUtil.fillText(settingsManager.getSettingStringValue(currentGraphicsSetting.getSetting().getId()), currentGraphicsSetting.getRectangle().getMinX() + (currentGraphicsSetting.getRectangle().getWidth() / 5) * 4, currentGraphicsSetting.getRectangle().getMinY() + currentGraphicsSetting.getRectangle().getHeight() / 2, Fonts.DEFAULT, 40, StringAlignment.CENTER_MIDDLE, 0x00FFFFFF);
                     break;
                 case AUDIO:
-                    drawUtil.setColor(50, 50, 50);
-                    drawUtil.fillRect(currentAudioSetting.getRectangle());
-                    drawUtil.setColor(0, 255, 255);
-                    drawUtil.strokeRect(currentAudioSetting.getRectangle());
-                    drawUtil.drawString(currentAudioSetting.getRectangle().getMinX() + currentAudioSetting.getRectangle().getWidth() / 5, currentAudioSetting.getRectangle().getMinY() + currentAudioSetting.getRectangle().getHeight() / 2, currentAudioSetting.getName(), 40, Fonts.DEFAULT, StringAlignment.CENTER_MIDDLE);
-                    drawUtil.drawString(currentAudioSetting.getRectangle().getMinX() + (currentAudioSetting.getRectangle().getWidth() / 5) * 4, currentAudioSetting.getRectangle().getMinY() + currentAudioSetting.getRectangle().getHeight() / 2, settingsManager.getSettingStringValue(currentAudioSetting.getSetting().getId()), 40, Fonts.DEFAULT, StringAlignment.CENTER_MIDDLE);
+                    DrawUtil.fillRect(currentAudioSetting.getRectangle(), 0x323232FF);
+                    DrawUtil.strokeRect(currentAudioSetting.getRectangle(), 0x00FFFFFF, 5);
+                    DrawUtil.fillText(currentAudioSetting.getName(), currentAudioSetting.getRectangle().getMinX() + currentAudioSetting.getRectangle().getWidth() / 5, currentAudioSetting.getRectangle().getMinY() + currentAudioSetting.getRectangle().getHeight() / 2, Fonts.DEFAULT, 40, StringAlignment.CENTER_MIDDLE, 0x00FFFFFF);
+                    DrawUtil.fillText(settingsManager.getSettingStringValue(currentAudioSetting.getSetting().getId()), currentAudioSetting.getRectangle().getMinX() + (currentAudioSetting.getRectangle().getWidth() / 5) * 4, currentAudioSetting.getRectangle().getMinY() + currentAudioSetting.getRectangle().getHeight() / 2, Fonts.DEFAULT, 40, StringAlignment.CENTER_MIDDLE, 0x00FFFFFF);
                     break;
             }
         }

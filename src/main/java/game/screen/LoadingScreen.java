@@ -7,13 +7,11 @@ import utils.StringAlignment;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class LoadingScreen {
-    private DrawUtil drawUtil;
     private AtomicInteger loading = new AtomicInteger(0);
     private String text = "";
     private int total;
 
-    public LoadingScreen(DrawUtil drawUtil, int total) {
-        this.drawUtil = drawUtil;
+    public LoadingScreen(int total) {
         this.total = total;
     }
 
@@ -30,12 +28,10 @@ public class LoadingScreen {
     }
 
     public void draw() {
-        drawUtil.clearCanvas();
-        drawUtil.setColor(0, 0, 0);
-        drawUtil.fillRect(0, 0, 1920, 1080);
-        drawUtil.setColor(255, 255, 255);
-        drawUtil.strokeRect(200, 500, 1520, 80);
-        drawUtil.fillRect(200, 500, ((double) loading.get() / total) * 1520, 80);
-        drawUtil.drawString(960, 600, text, 20, Fonts.DEFAULT, StringAlignment.TOP_MIDDLE);
+        DrawUtil.clearCanvas();
+        DrawUtil.fillRect(0, 0, 1920, 1080, 0x000000FF);
+        DrawUtil.strokeRect(200, 500, 1520, 80, 0xFFFFFFFF, 2);
+        DrawUtil.fillRect(200, 500, ((double) loading.get() / total) * 1520, 80, 0xFFFFFFFF);
+        DrawUtil.fillText(text, 960, 600, Fonts.DEFAULT, 20, StringAlignment.TOP_MIDDLE, 0xFFFFFFFF);
     }
 }

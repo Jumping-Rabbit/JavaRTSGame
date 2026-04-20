@@ -30,9 +30,12 @@ public class Launcher extends Application {
                     Launcher.stage.setOnCloseRequest(event -> {
                         close();
                     });
+                    stage.setAlwaysOnTop(true);
                     stage.show();
                     stage.toFront();
                     stage.requestFocus();
+                    stage.setAlwaysOnTop(false);
+
                 }
         );
 
@@ -50,9 +53,11 @@ public class Launcher extends Application {
                     Launcher.stage.setOnCloseRequest(event -> {
                         close();
                     });
+                    stage.setAlwaysOnTop(true);
                     stage.show();
                     stage.toFront();
                     stage.requestFocus();
+                    stage.setAlwaysOnTop(false);
                 }
         );
     }
@@ -69,9 +74,11 @@ public class Launcher extends Application {
                     Launcher.stage.setOnCloseRequest(event -> {
                         close();
                     });
+                    stage.setAlwaysOnTop(true);
                     stage.show();
                     stage.toFront();
                     stage.requestFocus();
+                    stage.setAlwaysOnTop(false);
                 }
         );
     }
@@ -100,9 +107,11 @@ public class Launcher extends Application {
         Launcher.stage.setOnCloseRequest(event -> {
             close();
         });
+        stage.setAlwaysOnTop(true);
         stage.toFront();
         stage.requestFocus();
         gamePanel.startGameThread();
+        stage.setAlwaysOnTop(false);
 
     }
 }

@@ -32,7 +32,6 @@ public class GamePanel extends Canvas {
     private Thread logicThread;
     private Thread soundThread;
 
-    private DrawUtil drawUtil;
 
     private Game game;
     private Screen tickScreen;
@@ -122,9 +121,8 @@ public class GamePanel extends Canvas {
 //        }
         settingsManager = new SettingsManager();
         settingsManager.getSettings();
-        drawUtil = new DrawUtil();
-        drawUtil.setGC(this.getGraphicsContext2D());
-        titleScreen = new TitleScreen(drawUtil);
+        DrawUtil.setGC(this.getGraphicsContext2D());
+        titleScreen = new TitleScreen();
         performanceStorage = new PerformanceStorage();
     }
 
@@ -173,7 +171,12 @@ public class GamePanel extends Canvas {
         logicThread = new Thread(new logicThread(performanceStorage));
         drawThread.start();
         logicThread.start();
-        loadingScreen = new LoadingScreen(drawUtil, 6 + Models.values().length * 16);
+        loadingScreen = new LoadingScreen(7 + Models.values().length * 16);
+        try {
+            Thread.sleep(250);
+        } catch (InterruptedException e) {
+            LoggerUtil.logError(e);
+        }
         Thread loader = new Thread(() -> {
             loadingScreen.addText("init Logger");
             long startTime = System.nanoTime();
@@ -200,6 +203,11 @@ public class GamePanel extends Canvas {
             InputHandler.KeyHandler.init();
             System.out.println("keyHandler time: " + (System.nanoTime()-startTime)/1000000000d);
             loadingScreen.increment();
+            loadingScreen.addText("init Color");
+            startTime = System.nanoTime();
+            Colors.init();
+            System.out.println("color time: " + (System.nanoTime()-startTime)/1000000000d);
+            loadingScreen.increment();
             loadingScreen.addText("init actions");
             startTime = System.nanoTime();
             Actions.init();
@@ -207,7 +215,7 @@ public class GamePanel extends Canvas {
             loadingScreen.increment();
             startTime = System.nanoTime();
             DrawUtil.init(loadingScreen);
-            System.out.println("drawUtil time: " + (System.nanoTime()-startTime)/1000000000d);
+            System.out.println("DrawUtil time: " + (System.nanoTime()-startTime)/1000000000d);
             loadingScreen.addText("done");
 
             try {
@@ -236,7 +244,7 @@ public class GamePanel extends Canvas {
                 tickScreen = getGame().copy();
                 tickScreen.updateOnFrame();
                 if (tickScreen.isExit()) {
-                    setTitleScreen(new TitleScreen(drawUtil));
+                    setTitleScreen(new TitleScreen());
                     setGameStatus(GameStatus.TITLESCREEN);
                 } else {
                     setGame((Game) tickScreen);
@@ -248,16 +256,16 @@ public class GamePanel extends Canvas {
                 if (tickScreen.isExit()) {
                     switch (((TitleScreen) tickScreen).getSelectedButton()) {
                         case MAP_EDITOR:
-                            setMapEditor(new MapEditor(drawUtil));
+                            setMapEditor(new MapEditor());
                             setGameStatus(GameStatus.MAP_EDITOR);
                             break;
                         case SETTINGS:
-                            setSettings(settings = new Settings(drawUtil, settingsManager));
+                            setSettings(settings = new Settings(settingsManager));
                             setGameStatus(GameStatus.SETTINGS);
                             break;
                         case CUSTOM:
                             if (titleScreen.getSelectedFile() == null) break;
-                            setGame(new Game(drawUtil, getTitleScreen().getSelectedFile()));
+                            setGame(new Game(getTitleScreen().getSelectedFile()));
                             setGameStatus(GameStatus.GAME);
                             break;
                     }
@@ -298,11 +306,11 @@ public class GamePanel extends Canvas {
         GraphicsContext gc = this.getGraphicsContext2D();
         gc.setImageSmoothing(false);
         gc.setFontSmoothingType(FontSmoothingType.LCD);
-        drawUtil.setFactor((System.nanoTime() - lastTickTime.get()) / 50000000d);
-//        System.out.println(drawUtil.getFactor());
-//        drawUtil.setGC(gc);
-        drawUtil.clearCanvas();
-        drawUtil.fillBackground();
+        DrawUtil.setFactor((System.nanoTime() - lastTickTime.get()) / 50000000d);
+//        System.out.println(DrawUtil.getFactor());
+//        DrawUtil.setGC(gc);
+        DrawUtil.clearCanvas();
+        DrawUtil.fillBackground();
 //        System.out.println("h");
         switch (getGameStatus()) {
             case GAME:
@@ -320,13 +328,12 @@ public class GamePanel extends Canvas {
             case START_LOADING:
                 loadingScreen.draw();
         }
-        drawUtil.fillOffsetEdge();
+        DrawUtil.fillOffsetEdge();
 
-        drawUtil.setColor(255, 255, 255);
-        drawUtil.drawString(5, 0, "fps:" + formatString(performanceStorage.getFPS(), "00000.00") + " tps:" + formatString(performanceStorage.getTPS(), "00"), 10, Fonts.DEFAULT, StringAlignment.TOP_LEFT);
-        drawUtil.drawString(5, 10, "fps1%:" + formatString(performanceStorage.getPeakDT(), "0000.00") + " fps0.1%:" + formatString(performanceStorage.getPeakPeakDT(), "0000.00"), 10, Fonts.DEFAULT, StringAlignment.TOP_LEFT);
-        drawUtil.drawString(5, 20, "ttu:" + formatString(performanceStorage.getTickTimeUsed(), "0000.00") + "%" + " ttu1%:" + formatString(performanceStorage.getTickTimeUsedLow(), "0000.00") + "%" + " late frames:" + performanceStorage.getLateFrames(), 10, Fonts.DEFAULT, StringAlignment.TOP_LEFT);
-        drawUtil.drawString(1915, 0, "BGM: " + SoundManager.getBgmName(), 10, Fonts.DEFAULT, StringAlignment.TOP_RIGHT);
+        DrawUtil.fillText("fps:" + formatString(performanceStorage.getFPS(), "00000.00") + " tps:" + formatString(performanceStorage.getTPS(), "00"), 5, 0, Fonts.DEFAULT, 10, StringAlignment.TOP_LEFT, 0xFFFFFFFF);
+        DrawUtil.fillText("fps1%:" + formatString(performanceStorage.getPeakDT(), "0000.00") + " fps0.1%:" + formatString(performanceStorage.getPeakPeakDT(), "0000.00"), 5, 10, Fonts.DEFAULT, 10, StringAlignment.TOP_LEFT, 0xFFFFFFFF);
+        DrawUtil.fillText("ttu:" + formatString(performanceStorage.getTickTimeUsed(), "0000.00") + "%" + " ttu1%:" + formatString(performanceStorage.getTickTimeUsedLow(), "0000.00") + "%" + " late frames:" + performanceStorage.getLateFrames(), 5, 20, Fonts.DEFAULT, 10, StringAlignment.TOP_LEFT, 0xFFFFFFFF);
+        DrawUtil.fillText("BGM: " + SoundManager.getBgmName(), 1915, 0, Fonts.DEFAULT, 10, StringAlignment.TOP_RIGHT, 0xFFFFFFFF);
     }
 
     enum GameStatus {

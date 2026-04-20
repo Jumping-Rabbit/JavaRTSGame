@@ -35,7 +35,6 @@ public class Game extends Screen {
     private final ArrayList<Entity> visibleEntities = new ArrayList<>(1000);
     private final Long2IntMap cellHeads;
     File map;
-    DrawUtil drawUtil;
     GameState gameState = GameState.RUNNING;
     GameViewport gameViewport;//get x and y from map
     TileManager tileManager;
@@ -47,19 +46,19 @@ public class Game extends Screen {
     long mapWidth;
     long mapHeight;
 
-    public Game(DrawUtil drawUtil, File map) {
+    public Game(File map) {
         var objectMapper = new ObjectMapper();
         JsonNode root = objectMapper.readTree(new File(map.getPath() + "/map.json"));
         JsonNode playersData = root.path("playerData");
-        this(drawUtil, map, (int) StrictMath.floor(StrictMath.random() * playersData.size()));
+        this(map, (int) StrictMath.floor(StrictMath.random() * playersData.size()));
 
     }
 
-    public Game(DrawUtil drawUtil, File map, int playerNum) {
+    public Game(File map, int playerNum) {
         exit = false;
         units = new ArrayList<>();
         for (int i = 0; i < 20000; i++) {
-            units.add(new Marine(drawUtil, (int) (StrictMath.random() * 7680), (int) (StrictMath.random() * 4320), players.BLUE));
+            units.add(new Marine((int) (StrictMath.random() * 7680), (int) (StrictMath.random() * 4320), players.BLUE));
         }
         buildings = new ArrayList<>();
         selectedEntities = new ArrayList<>();
@@ -68,7 +67,7 @@ public class Game extends Screen {
             unit.setIsSelected(true);
         }
 
-        tileManager = new TileManager(drawUtil, map);
+        tileManager = new TileManager(map);
         this.map = map;
         var objectMapper = new ObjectMapper();
         JsonNode root = objectMapper.readTree(new File(map.getPath() + "/map.json"));
@@ -77,8 +76,7 @@ public class Game extends Screen {
         mapWidth = root.get("width").asLong();
         mapHeight = root.get("height").asLong();
         gameViewport = new GameViewport(DTL(Double.parseDouble(String.valueOf(playerData.get("x")))), DTL(Double.parseDouble(String.valueOf(playerData.get("y")))));
-        this.drawUtil = drawUtil;
-        drawUtil.setGameViewport(gameViewport);
+        DrawUtil.setGameViewport(gameViewport);
         tickNum = 0;
         Replay.newReplay(map);
         cellHeads = new Long2IntOpenHashMap();
@@ -90,7 +88,6 @@ public class Game extends Screen {
     private Game(Game game) {
         selectedRectangle = game.selectedRectangle;
         map = game.map;
-        drawUtil = game.drawUtil;
         gameState = game.gameState;
         gameViewport = game.gameViewport;
         tileManager = game.tileManager;
@@ -191,7 +188,7 @@ public class Game extends Screen {
                 case LEFT_CLICK:
                     clearSelected();
                     for (Unit unit : units) {
-                        if (CollisionUtil.PointCircleCollision(DTL(input.getX()) + gameViewport.getX(), DTL(input.getY()) + gameViewport.getY(), NumUtil.interpolate(unit.getLastX(), unit.getX(), drawUtil.getFactor()) + unit.getRadius(), NumUtil.interpolate(unit.getLastY(), unit.getY(), drawUtil.getFactor()) + unit.getRadius(), unit.getRadius())) {
+                        if (CollisionUtil.PointCircleCollision(DTL(input.getX()) + gameViewport.getX(), DTL(input.getY()) + gameViewport.getY(), NumUtil.interpolate(unit.getLastX(), unit.getX(), DrawUtil.getFactor()) + unit.getRadius(), NumUtil.interpolate(unit.getLastY(), unit.getY(), DrawUtil.getFactor()) + unit.getRadius(), unit.getRadius())) {
                             addSelected(unit);
                         }
                     }
@@ -200,7 +197,7 @@ public class Game extends Screen {
                     clearSelected();
                     selectedRectangle = new Rectangle2D(StrictMath.min(input.getX(), input.getStartX()), StrictMath.min(input.getY(), input.getStartY()), StrictMath.abs(input.getX() - input.getStartX()), StrictMath.abs(input.getY() - input.getStartY()));
                     for (Unit unit : units) {
-                        if (CollisionUtil.RectCircleCollision(NumUtil.interpolate(unit.getX(), unit.getLastX(), drawUtil.getFactor()) + unit.getRadius(), NumUtil.interpolate(unit.getY(), unit.getLastY(), drawUtil.getFactor()) + unit.getRadius(), unit.getRadius(), selectedRectangle)) {
+                        if (CollisionUtil.RectCircleCollision(NumUtil.interpolate(unit.getX(), unit.getLastX(), DrawUtil.getFactor()) + unit.getRadius(), NumUtil.interpolate(unit.getY(), unit.getLastY(), DrawUtil.getFactor()) + unit.getRadius(), unit.getRadius(), selectedRectangle)) {
                             addSelected(unit);
                         }
                     }
@@ -245,7 +242,7 @@ public class Game extends Screen {
     }
 
     public void draw() {
-        drawUtil.setGameViewport(gameViewport);
+        DrawUtil.setGameViewport(gameViewport);
 
         visibleEntities.clear();
 
@@ -268,10 +265,6 @@ public class Game extends Screen {
                     Unit unit = units.get(currentIndex);
                     visibleEntities.add(unit);
 
-                    if (unit.isSelected()) {
-                        unit.drawSelectedRing();
-                    }
-
                     currentIndex = unit.nextInCell;
                 }
             }
@@ -281,23 +274,22 @@ public class Game extends Screen {
             if (CollisionUtil.RectRectCollision(0, 0, viewWidth, viewHeight,
                     building.getX() - viewX, building.getY() - viewY,
                     building.getDiameter(), building.getModel().getHeight())) {
-
                 visibleEntities.add(building);
-
-                if (building.isSelected()) {
-                    building.drawSelectedRing();
-                }
             }
         }
 
         visibleEntities.sort(Entity.Y_COMPARATOR);
         for (int i = 0; i < visibleEntities.size(); i++) {
+            if (visibleEntities.get(i).isSelected()) {
+                visibleEntities.get(i).drawSelectedRing();
+            }
             visibleEntities.get(i).draw();
+            visibleEntities.get(i).drawHeathBar();
+
         }
 
         if (selectedRectangle != null) {
-            drawUtil.setColor(0, 255, 0, 0.25);
-            drawUtil.fillRect(selectedRectangle);
+            DrawUtil.fillRect(selectedRectangle, 0x00FF0040);
         }
     }
 
@@ -344,6 +336,8 @@ public class Game extends Screen {
             return results;
         }
 
+
+
         private List<CollisionResult> detectSequentially() {
             List<CollisionResult> results = new ArrayList<>();
             for (int i = start; i < end; i++) {
@@ -378,7 +372,7 @@ public class Game extends Screen {
                                     long distance = StrictMath.max(NumUtil.sqrtFast(distSq), 1);
 
                                     long overlap = rSum - distance;
-                                    long pushAmount = (long) (overlap * 0.6);
+                                    long pushAmount = (long) (overlap * 0.75);
 
                                     long moveX = (dx * pushAmount) / distance;
                                     long moveY = (dy * pushAmount) / distance;

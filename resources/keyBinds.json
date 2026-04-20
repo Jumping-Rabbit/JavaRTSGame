@@ -41,7 +41,7 @@
   "tab" : "none",
   "alt" : "none",
   "enter" : "confirm",
-  "backspace" : "back",
+  "backspace" : "none",
   "up" : "up",
   "down" : "down",
   "left" : "left",

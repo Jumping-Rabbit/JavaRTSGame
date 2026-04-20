@@ -32,14 +32,12 @@ public class MapEditor extends Screen {
     private ArrayList<File> buildings = new ArrayList<>();
     private ArrayList<File> objects = new ArrayList<>();
     private double tileWidth;
-    private DrawUtil drawUtil;
     private int tileIndex;
     private int height = 0;
 
     private boolean exit = false;
 
-    public MapEditor(DrawUtil drawUtil) {
-        this.drawUtil = drawUtil;
+    public MapEditor() {
         tileIndex = 0;
     }
 
@@ -55,7 +53,6 @@ public class MapEditor extends Screen {
         buildings = new ArrayList<>();
         objects = new ArrayList<>();
         tileWidth = mapEditor.tileIndex;
-        drawUtil = mapEditor.drawUtil;
         tileIndex = mapEditor.tileIndex;
         height = mapEditor.height;
         exit = mapEditor.exit;
@@ -299,13 +296,12 @@ public class MapEditor extends Screen {
     }
 
     public void draw() {
-        drawUtil.setThickness(5);
-        drawUtil.setColor(0, 150, 255);
+        DrawUtil.setThickness(5);
 //        if (!tileMap.isEmpty()) {
 //            tileWidth = 16;
 //            for (int x = 0; x < tileMap.size(); x++) {
 //                for (int y = 0; y < tileMap.getFirst().size(); y++) {
-//                    drawUtil.fillImage(tiles.get(tileMap.get(x).get(y)), x, y, tileWidth, tileWidth);
+//                    DrawUtil.fillImage(tiles.get(tileMap.get(x).get(y)), x, y, tileWidth, tileWidth);
 //                }
 //            }
 //        }
@@ -316,26 +312,26 @@ public class MapEditor extends Screen {
 //                if (tiles.size() - 1 < x + y * width) {
 //                    break;
 //                }
-//                drawUtil.fillImage(tiles.get(y + x * width), 1320 + x * width, 510 + x * width, 16, 16);
+//                DrawUtil.fillImage(tiles.get(y + x * width), 1320 + x * width, 510 + x * width, 16, 16);
 //            }
 //        }
 
         for (Buttons button : Buttons.values()) {
-            drawUtil.strokeRect(button.getRectangle2D());
+            DrawUtil.strokeRect(button.getRectangle2D(), 0x0096FFFF, 5);
             if (button == Buttons.RENAME_MAP && directory != null) {
 //                JSONParser parser = new JSONParser();
 //                try {
 //                    Object object = parser.parse(new FileReader(directory + "/map.json"));
 //                    JSONObject map = (JSONObject) object;
-//                    drawUtil.drawString(button.getRectangle2D().getMinX() + button.getRectangle2D().getWidth() / 2, button.getRectangle2D().getMinY() + button.getRectangle2D().getHeight() / 2, (String) map.get("name"), 20, Fonts.DEFAULT);
+//                    DrawUtil.drawString(button.getRectangle2D().getMinX() + button.getRectangle2D().getWidth() / 2, button.getRectangle2D().getMinY() + button.getRectangle2D().getHeight() / 2, (String) map.get("name"), 20, Fonts.DEFAULT);
 //                } catch (IOException | ParseException e) {
 //                    throw new RuntimeException(e);
 //                }
                 continue;
             } else if (button == Buttons.HEIGHT_COUNTER) {
-                drawUtil.drawString(button.getRectangle2D().getMinX() + button.getRectangle2D().getWidth() / 2, button.getRectangle2D().getMinY() + button.getRectangle2D().getHeight() / 2, String.valueOf(height), 20, Fonts.DEFAULT, StringAlignment.CENTER_MIDDLE);
+                DrawUtil.fillText(String.valueOf(height), button.getRectangle2D().getMinX() + button.getRectangle2D().getWidth() / 2, button.getRectangle2D().getMinY() + button.getRectangle2D().getHeight() / 2, Fonts.DEFAULT, 20, StringAlignment.CENTER_MIDDLE, 0x0096FFFF);
             }
-            drawUtil.drawString(button.getRectangle2D().getMinX() + button.getRectangle2D().getWidth() / 2, button.getRectangle2D().getMinY() + button.getRectangle2D().getHeight() / 2, button.getName(), 20, Fonts.DEFAULT, StringAlignment.CENTER_MIDDLE);
+            DrawUtil.fillText(button.getName(), button.getRectangle2D().getMinX() + button.getRectangle2D().getWidth() / 2, button.getRectangle2D().getMinY() + button.getRectangle2D().getHeight() / 2, Fonts.DEFAULT, 20, StringAlignment.CENTER_MIDDLE, 0x0096FFFF);
         }
     }
 

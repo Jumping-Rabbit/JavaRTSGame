@@ -13,7 +13,6 @@ import java.util.Scanner;
 
 public class TileManager {
     Game game;
-    DrawUtil drawUtil;
     Tile[] tile;
     int[][] currentMapNum;
     int mapWidth;
@@ -21,8 +20,8 @@ public class TileManager {
     BufferedImage[] tiles;
 
 
-    public TileManager(DrawUtil drawUtil, File file) {
-//        this.drawUtil = drawUtil;
+    public TileManager(File file) {
+//        this.DrawUtil = DrawUtil;
 //        //TODO: declare and populate tiles here from file
 //        //TODO: fix not permission when new scanner of file
 //

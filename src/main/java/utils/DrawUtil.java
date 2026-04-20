@@ -10,43 +10,46 @@ import javafx.scene.image.Image;
 import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.EnumMap;
 
+import static utils.NumUtil.LTD;
+
 public class DrawUtil {
     private static final ObjectMapper mapper = new ObjectMapper();
     private static EnumMap<Models, WritableImage[]> modelMap;
-    GameViewport gameViewport;
-    double factor = 0;
-    private GraphicsContext gc;
+    static GameViewport gameViewport;
+    private static double factor = 0;
+    private static GraphicsContext gc;
+    private static int color;
 
     public static void init(LoadingScreen loadingScreen) {
         modelMap = ModelLoaderUtil.calculateModelImages(loadingScreen);
     }
 
-    public synchronized double getFactor() {
+    public static synchronized double getFactor() {
         return factor;
     }
 
-    public synchronized void setFactor(double factor) {
-        this.factor = StrictMath.clamp(factor, 0, 1);
-        ;
+    public static synchronized void setFactor(double factor) {
+        DrawUtil.factor = StrictMath.clamp(factor, 0, 1);
     }
 
-    public void setGameViewport(GameViewport gameViewport) {
-        this.gameViewport = gameViewport;
+    public static void setGameViewport(GameViewport gameViewport) {
+        DrawUtil.gameViewport = gameViewport;
     }
 
-    public GraphicsContext getGC() {
+    public static GraphicsContext getGC() {
         return gc;
     }
 
-    public void setGC(GraphicsContext gc) {
-        this.gc = gc;
+    public static void setGC(GraphicsContext gc) {
+        DrawUtil.gc = gc;
     }
 
-    public void startRotation(double x1, double y1, double x2, double y2, double xOffset, double yOffset, double direction1, double direction2) {
+    public static void startRotation(double x1, double y1, double x2, double y2, double xOffset, double yOffset, double direction1, double direction2) {
         double x;
         double y;
         double scale = Viewport.getScale();
@@ -60,220 +63,685 @@ public class DrawUtil {
         rotate(x, y, NumUtil.interpolate(direction1, direction2, factor));
     }
 
-    private void rotate(double x, double y, double rotation) {
+    private static void rotate(double x, double y, double rotation) {
         gc.save();
         gc.translate(x, y);
         gc.rotate(rotation);
         gc.translate(-x, -y);
     }
 
-    public void resetRotation() {
+    public static void resetRotation() {
         gc.restore();
     }
 
 
-    public void setColor(int r, int g, int b) {
-        gc.setFill(Color.rgb(r, g, b));
-        gc.setStroke(Color.rgb(r, g, b));
+    public static void setColor(int hex) {
+
+        if (color == hex){
+            return;
+        }
+        Color newColor = Colors.fromHex(hex);
+        color = hex;
+        gc.setFill(newColor);
+        gc.setStroke(newColor);
     }
 
-    public void setColor(int r, int g, int b, double transparency) {
-        gc.setFill(Color.rgb(r, g, b, transparency));
-        gc.setStroke(Color.rgb(r, g, b, transparency));
-    }
-
-    public void setColor(Color color) {
-        gc.setFill(color);
-        gc.setStroke(color);
-    }
-
-    public void setThickness(double thickness) {
+    /**sets the thickness when calling stroke*/
+    public static void setThickness(double thickness) {
         gc.setLineWidth(thickness * Viewport.getScale());
     }
 
 
-    public void fillRect(double x, double y, double width, double height) {
+    /** projects the x coordinate to screen position*/
+    private static double projectX(double x){
+        return (x - Viewport.getX()) * Viewport.getScale() + Viewport.getXOffset();
+    }
+    /** projects the y coordinate to screen position*/
+    private static double projectY(double y){
+        return (y - Viewport.getY()) * Viewport.getScale() + Viewport.getYOffset();
+    }
+
+    /**draws a filled rectangle, scaled inputs*/
+    public static void fillRectScaled(long xScaled, long yScaled, long widthScaled, long heightScaled, int color){
         double scale = Viewport.getScale();
-        gc.fillRect((x - Viewport.getX()) * scale + Viewport.getXOffset(), (y - Viewport.getY()) * scale + Viewport.getYOffset(), width * scale, height * scale);
+        setColor(color);
+        gc.fillRect(projectX(LTD(xScaled)), projectY(LTD(yScaled)), LTD(widthScaled)*scale, LTD(heightScaled)*scale);
     }
-
-    public void fillRect(Rectangle2D rect) {
-        fillRect(rect.getMinX(), rect.getMinY(), rect.getWidth(), rect.getHeight());
-    }
-
-    public void fillRectGame(double x, double y, double width, double height) {
-        if (!CollisionUtil.RectRectCollision(gameViewport.getX(), gameViewport.getY(), gameViewport.getWidth(), gameViewport.getHeight(), x, y, width, height)) {
-            return;
-        }
-        fillRect(x, y, width, height);
-    }
-
-    public void fillRectInterpolate(double xCurrent, double yCurrent, double xLast, double yLast, double width, double height) {
-        double x = NumUtil.interpolate(xCurrent, xLast, factor);
-        double y = NumUtil.interpolate(yCurrent, yLast, factor);
-        fillRect(x, y, width, height);
-    }
-
-    public void fillRectInterpolateGame(double xCurrent, double yCurrent, double xLast, double yLast, double width, double height) {
-        double x = NumUtil.interpolate(xCurrent, xLast, factor);
-        double y = NumUtil.interpolate(yCurrent, yLast, factor);
-        if (!CollisionUtil.RectRectCollision(gameViewport.getX(), gameViewport.getY(), gameViewport.getWidth(), gameViewport.getHeight(), x, y, width, height)) {
-            return;
-        }
-        fillRect(x - gameViewport.getX(), y - gameViewport.getY(), width, height);
-    }
-
-    public void strokeRect(double x, double y, double width, double height) {
+    /**draws a rectangle outline, scaled inputs*/
+    public static void strokeRectScaled(long xScaled, long yScaled, long widthScaled, long heightScaled, int color, double strokeWidth){
         double scale = Viewport.getScale();
-        gc.strokeRect((x - Viewport.getX()) * scale + Viewport.getXOffset(), (y - Viewport.getY()) * scale + Viewport.getYOffset(), width * scale, height * scale);
+        setColor(color);
+        setThickness(strokeWidth);
+        gc.strokeRect(projectX(LTD(xScaled)), projectY(LTD(yScaled)), LTD(widthScaled)*scale, LTD(heightScaled)*scale);
     }
-
-    public void strokeRect(Rectangle2D rect) {
-        strokeRect(rect.getMinX(), rect.getMinY(), rect.getWidth(), rect.getHeight());
-    }
-
-    public void strokeRectGame(double x, double y, double width, double height) {
-        if (!CollisionUtil.RectRectCollision(gameViewport.getX(), gameViewport.getY(), gameViewport.getWidth(), gameViewport.getHeight(), x, y, width, height)) {
-            return;
-        }
-        strokeRect(x, y, width, height);
-    }
-
-
-    public void fillCircle(double x, double y, double radius) {
+    /**draws a filled rounded rectangle, scaled inputs*/
+    public static void fillRoundedRectScaled(long xScaled, long yScaled, long widthScaled, long heightScaled, double arc, int color){
         double scale = Viewport.getScale();
-        gc.fillOval((x - Viewport.getX()) * scale + Viewport.getXOffset(), (y - Viewport.getY()) * scale + Viewport.getYOffset(), radius * 2 * scale, radius * 2 * scale);
+        setColor(color);
+        gc.fillRoundRect(projectX(LTD(xScaled)), projectY(LTD(yScaled)), LTD(widthScaled)*scale, LTD(heightScaled)*scale, arc*scale, arc*scale);
     }
-
-    public void fillCircleGame(double x, double y, double radius) {
-        if (!CollisionUtil.RectCircleCollision(x, y, radius, gameViewport.getX(), gameViewport.getY(), gameViewport.getWidth(), gameViewport.getHeight())) {
-            return;
-        }
-        fillCircle(x - gameViewport.getX(), y - gameViewport.getY(), radius);
-    }
-
-    public void fillCircleInterpolate(double xCurrent, double yCurrent, double xLast, double yLast, double radius) {
-        double x = NumUtil.interpolate(xCurrent, xLast, factor);
-        double y = NumUtil.interpolate(yCurrent, yLast, factor);
+    /**draws a rounded rectangle outline, scaled inputs*/
+    public static void strokeRoundedRectScaled(long xScaled, long yScaled, long widthScaled, long heightScaled, double arc, int color, double strokeWidth){
         double scale = Viewport.getScale();
-        fillCircle(x, y, radius);
+        setColor(color);
+        setThickness(strokeWidth);
+        gc.fillRoundRect(projectX(LTD(xScaled)), projectY(LTD(yScaled)), LTD(widthScaled)*scale, LTD(heightScaled)*scale, arc*scale, arc*scale);
     }
-
-    public void fillCircleInterpolateGame(double xCurrent, double yCurrent, double xLast, double yLast, double radius) {
-        double x = NumUtil.interpolate(xCurrent, xLast, factor);
-        double y = NumUtil.interpolate(yCurrent, yLast, factor);
-        if (!CollisionUtil.RectCircleCollision(x, y, radius, gameViewport.getX(), gameViewport.getY(), gameViewport.getWidth(), gameViewport.getHeight())) {
-            return;
-        }
-        fillCircle(x - gameViewport.getX(), y - gameViewport.getY(), radius);
-    }
-
-    public void fillImage(Image image, double x, double y, double width, double height) {
+    /**draws a filled circle, scaled inputs*/
+    public static void fillCircleScaled(long xScaled, long yScaled, long radiusScaled, int color){
         double scale = Viewport.getScale();
-        gc.drawImage(image, ((x - Viewport.getX()) * scale + Viewport.getXOffset()), ((y - Viewport.getY()) * scale + Viewport.getYOffset()), (width * scale), (height * scale));
+        setColor(color);
+        gc.fillOval(projectX(LTD(xScaled)), projectY(LTD(yScaled)), LTD(radiusScaled)*2*scale, LTD(radiusScaled)*2*scale);
     }
-
-    public void fillImageGame(Image image, double x, double y, double width, double height) {
-        if (!CollisionUtil.RectRectCollision(gameViewport.getX(), gameViewport.getY(), gameViewport.getWidth(), gameViewport.getHeight(), x, y, width, height)) {
-            return;
-        }
-        fillImage(image, x - gameViewport.getX(), y - gameViewport.getY(), width, height);
-    }
-
-    public void fillImageInterpolate(Image image, double xCurrent, double yCurrent, double xLast, double yLast, double width, double height) {
-        double x = NumUtil.interpolate(xCurrent, xLast, factor);
-        double y = NumUtil.interpolate(yCurrent, yLast, factor);
+    /**draws a circle outline, scaled inputs*/
+    public static void strokeCircleScaled(long xScaled, long yScaled, long radiusScaled, int color, double strokeWidth){
         double scale = Viewport.getScale();
-        fillImage(image, x, y, width, height);
+        setColor(color);
+        setThickness(strokeWidth);
+        gc.strokeOval(projectX(LTD(xScaled)), projectY(LTD(yScaled)), LTD(radiusScaled)*2*scale, LTD(radiusScaled)*2*scale);
     }
-
-    public void fillImageInterpolateGame(Image image, double xCurrent, double yCurrent, double xLast, double yLast, double width, double height) {
-        double x = NumUtil.interpolate(xCurrent, xLast, factor);
-        double y = NumUtil.interpolate(yCurrent, yLast, factor);
-        if (!CollisionUtil.RectRectCollision(gameViewport.getX(), gameViewport.getY(), gameViewport.getWidth(), gameViewport.getHeight(), x, y, width, height)) {
-            return;
-        }
-        fillImage(image, x - gameViewport.getX(), y - gameViewport.getY(), width, height);
+    /**draws a filled oval, scaled inputs*/
+    public static void fillOvalScaled(long xScaled, long yScaled, long widthScaled, long heightScaled, int color){
+        double scale = Viewport.getScale();
+        setColor(color);
+        gc.fillOval(projectX(LTD(xScaled)), projectY(LTD(yScaled)), LTD(widthScaled)*scale, LTD(heightScaled)*scale);
     }
-
-    public void drawString(double x, double y, String string, double size, Fonts font, StringAlignment alignment) {
+    /**draws a oval outline, scaled inputs*/
+    public static void strokeOvalScaled(long xScaled, long yScaled, long widthScaled, long heightScaled, int color, double strokeWidth){
+        double scale = Viewport.getScale();
+        setColor(color);
+        setThickness(strokeWidth);
+        gc.strokeOval(projectX(LTD(xScaled)), projectY(LTD(yScaled)), LTD(widthScaled)*scale, LTD(heightScaled)*scale);
+    }
+    /**draws a filled line, scaled inputs*/
+    public static void fillLineScaled(long startXScaled, long startYScaled, long endXScaled, long endYScaled, int color){
+        double scale = Viewport.getScale();
+        setColor(color);
+        gc.strokeLine(projectX(LTD(startXScaled)), projectY(LTD(startYScaled)), projectX(LTD(endXScaled)), projectY(LTD(endYScaled)));
+    }
+    /**draws a filled text, scaled inputs*/
+    public static void fillTextScaled(String text, long xScaled, long yScaled, Fonts font, double size, StringAlignment alignment){
         double scale = Viewport.getScale();
         gc.setFont(font.getFont(size * scale));
         gc.setTextAlign(alignment.getTextAlignment());
         gc.setTextBaseline(alignment.getVPos());
-        gc.fillText(string, ((x - Viewport.getX()) * scale + Viewport.getXOffset()), ((y - Viewport.getY()) * scale + Viewport.getYOffset()));
+        gc.fillText(text, projectX(LTD(xScaled)), projectY(LTD(yScaled)));
+    }
+    /**draws a image, scaled inputs*/
+    public static void fillImageScaled(Image image, long xScaled, long yScaled, long widthScaled, long heightScaled){
+        double scale = Viewport.getScale();
+        gc.drawImage(image, projectX(LTD(xScaled)), projectY(LTD(yScaled)), (LTD(widthScaled) * scale), (LTD(heightScaled) * scale));
+    }
+    /**draws a model, scaled inputs*/
+    public static void fillModelScaled(Models modelKey, long xScaled, long yScaled, long zScaled, long directionScaled){
+        double scale = Viewport.getScale();
+        WritableImage model = modelMap.get(modelKey)[(int) (StrictMath.floorMod((int) (LTD(directionScaled)+11.25), 360)/22.5)];
+        double imageSize = model.getWidth();
+        double halfImageSize = model.getWidth() / 2;
+        double modelWidth = modelKey.getWidth();
+        gc.drawImage(model, projectX(LTD(xScaled) - halfImageSize + modelWidth), projectY(LTD(yScaled) - halfImageSize), imageSize * scale, imageSize * scale);
     }
 
-    public void drawStringGame(double x, double y, String string, double size, Fonts font, StringAlignment alignment) {
+
+    /**draws a filled rectangle, scaled inputs*/
+    public static void fillRect(double x, double y, double width, double height, int color){
         double scale = Viewport.getScale();
-        Text text = new Text(string);
-        text.setFont(font.getFont(size * scale));
+        setColor(color);
+        gc.fillRect(projectX(x), projectY(y), width*scale, height*scale);
+    }
+    /**draws a filled rectangle, scaled inputs*/
+    public static void fillRect(Rectangle2D rect, int color){
+        double scale = Viewport.getScale();
+        setColor(color);
+        gc.fillRect(projectX(rect.getMinX()), projectY(rect.getMinY()), rect.getWidth()*scale, rect.getHeight()*scale);
+    }
+    /**draws a rectangle outline, scaled inputs*/
+    public static void strokeRect(double x, double y, double width, double height, int color, double strokeWidth){
+        double scale = Viewport.getScale();
+        setColor(color);
+        setThickness(strokeWidth);
+        gc.strokeRect(projectX(x), projectY(y), width*scale, height*scale);
+    }
+    /**draws a rectangle outline, scaled inputs*/
+    public static void strokeRect(Rectangle2D rect, int color, double strokeWidth){
+        double scale = Viewport.getScale();
+        setColor(color);
+        setThickness(strokeWidth);
+        gc.strokeRect(projectX(rect.getMinX()), projectY(rect.getMinY()), rect.getWidth()*scale, rect.getHeight()*scale);
+    }
+    /**draws a filled rounded rectangle, scaled inputs*/
+    public static void fillRoundedRect(double x, double y, double width, double height, double arc, int color){
+        double scale = Viewport.getScale();
+        setColor(color);
+        gc.fillRoundRect(projectX(x), projectY(y), width*scale, height*scale, arc*scale, arc*scale);
+    }
+
+    /**draws a rounded rectangle outline, scaled inputs*/
+    public static void strokeRoundedRect(double x, double y, double width, double height, double arc, int color, double strokeWidth){
+        double scale = Viewport.getScale();
+        setColor(color);
+        setThickness(strokeWidth);
+        gc.strokeRoundRect(projectX(x), projectY(y), width*scale, height*scale, arc*scale, arc*scale);
+    }
+
+    /**draws a filled circle, scaled inputs*/
+    public static void fillCircle(double x, double y, double radius, int color){
+        double scale = Viewport.getScale();
+        setColor(color);
+        gc.fillOval(projectX(x), projectY(y), radius*2*scale, radius*2*scale);
+    }
+
+    /**draws a circle outline, scaled inputs*/
+    public static void strokeCircle(double x, double y, double radius, int color, double strokeWidth){
+        double scale = Viewport.getScale();
+        setColor(color);
+        setThickness(strokeWidth);
+        gc.strokeOval(projectX(x), projectY(y), radius*2*scale, radius*2*scale);
+    }
+
+    /**draws a filled oval, scaled inputs*/
+    public static void fillOval(double x, double y, double width, double height, int color){
+        double scale = Viewport.getScale();
+        setColor(color);
+        gc.fillOval(projectX(x), projectY(y), width*scale, height*scale);
+    }
+
+    /**draws a oval outline, scaled inputs*/
+    public static void strokeOval(double x, double y, double width, double height, int color, double strokeWidth){
+        double scale = Viewport.getScale();
+        setColor(color);
+        setThickness(strokeWidth);
+        gc.strokeOval(projectX(x), projectY(y), width*scale, height*scale);
+    }
+
+    /**draws a filled line, scaled inputs*/
+    public static void fillLine(double startX, double startY, double endX, double endY, int color){
+        double scale = Viewport.getScale();
+        setColor(color);
+        gc.strokeLine(projectX(startX), projectY(startY), projectX(endX), projectY(endY));
+    }
+
+    /**draws a filled text*/
+    public static void fillText(String text, double x, double y, Fonts font, double size, StringAlignment alignment, int color){
+        double scale = Viewport.getScale();
+        setColor(color);
         gc.setFont(font.getFont(size * scale));
         gc.setTextAlign(alignment.getTextAlignment());
         gc.setTextBaseline(alignment.getVPos());
-        if (!CollisionUtil.RectRectCollision(gameViewport.getX(), gameViewport.getY(), gameViewport.getWidth(), gameViewport.getHeight(), x - (text.getBoundsInLocal().getWidth() / 2f), y, text.getBoundsInLocal().getWidth(), text.getBoundsInLocal().getHeight())) {
-            return;
-        }
-        drawString(x - gameViewport.getX(), y - gameViewport.getY(), string, size, font, alignment);
+        gc.fillText(text, projectX(x), projectY(y));
     }
 
-    public void drawLine(double x1, double y1, double x2, double y2) {
-        if (gameViewport != null) {
-            if (!CollisionUtil.RectLineCollision(x1, y1, x2, y2, gameViewport.getX(), gameViewport.getY(), gameViewport.getWidth(), gameViewport.getHeight())) {
-                return;
-            }
-        }
+    /**draws a image*/
+    public static void fillImage(Image image, double x, double y, double width, double height){
         double scale = Viewport.getScale();
-        gc.strokeLine(x1 * scale + Viewport.getXOffset(), y1 * scale + Viewport.getYOffset(), x2 * scale + Viewport.getXOffset(), y2 * scale + Viewport.getYOffset());
+        gc.drawImage(image, projectX(x), projectY(y), (width * scale), (height * scale));
     }
 
-    public void drawModelGame(Models modelKey, double x, double y, double z, double direction) {
-        if (!CollisionUtil.RectRectCollision(gameViewport.getX(), gameViewport.getY(), gameViewport.getWidth(), gameViewport.getHeight(), x, y, modelKey.getWidth(), modelKey.getWidth())) {
-            return;
-        }
-        x-= gameViewport.getX();
-        y-= gameViewport.getY();
-        drawModel(modelKey, x, y, z, direction);
-    }
-
-    public void drawModelGameCulled(Models modelKey, double x, double y, double z, double direction) {
-        x-= gameViewport.getX();
-        y-= gameViewport.getY();
-        drawModel(modelKey, x, y, z, direction);
-    }
-
-    public void drawModel(Models modelKey, double x, double y, double z, double direction) {
+    /**draws a model*/
+    public static void fillModel(Models modelKey, double x, double y, double z, double direction){
         double scale = Viewport.getScale();
         WritableImage model = modelMap.get(modelKey)[(int) (StrictMath.floorMod((int) (direction+11.25), 360)/22.5)];
-        double imageSize = model.getWidth();//ModelLoaderUtil.getImageSize();
-        double halfImageSize = model.getWidth() / 2;//ModelLoaderUtil.getHalfImageSize();
+        double imageSize = model.getWidth();
+        double halfImageSize = model.getWidth() / 2;
         double modelWidth = modelKey.getWidth();
-        gc.drawImage(model, ((x - halfImageSize - Viewport.getX() + modelWidth) * scale + Viewport.getXOffset()), ((y - halfImageSize - Viewport.getY()) * scale + Viewport.getYOffset()), imageSize * scale, imageSize * scale);
-    }
-
-    public void drawModelInterpolateGame(Models modelKey, double xCurrent, double yCurrent, double zCurrent, double xLast, double yLast, double zLast, double directionCurrent, double directionLast) {
-        drawModelGame(modelKey, NumUtil.interpolate(xCurrent, xLast, factor), NumUtil.interpolate(yCurrent, yLast, factor), NumUtil.interpolate(zCurrent, zLast, factor), NumUtil.interpolate(directionCurrent, directionLast, factor));
-    }
-    public void drawModelInterpolateGameCulled(Models modelKey, double xCurrent, double yCurrent, double zCurrent, double xLast, double yLast, double zLast, double directionCurrent, double directionLast) {
-        drawModelGameCulled(modelKey, NumUtil.interpolate(xCurrent, xLast, factor), NumUtil.interpolate(yCurrent, yLast, factor), NumUtil.interpolate(zCurrent, zLast, factor), NumUtil.interpolate(directionCurrent, directionLast, factor));
+        gc.drawImage(model, projectX(x - halfImageSize + modelWidth), projectY(y - halfImageSize), imageSize * scale, imageSize * scale);
     }
 
 
-    public void clearCanvas() {
-        gc.clearRect(0, 0, gc.getCanvas().getWidth(), gc.getCanvas().getHeight());
+    /** shorthand for linear iterpolate, scaled inputs*/
+    private static long lerp(long current, long last){
+        return NumUtil.interpolate(current, last, factor);
+    }
+    /** shorthand for linear iterpolate*/
+    private static double lerp(double current, double last){
+        return NumUtil.interpolate(current, last, factor);
     }
 
-    public void fillBackground() {
+    public static class Lerp{
+        /**draws a filled rectangle, scaled inputs*/
+        public static void fillRectScaled(long xCurrentScaled, long xLastScaled, long yCurrentScaled, long yLastScaled, long widthScaled, long heightScaled, int color){
+            DrawUtil.fillRectScaled(lerp(xCurrentScaled, xLastScaled), lerp(yCurrentScaled, yLastScaled), widthScaled, heightScaled, color);
+        }
+        /**draws a rectangle outline, scaled inputs*/
+        public static void strokeRectScaled(long xCurrentScaled, long xLastScaled, long yCurrentScaled, long yLastScaled, long widthScaled, long heightScaled, int color, double strokeWidth){
+            DrawUtil.strokeRectScaled(lerp(xCurrentScaled, xLastScaled), lerp(yCurrentScaled, yLastScaled), widthScaled, heightScaled, color, strokeWidth);
+        }
+        /**draws a filled rounded rectangle, scaled inputs*/
+        public static void fillRoundedRectScaled(long xCurrentScaled, long xLastScaled, long yCurrentScaled, long yLastScaled, long widthScaled, long heightScaled, double arc, int color){
+            DrawUtil.fillRoundedRectScaled(lerp(xCurrentScaled, xLastScaled), lerp(yCurrentScaled, yLastScaled), widthScaled, heightScaled, arc, color);
+        }
+        /**draws a rounded rectangle outline, scaled inputs*/
+        public static void strokeRoundedRectScaled(long xCurrentScaled, long xLastScaled, long yCurrentScaled, long yLastScaled, long widthScaled, long heightScaled, double arc, int color, double strokeWidth){
+            DrawUtil.strokeRoundedRectScaled(lerp(xCurrentScaled, xLastScaled), lerp(yCurrentScaled, yLastScaled), widthScaled, heightScaled, arc, color, strokeWidth);
+        }
+        /**draws a filled circle, scaled inputs*/
+        public static void fillCircleScaled(long xCurrentScaled, long xLastScaled, long yCurrentScaled, long yLastScaled, long radiusScaled, int color){
+            DrawUtil.fillCircleScaled(lerp(xCurrentScaled, xLastScaled), lerp(yCurrentScaled, yLastScaled), radiusScaled, color);
+        }
+        /**draws a circle outline, scaled inputs*/
+        public static void strokeCircleScaled(long xCurrentScaled, long xLastScaled, long yCurrentScaled, long yLastScaled, long radiusScaled, int color, double strokeWidth){
+            DrawUtil.strokeCircleScaled(lerp(xCurrentScaled, xLastScaled), lerp(yCurrentScaled, yLastScaled), radiusScaled, color, strokeWidth);
+        }
+        /**draws a filled oval, scaled inputs*/
+        public static void fillOvalScaled(long xCurrentScaled, long xLastScaled, long yCurrentScaled, long yLastScaled, long widthScaled, long heightScaled, int color){
+            DrawUtil.fillOvalScaled(lerp(xCurrentScaled, xLastScaled), lerp(yCurrentScaled, yLastScaled), widthScaled, heightScaled, color);
+        }
+        /**draws a oval outline, scaled inputs*/
+        public static void strokeOvalScaled(long xCurrentScaled, long xLastScaled, long yCurrentScaled, long yLastScaled, long widthScaled, long heightScaled, int color, double strokeWidth){
+            DrawUtil.strokeOvalScaled(lerp(xCurrentScaled, xLastScaled), lerp(yCurrentScaled, yLastScaled), widthScaled, heightScaled, color, strokeWidth);
+        }
+        /**draws a filled line, scaled inputs*/
+        public static void fillLineScaled(long startXCurrentScaled, long startXLastScaled, long startYCurrentScaled, long startYLastScaled, long endXCurrentScaled, long endXLastScaled, long endYCurrentScaled, long endYLastScaled, int color){
+            DrawUtil.fillLineScaled(lerp(startXCurrentScaled, startXLastScaled), lerp(startYCurrentScaled, startYLastScaled), lerp(endXCurrentScaled, endXLastScaled), lerp(endYCurrentScaled, endYLastScaled), color);
+        }
+        /**draws a filled text, scaled inputs*/
+        public static void fillTextScaled(String text, long xCurrentScaled, long xLastScaled, long yCurrentScaled, long yLastScaled, Fonts font, double size, StringAlignment alignment){
+            DrawUtil.fillTextScaled(text, lerp(xCurrentScaled, xLastScaled), lerp(yCurrentScaled, yLastScaled), font, size, alignment);
+        }
+        /**draws a image, scaled inputs*/
+        public static void fillImageScaled(Image image, long xCurrentScaled, long xLastScaled, long yCurrentScaled, long yLastScaled, long width, long height){
+            DrawUtil.fillImageScaled(image, lerp(xCurrentScaled, xLastScaled), lerp(yCurrentScaled, yLastScaled), width, height);
+        }
+        /**draws a model, scaled inputs*/
+        public static void fillModelScaled(Models modelKey, long xCurrentScaled, long xLastScaled, long yCurrentScaled, long yLastScaled, long zCurrentScaled, long zLastScaled, long directionCurrentScaled, long directionLastScaled){
+            DrawUtil.fillModelScaled(modelKey, lerp(xCurrentScaled, xLastScaled), lerp(yCurrentScaled, yLastScaled), lerp(zCurrentScaled, zLastScaled), lerp(directionCurrentScaled, directionLastScaled));
+        }
+
+
+        /**draws a filled rectangle*/
+        public static void fillRect(double xCurrent, double xLast, double yCurrent, double yLast, double width, double height, int color){
+            DrawUtil.fillRect(lerp(xCurrent, xLast), lerp(yCurrent, yLast), width, height, color);
+        }
+        /**draws a rectangle outline*/
+        public static void strokeRect(double xCurrent, double xLast, double yCurrent, double yLast, double width, double height, int color, double strokeWidth){
+            DrawUtil.strokeRect(lerp(xCurrent, xLast), lerp(yCurrent, yLast), width, height, color, strokeWidth);
+        }
+        /**draws a filled rounded rectangle*/
+        public static void fillRoundedRect(double xCurrent, double xLast, double yCurrent, double yLast, double width, double height, double arc, int color){
+            DrawUtil.fillRoundedRect(lerp(xCurrent, xLast), lerp(yCurrent, yLast), width, height, arc, color);
+        }
+        /**draws a rounded rectangle outline*/
+        public static void strokeRoundedRect(double xCurrent, double xLast, double yCurrent, double yLast, double width, double height, double arc, int color, double strokeWidth){
+            DrawUtil.strokeRoundedRect(lerp(xCurrent, xLast), lerp(yCurrent, yLast), width, height, arc, color, strokeWidth);
+        }
+        /**draws a filled circle*/
+        public static void fillCircle(double xCurrent, double xLast, double yCurrent, double yLast, double radius, int color){
+            DrawUtil.fillCircle(lerp(xCurrent, xLast), lerp(yCurrent, yLast), radius, color);
+        }
+        /**draws a circle outline*/
+        public static void strokeCircle(double xCurrent, double xLast, double yCurrent, double yLast, double radius, int color, double strokeWidth){
+            DrawUtil.strokeCircle(lerp(xCurrent, xLast), lerp(yCurrent, yLast), radius, color, strokeWidth);
+        }
+        /**draws a filled oval*/
+        public static void fillOval(double xCurrent, double xLast, double yCurrent, double yLast, double width, double height, int color){
+            DrawUtil.fillOval(lerp(xCurrent, xLast), lerp(yCurrent, yLast), width, height, color);
+        }
+        /**draws a oval outline*/
+        public static void strokeOval(double xCurrent, double xLast, double yCurrent, double yLast, double width, double height, int color, double strokeWidth){
+            DrawUtil.strokeOval(lerp(xCurrent, xLast), lerp(yCurrent, yLast), width, height, color, strokeWidth);
+        }
+        /**draws a filled line*/
+        public static void fillLine(double startXCurrent, double startXLast, double startYCurrent, double startYLast, double endXCurrent, double endXLast, double endYCurrent, double endYLast, int color){
+            DrawUtil.fillLine(lerp(startXCurrent, startXLast), lerp(startYCurrent, startYLast), lerp(endXCurrent, endXLast), lerp(endYCurrent, endYLast), color);
+        }
+        /**draws a filled text*/
+        public static void fillText(String text, double xCurrent, double xLast, double yCurrent, double yLast, Fonts font, double size, StringAlignment alignment, int color){
+            DrawUtil.fillText(text, lerp(xCurrent, xLast), lerp(yCurrent, yLast), font, size, alignment, color);
+        }
+        /**draws a image*/
+        public static void fillImage(Image image, double xCurrent, double xLast, double yCurrent, double yLast, double width, double height){
+            DrawUtil.fillImage(image, lerp(xCurrent, xLast), lerp(yCurrent, yLast), width, height);
+        }
+        /**draws a model*/
+        public static void fillModel(Models modelKey, double xCurrent, double xLast, double yCurrent, double yLast, double zCurrent, double zLast, double directionCurrent, double directionLast){
+            DrawUtil.fillModel(modelKey, lerp(xCurrent, xLast), lerp(yCurrent, yLast), lerp(zCurrent, zLast), lerp(directionCurrent, directionLast));
+        }
+    }
+
+    public static class Game{
+        /** puts the offset from gameViewport*/
+        private static long putXGO (long x){
+            return x - gameViewport.getX();
+        }
+        /** puts the offset from gameViewport*/
+        private static long putYGO (long y){
+            return y - gameViewport.getY();
+        }
+        /** puts the offset from gameViewport*/
+        private static double putXGO (double x){
+            return x - gameViewport.getX();
+        }
+        /** puts the offset from gameViewport*/
+        private static double putYGO (double y){
+            return y - gameViewport.getY();
+        }
+
+        /**returns true if needs to be culled*/
+        private static boolean cull(long x, long y, long width, long height){
+//            return CollisionUtil.RectRectCollision(x, y, width, height, );//use scaled gameViewport coords, return true if needs to be culled
+            return true;
+        }
+
+        /**returns true if needs to be culled*/
+        private static boolean cull(double x, double y, double width, double height){
+            return true;
+        }
+
+        /**draws a filled rectangle, scaled inputs*/
+        public static void fillRectScaled(long xCurrentScaled, long xLastScaled, long yCurrentScaled, long yLastScaled, long widthScaled, long heightScaled, int color){
+            DrawUtil.fillRectScaled(putXGO(lerp(xCurrentScaled, xLastScaled)), putYGO(lerp(yCurrentScaled, yLastScaled)), widthScaled, heightScaled, color);
+        }
+        /**draws a rectangle outline, scaled inputs*/
+        public static void strokeRectScaled(long xCurrentScaled, long xLastScaled, long yCurrentScaled, long yLastScaled, long widthScaled, long heightScaled, int color, double strokeWidth){
+            DrawUtil.strokeRectScaled(putXGO(lerp(xCurrentScaled, xLastScaled)), putYGO(lerp(yCurrentScaled, yLastScaled)), widthScaled, heightScaled, color, strokeWidth);
+        }
+        /**draws a filled rounded rectangle, scaled inputs*/
+        public static void fillRoundedRectScaled(long xCurrentScaled, long xLastScaled, long yCurrentScaled, long yLastScaled, long widthScaled, long heightScaled, double arc, int color){
+            DrawUtil.fillRoundedRectScaled(putXGO(lerp(xCurrentScaled, xLastScaled)), putYGO(lerp(yCurrentScaled, yLastScaled)), widthScaled, heightScaled, arc, color);
+        }
+        /**draws a rounded rectangle outline, scaled inputs*/
+        public static void strokeRoundedRectScaled(long xCurrentScaled, long xLastScaled, long yCurrentScaled, long yLastScaled, long widthScaled, long heightScaled, double arc, int color, double strokeWidth){
+            DrawUtil.strokeRoundedRectScaled(putXGO(lerp(xCurrentScaled, xLastScaled)), putYGO(lerp(yCurrentScaled, yLastScaled)), widthScaled, heightScaled, arc, color, strokeWidth);
+        }
+        /**draws a filled circle, scaled inputs*/
+        public static void fillCircleScaled(long xCurrentScaled, long xLastScaled, long yCurrentScaled, long yLastScaled, long radiusScaled, int color){
+            DrawUtil.fillCircleScaled(putXGO(lerp(xCurrentScaled, xLastScaled)), putYGO(lerp(yCurrentScaled, yLastScaled)), radiusScaled, color);
+        }
+        /**draws a circle outline, scaled inputs*/
+        public static void strokeCircleScaled(long xCurrentScaled, long xLastScaled, long yCurrentScaled, long yLastScaled, long radiusScaled, int color, double strokeWidth){
+            DrawUtil.strokeCircleScaled(putXGO(lerp(xCurrentScaled, xLastScaled)), putYGO(lerp(yCurrentScaled, yLastScaled)), radiusScaled, color, strokeWidth);
+        }
+        /**draws a filled oval, scaled inputs*/
+        public static void fillOvalScaled(long xCurrentScaled, long xLastScaled, long yCurrentScaled, long yLastScaled, long widthScaled, long heightScaled, int color){
+            DrawUtil.fillOvalScaled(putXGO(lerp(xCurrentScaled, xLastScaled)), putYGO(lerp(yCurrentScaled, yLastScaled)), widthScaled, heightScaled, color);
+        }
+        /**draws a oval outline, scaled inputs*/
+        public static void strokeOvalScaled(long xCurrentScaled, long xLastScaled, long yCurrentScaled, long yLastScaled, long widthScaled, long heightScaled, int color, double strokeWidth){
+            DrawUtil.strokeOvalScaled(putXGO(lerp(xCurrentScaled, xLastScaled)), putYGO(lerp(yCurrentScaled, yLastScaled)), widthScaled, heightScaled, color, strokeWidth);
+        }
+        /**draws a filled line, scaled inputs*/
+        public static void fillLineScaled(long startXCurrentScaled, long startXLastScaled, long startYCurrentScaled, long startYLastScaled, long endXCurrentScaled, long endXLastScaled, long endYCurrentScaled, long endYLastScaled, int color){
+            DrawUtil.fillLineScaled(putXGO(lerp(startXCurrentScaled, startXLastScaled)), putYGO(lerp(startYCurrentScaled, startYLastScaled)), putXGO(lerp(endXCurrentScaled, endXLastScaled)), putYGO(lerp(endYCurrentScaled, endYLastScaled)), color);
+        }
+        /**draws a filled text, scaled inputs*/
+        public static void fillTextScaled(String text, long xCurrentScaled, long xLastScaled, long yCurrentScaled, long yLastScaled, Fonts font, double size, StringAlignment alignment){
+            DrawUtil.fillTextScaled(text, putXGO(lerp(xCurrentScaled, xLastScaled)), putYGO(lerp(yCurrentScaled, yLastScaled)), font, size, alignment);
+        }
+        /**draws a image, scaled inputs*/
+        public static void fillImageScaled(Image image, long xCurrentScaled, long xLastScaled, long yCurrentScaled, long yLastScaled, long width, long height){
+            DrawUtil.fillImageScaled(image, putXGO(lerp(xCurrentScaled, xLastScaled)), putYGO(lerp(yCurrentScaled, yLastScaled)), width, height);
+        }
+        /**draws a model, scaled inputs*/
+        public static void fillModelScaled(Models modelKey, long xCurrentScaled, long xLastScaled, long yCurrentScaled, long yLastScaled, long zCurrentScaled, long zLastScaled, long directionCurrentScaled, long directionLastScaled){
+            DrawUtil.fillModelScaled(modelKey, putXGO(lerp(xCurrentScaled, xLastScaled)), putYGO(lerp(yCurrentScaled, yLastScaled)), lerp(zCurrentScaled, zLastScaled), lerp(directionCurrentScaled, directionLastScaled));
+        }
+
+
+        /**draws a filled rectangle*/
+        public static void fillRect(double xCurrent, double xLast, double yCurrent, double yLast, double width, double height, int color){
+            DrawUtil.fillRect(putXGO(lerp(xCurrent, xLast)), putYGO(lerp(yCurrent, yLast)), width, height, color);
+        }
+        /**draws a rectangle outline*/
+        public static void strokeRect(double xCurrent, double xLast, double yCurrent, double yLast, double width, double height, int color, double strokeWidth){
+            DrawUtil.strokeRect(putXGO(lerp(xCurrent, xLast)), putYGO(lerp(yCurrent, yLast)), width, height, color, strokeWidth);
+        }
+        /**draws a filled rounded rectangle*/
+        public static void fillRoundedRect(double xCurrent, double xLast, double yCurrent, double yLast, double width, double height, double arc, int color){
+            DrawUtil.fillRoundedRect(putXGO(lerp(xCurrent, xLast)), putYGO(lerp(yCurrent, yLast)), width, height, arc, color);
+        }
+        /**draws a rounded rectangle outline*/
+        public static void strokeRoundedRect(double xCurrent, double xLast, double yCurrent, double yLast, double width, double height, double arc, int color, double strokeWidth){
+            DrawUtil.strokeRoundedRect(putXGO(lerp(xCurrent, xLast)), putYGO(lerp(yCurrent, yLast)), width, height, arc, color, strokeWidth);
+        }
+        /**draws a filled circle*/
+        public static void fillCircle(double xCurrent, double xLast, double yCurrent, double yLast, double radius, int color){
+            DrawUtil.fillCircle(putXGO(lerp(xCurrent, xLast)), putYGO(lerp(yCurrent, yLast)), radius, color);
+        }
+        /**draws a circle outline*/
+        public static void strokeCircle(double xCurrent, double xLast, double yCurrent, double yLast, double radius, int color, double strokeWidth){
+            DrawUtil.strokeCircle(putXGO(lerp(xCurrent, xLast)), putYGO(lerp(yCurrent, yLast)), radius, color, strokeWidth);
+        }
+        /**draws a filled oval*/
+        public static void fillOval(double xCurrent, double xLast, double yCurrent, double yLast, double width, double height, int color){
+            DrawUtil.fillOval(putXGO(lerp(xCurrent, xLast)), putYGO(lerp(yCurrent, yLast)), width, height, color);
+        }
+        /**draws a oval outline*/
+        public static void strokeOval(double xCurrent, double xLast, double yCurrent, double yLast, double width, double height, int color, double strokeWidth){
+            DrawUtil.strokeOval(putXGO(lerp(xCurrent, xLast)), putYGO(lerp(yCurrent, yLast)), width, height, color, strokeWidth);
+        }
+        /**draws a filled line*/
+        public static void fillLine(double startXCurrent, double startXLast, double startYCurrent, double startYLast, double endXCurrent, double endXLast, double endYCurrent, double endYLast, int color){
+            DrawUtil.fillLine(putXGO(lerp(startXCurrent, startXLast)), putYGO(lerp(startYCurrent, startYLast)), putXGO(lerp(endXCurrent, endXLast)), putYGO(lerp(endYCurrent, endYLast)), color);
+        }
+        /**draws a filled text*/
+        public static void fillText(String text, double xCurrent, double xLast, double yCurrent, double yLast, Fonts font, double size, StringAlignment alignment, int color){
+            DrawUtil.fillText(text, putXGO(lerp(xCurrent, xLast)), putYGO(lerp(yCurrent, yLast)), font, size, alignment, color);
+        }
+        /**draws a image*/
+        public static void fillImage(Image image, double xCurrent, double xLast, double yCurrent, double yLast, double width, double height){
+            DrawUtil.fillImage(image, putXGO(lerp(xCurrent, xLast)), putYGO(lerp(yCurrent, yLast)), width, height);
+        }
+        /**draws a model*/
+        public static void fillModel(Models modelKey, double xCurrent, double xLast, double yCurrent, double yLast, double zCurrent, double zLast, double directionCurrent, double directionLast){
+            DrawUtil.fillModel(modelKey, putXGO(lerp(xCurrent, xLast)), putYGO(lerp(yCurrent, yLast)), lerp(zCurrent, zLast), lerp(directionCurrent, directionLast));
+        }
+
+
+        /**draws a filled rectangle, scaled inputs, returns false if culled*/
+        public static boolean fillRectScaledCull(long xCurrentScaled, long xLastScaled, long yCurrentScaled, long yLastScaled, long widthScaled, long heightScaled, int color){
+            long x = lerp(xCurrentScaled, xLastScaled);
+            long y = lerp(yCurrentScaled, yLastScaled);
+            if (cull(x, y, widthScaled, heightScaled)) return false;
+            DrawUtil.fillRectScaled(putXGO(x), putYGO(y), widthScaled, heightScaled, color);
+            return true;
+        }
+        /**draws a rectangle outline, scaled inputs, returns false if culled*/
+        public static boolean strokeRectScaledCull(long xCurrentScaled, long xLastScaled, long yCurrentScaled, long yLastScaled, long widthScaled, long heightScaled, int color, double strokeWidth){
+            long x = lerp(xCurrentScaled, xLastScaled);
+            long y = lerp(yCurrentScaled, yLastScaled);
+            if (cull(x, y, widthScaled, heightScaled)) return false;
+            DrawUtil.strokeRectScaled(putXGO(x), putYGO(y), widthScaled, heightScaled, color, strokeWidth);
+            return true;
+        }
+        /**draws a filled rounded rectangle, scaled inputs, returns false if culled*/
+        public static boolean fillRoundedRectScaledCull(long xCurrentScaled, long xLastScaled, long yCurrentScaled, long yLastScaled, long widthScaled, long heightScaled, double arc, int color){
+            long x = lerp(xCurrentScaled, xLastScaled);
+            long y = lerp(yCurrentScaled, yLastScaled);
+            if (cull(x, y, widthScaled, heightScaled)) return false;
+            DrawUtil.fillRoundedRectScaled(putXGO(x), putYGO(y), widthScaled, heightScaled, arc, color);
+            return true;
+        }
+        /**draws a rounded rectangle outline, scaled inputs, returns false if culled*/
+        public static boolean strokeRoundedRectScaledCull(long xCurrentScaled, long xLastScaled, long yCurrentScaled, long yLastScaled, long widthScaled, long heightScaled, double arc, int color, double strokeWidth){
+            long x = lerp(xCurrentScaled, xLastScaled);
+            long y = lerp(yCurrentScaled, yLastScaled);
+            if (cull(x, y, widthScaled, heightScaled)) return false;
+            DrawUtil.strokeRoundedRectScaled(putXGO(x), putYGO(y), widthScaled, heightScaled, arc, color, strokeWidth);
+            return true;
+        }
+        /**draws a filled circle, scaled inputs, returns false if culled*/
+        public static boolean fillCircleScaledCull(long xCurrentScaled, long xLastScaled, long yCurrentScaled, long yLastScaled, long radiusScaled, int color){
+            long x = lerp(xCurrentScaled, xLastScaled);
+            long y = lerp(yCurrentScaled, yLastScaled);
+            if (cull(x, y, radiusScaled*2, radiusScaled*2)) return false;
+            DrawUtil.fillCircleScaled(putXGO(x), putYGO(y), radiusScaled, color);
+            return true;
+        }
+        /**draws a circle outline, scaled inputs, returns false if culled*/
+        public static boolean strokeCircleScaledCull(long xCurrentScaled, long xLastScaled, long yCurrentScaled, long yLastScaled, long radiusScaled, int color, double strokeWidth){
+            long x = lerp(xCurrentScaled, xLastScaled);
+            long y = lerp(yCurrentScaled, yLastScaled);
+            if (cull(x, y, radiusScaled*2, radiusScaled*2)) return false;
+            DrawUtil.strokeCircleScaled(putXGO(x), putYGO(y), radiusScaled, color, strokeWidth);
+            return true;
+        }
+        /**draws a filled oval, scaled inputs, returns false if culled*/
+        public static boolean fillOvalScaledCull(long xCurrentScaled, long xLastScaled, long yCurrentScaled, long yLastScaled, long widthScaled, long heightScaled, int color){
+            long x = lerp(xCurrentScaled, xLastScaled);
+            long y = lerp(yCurrentScaled, yLastScaled);
+            if (cull(x, y, widthScaled, heightScaled)) return false;
+            DrawUtil.fillOvalScaled(putXGO(x), putYGO(y), widthScaled, heightScaled, color);
+            return true;
+        }
+        /**draws a oval outline, scaled inputs, returns false if culled*/
+        public static boolean strokeOvalScaledCull(long xCurrentScaled, long xLastScaled, long yCurrentScaled, long yLastScaled, long widthScaled, long heightScaled, int color, double strokeWidth){
+            long x = lerp(xCurrentScaled, xLastScaled);
+            long y = lerp(yCurrentScaled, yLastScaled);
+            if (cull(x, y, widthScaled, heightScaled)) return false;
+            DrawUtil.strokeOvalScaled(putXGO(x), putYGO(y), widthScaled, heightScaled, color, strokeWidth);
+            return true;
+        }
+        /**draws a filled line, scaled inputs, returns false if culled*/
+        public static boolean fillLineScaledCull(long startXCurrentScaled, long startXLastScaled, long startYCurrentScaled, long startYLastScaled, long endXCurrentScaled, long endXLastScaled, long endYCurrentScaled, long endYLastScaled, int color){
+            long startX = lerp(startXCurrentScaled, startXLastScaled);
+            long startY = lerp(startYCurrentScaled, startYLastScaled);
+            long endX = lerp(endXCurrentScaled, endXLastScaled);
+            long endY = lerp(endYCurrentScaled, endYLastScaled);
+            if (cull(startX, startY, endX-startX, endY-startX)) return false;
+            DrawUtil.fillLineScaled(putXGO(startX), putYGO(startY), putXGO(endX), putYGO(endY), color);
+            return true;
+        }
+        /**draws a filled text, scaled inputs, returns false if culled*/
+        public static boolean fillTextScaledCull(String text, long xCurrentScaled, long xLastScaled, long yCurrentScaled, long yLastScaled, Fonts font, double size, StringAlignment alignment){
+            long x = lerp(xCurrentScaled, xLastScaled);
+            long y = lerp(yCurrentScaled, yLastScaled);
+//            if (cull(x, y, widthScaled, heightScaled)) return;//TODO:fix this
+            DrawUtil.fillTextScaled(text, putXGO(x), putYGO(y), font, size, alignment);
+            return true;
+        }
+        /**draws a image, scaled inputs, returns false if culled*/
+        public static boolean fillImageScaledCull(Image image, long xCurrentScaled, long xLastScaled, long yCurrentScaled, long yLastScaled, long widthScaled, long heightScaled){
+            long x = lerp(xCurrentScaled, xLastScaled);
+            long y = lerp(yCurrentScaled, yLastScaled);
+            if (cull(x, y, widthScaled, heightScaled)) return false;
+            DrawUtil.fillImageScaled(image, putXGO(x), putYGO(y), widthScaled, heightScaled);
+            return true;
+        }
+        /**draws a model, scaled inputs, returns false if culled*/
+        public static boolean fillModelScaledCull(Models modelKey, long xCurrentScaled, long xLastScaled, long yCurrentScaled, long yLastScaled, long zCurrentScaled, long zLastScaled, long directionCurrentScaled, long directionLastScaled){
+            long x = lerp(xCurrentScaled, xLastScaled);
+            long y = lerp(yCurrentScaled, yLastScaled);//do something with z here
+//            if (cull(x, y, widthScaled, heightScaled)) return;//TODO:fix this
+            DrawUtil.fillModelScaled(modelKey, putXGO(x), putYGO(y), lerp(zCurrentScaled, zLastScaled), lerp(directionCurrentScaled, directionLastScaled));
+            return true;
+        }
+
+
+        /**draws a filled rectangle, returns false if culled*/
+        public static boolean fillRectCull(double xCurrent, double xLast, double yCurrent, double yLast, double width, double height, int color){
+            double x = lerp(xCurrent, xLast);
+            double y = lerp(yCurrent, yLast);
+            if (cull(x, y, width, height)) return false;
+            DrawUtil.fillRect(putXGO(x), putYGO(y), width, height, color);
+            return true;
+        }
+        /**draws a rectangle outline, returns false if culled*/
+        public static boolean strokeRectCull(double xCurrent, double xLast, double yCurrent, double yLast, double width, double height, int color, double strokeWidth){
+            double x = lerp(xCurrent, xLast);
+            double y = lerp(yCurrent, yLast);
+            if (cull(x, y, width, height)) return false;
+            DrawUtil.strokeRect(putXGO(x), putYGO(y), width, height, color, strokeWidth);
+            return true;
+        }
+        /**draws a filled rounded rectangle, returns false if culled*/
+        public static boolean fillRoundedRectCull(double xCurrent, double xLast, double yCurrent, double yLast, double width, double height, double arc, int color){
+            double x = lerp(xCurrent, xLast);
+            double y = lerp(yCurrent, yLast);
+            if (cull(x, y, width, height)) return false;
+            DrawUtil.fillRoundedRect(putXGO(x), putYGO(y), width, height, arc, color);
+            return true;
+        }
+        /**draws a rounded rectangle outline, returns false if culled*/
+        public static boolean strokeRoundedRectCull(double xCurrent, double xLast, double yCurrent, double yLast, double width, double height, double arc, int color, double strokeWidth){
+            double x = lerp(xCurrent, xLast);
+            double y = lerp(yCurrent, yLast);
+            if (cull(x, y, width, height)) return false;
+            DrawUtil.strokeRoundedRect(putXGO(x), putYGO(y), width, height, arc, color, strokeWidth);
+            return true;
+        }
+        /**draws a filled circle, returns false if culled*/
+        public static boolean fillCircleCull(double xCurrent, double xLast, double yCurrent, double yLast, double radius, int color){
+            double x = lerp(xCurrent, xLast);
+            double y = lerp(yCurrent, yLast);
+            if (cull(x, y, radius*2, radius*2)) return false;
+            DrawUtil.fillCircle(putXGO(x), putYGO(y), radius, color);
+            return true;
+        }
+        /**draws a circle outline, returns false if culled*/
+        public static boolean strokeCircleCull(double xCurrent, double xLast, double yCurrent, double yLast, double radius, int color, double strokeWidth){
+            double x = lerp(xCurrent, xLast);
+            double y = lerp(yCurrent, yLast);
+            if (cull(x, y, radius*2, radius*2)) return false;
+            DrawUtil.strokeCircle(putXGO(x), putYGO(y), radius, color, strokeWidth);
+            return true;
+        }
+        /**draws a filled oval, returns false if culled*/
+        public static boolean fillOvalCull(double xCurrent, double xLast, double yCurrent, double yLast, double width, double height, int color){
+            double x = lerp(xCurrent, xLast);
+            double y = lerp(yCurrent, yLast);
+            if (cull(x, y, width, height)) return false;
+            DrawUtil.fillOval(putXGO(x), putYGO(y), width, height, color);
+            return true;
+        }
+        /**draws a oval outline, returns false if culled*/
+        public static boolean strokeOvalCull(double xCurrent, double xLast, double yCurrent, double yLast, double width, double height, int color, double strokeWidth){
+            double x = lerp(xCurrent, xLast);
+            double y = lerp(yCurrent, yLast);
+            if (cull(x, y, width, height)) return false;
+            DrawUtil.strokeOval(putXGO(x), putYGO(y), width, height, color, strokeWidth);
+            return true;
+        }
+        /**draws a filled line, returns false if culled*/
+        public static boolean fillLineCull(double startXCurrent, double startXLast, double startYCurrent, double startYLast, double endXCurrent, double endXLast, double endYCurrent, double endYLast, int color){
+            double startX = lerp(startXCurrent, startXLast);
+            double startY = lerp(startYCurrent, startYLast);
+            double endX = lerp(endXCurrent, endXLast);
+            double endY = lerp(endYCurrent, endYLast);
+            if (cull(startX, startY, endX-startX, endY-startX)) return false;
+            DrawUtil.fillLine(putXGO(startX), putYGO(startY), putXGO(endX), putYGO(endY), color);
+            return true;
+        }
+        /**draws a filled text, returns false if culled*/
+        public static boolean fillTextCull(String text, double xCurrent, double xLast, double yCurrent, double yLast, Fonts font, double size, StringAlignment alignment, int color){
+            double x = lerp(xCurrent, xLast);
+            double y = lerp(yCurrent, yLast);
+//            if (cull(x, y, width, height)) return;//TODO: fix
+            DrawUtil.fillText(text, putXGO(x), putYGO(y), font, size, alignment, color);
+            return true;
+        }
+        /**draws a image, returns false if culled*/
+        public static boolean fillImageCull(Image image, double xCurrent, double xLast, double yCurrent, double yLast, double width, double height){
+            double x = lerp(xCurrent, xLast);
+            double y = lerp(yCurrent, yLast);
+            if (cull(x, y, width, height)) return false;
+            DrawUtil.fillImage(image, putXGO(x), putYGO(y), width, height);
+            return true;
+        }
+        /**draws a model, returns false if culled*/
+        public static boolean fillModelCull(Models modelKey, double xCurrent, double xLast, double yCurrent, double yLast, double zCurrent, double zLast, double directionCurrent, double directionLast){
+            double x = lerp(xCurrent, xLast);
+            double y = lerp(yCurrent, yLast);
+//            if (cull(x, y, width, height)) return;//TODO: fix
+            DrawUtil.fillModel(modelKey, putXGO(x), putYGO(y), lerp(zCurrent, zLast), lerp(directionCurrent, directionLast));
+            return true;
+        }
+
+    }
+
+    public static void clearCanvas() {
+        gc.clearRect(0, 0, gc.getCanvas().getWidth()+1, gc.getCanvas().getHeight()+1);
+    }
+
+    public static void fillBackground() {
         double scale = Viewport.getScale();
-        setColor(0, 0, 0);
-        gc.fillRect(0, 0, StrictMath.ceil(1920 * scale + (Viewport.getXOffset() * 2)), StrictMath.ceil(1080 * scale + (Viewport.getYOffset() * 2)));
-        setColor(50, 50, 50);
-        fillRect(0, 0, 1920, 1080);
+        setColor(0x000000FF);
+        gc.fillRect(0, 0, 1920 * scale + (Viewport.getXOffset() * 2)+1, 1080 * scale + (Viewport.getYOffset() * 2)+1);
+        fillRect(0, 0, 1920, 1080, 0x323232FF);
     }
 
-    public void fillOffsetEdge() {
+    public static void fillOffsetEdge() {
         double scale = Viewport.getScale();
-        setColor(0, 0, 0);
+        setColor(0x000000FF);
         gc.fillRect(0, 0, 1920 * scale + (Viewport.getXOffset() * 2), Viewport.getYOffset());
         gc.fillRect(0, 0, Viewport.getXOffset(), 1080 * scale + Viewport.getYOffset() * 2);
         gc.fillRect(1920 * scale + Viewport.getXOffset(), 0, Viewport.getXOffset(), 1080 * scale + (Viewport.getYOffset() * 2));
