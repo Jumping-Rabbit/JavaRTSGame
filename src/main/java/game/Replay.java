@@ -29,14 +29,14 @@ public class Replay {
             Files.createDirectories(Paths.get(directory));
             //add map file
         } catch (IOException e) {
-            LoggerUtil.logError(e);
+            LoggerUtil.log(e);
         }
 
         file = new File(directory + "/replay.json");
         try {
             FileUtils.copyDirectory(map, new File(directory));
         } catch (IOException e) {
-            LoggerUtil.logError(e);
+            LoggerUtil.log(e);
         }
         objectMapper.writerWithDefaultPrettyPrinter().writeValue(file, objectMapper.createObjectNode());
         root = objectMapper.readTree(file);
@@ -61,7 +61,7 @@ public class Replay {
         try {
             objectMapper.writerWithDefaultPrettyPrinter().writeValue(file, root);
         } catch (Exception e) {
-            LoggerUtil.logError(e);
+            LoggerUtil.log(e);
         }
     }
 

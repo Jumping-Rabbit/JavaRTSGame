@@ -106,6 +106,14 @@ public abstract class Unit extends Entity {
         DrawUtil.Game.fillModelScaled(model, x, lastX, y, lastY, z, lastZ, direction, lastDirection);
     }
 
+    @Override
+    public void drawTarget(){
+        if (unitState != UnitState.MOVING){
+            return;
+        }//TODO:cull
+        DrawUtil.Game.fillCircleScaled(targetX-50000, targetX-50000, targetY-50000, targetY-50000, 100000, 0x00FF00FF);
+    }
+
     public void updateOnFrame() {
         if (!commands.isEmpty()) {
             for (Command command : commands) {

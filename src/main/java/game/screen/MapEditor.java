@@ -90,7 +90,7 @@ public class MapEditor extends Screen {
             Files.createDirectories(Paths.get(directory + "/objects"));
             Files.createDirectories(Paths.get(directory + "/tiles"));
         } catch (IOException e) {
-            LoggerUtil.logError(e);
+            LoggerUtil.log(e);
         }
 //        JSONObject map = new JSONObject();
 //        map.put("name", directory.substring(directory.lastIndexOf("/") + 1));

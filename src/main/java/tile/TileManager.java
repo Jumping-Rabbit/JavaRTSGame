@@ -2,7 +2,6 @@ package tile;
 
 import game.Viewport;
 import game.screen.Game;
-import utils.DrawUtil;
 import utils.LoggerUtil;
 
 import java.awt.*;
@@ -60,7 +59,7 @@ public class TileManager {
 
 
         } catch (FileNotFoundException e) {
-            LoggerUtil.logError(e);
+            LoggerUtil.log(e);
         }
     }
 

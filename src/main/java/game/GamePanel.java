@@ -5,19 +5,23 @@ import game.screen.*;
 import inputHandler.Actions;
 import inputHandler.Input;
 import inputHandler.InputHandler;
-import inputHandler.Keys;
 import javafx.application.Platform;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.text.FontSmoothingType;
+import oshi.ffm.SystemInfo;
+import oshi.hardware.CentralProcessor;
+import oshi.hardware.GraphicsCard;
+import oshi.hardware.HardwareAbstractionLayer;
+import oshi.hardware.Sensors;
 import utils.*;
 
 import java.text.DecimalFormat;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.logging.Logger;
 
 
 public class GamePanel extends Canvas {
@@ -43,6 +47,9 @@ public class GamePanel extends Canvas {
     private MapEditor mapEditor;
     private Settings settings;
     private PerformanceStorage performanceStorage;
+    private HardwarePerformance hardwarePerformance;
+
+
 
     public GamePanel() {
         super(0, 0);
@@ -124,6 +131,7 @@ public class GamePanel extends Canvas {
         DrawUtil.setGC(this.getGraphicsContext2D());
         titleScreen = new TitleScreen();
         performanceStorage = new PerformanceStorage();
+        hardwarePerformance = new HardwarePerformance();
     }
 
     private synchronized GameStatus getGameStatus() {
@@ -169,13 +177,13 @@ public class GamePanel extends Canvas {
     public void startGameThread() {
         drawThread = new Thread(new drawThread(performanceStorage));
         logicThread = new Thread(new logicThread(performanceStorage));
-        drawThread.start();
-        logicThread.start();
         loadingScreen = new LoadingScreen(7 + Models.values().length * 16);
+        drawThread.start();
+
         try {
             Thread.sleep(250);
         } catch (InterruptedException e) {
-            LoggerUtil.logError(e);
+            LoggerUtil.log(e);
         }
         Thread loader = new Thread(() -> {
             loadingScreen.addText("init Logger");
@@ -217,18 +225,28 @@ public class GamePanel extends Canvas {
             DrawUtil.init(loadingScreen);
             System.out.println("DrawUtil time: " + (System.nanoTime()-startTime)/1000000000d);
             loadingScreen.addText("done");
+            LoggerUtil.log("startup");
+            SystemInfo si = new SystemInfo();
+            LoggerUtil.log(LogType.EVENT, "os:", si.getOperatingSystem(), "cpu:", si.getHardware().getProcessor().getProcessorIdentifier().getName(), "gpu:", si.getHardware().getGraphicsCards().getFirst().getName(), "ram:", si.getHardware().getMemory().getTotal());
 
             try {
                 Thread.sleep(500);
             } catch (InterruptedException e) {
-                LoggerUtil.logError(e);
+                LoggerUtil.log(e);
             }
             setGameStatus(GameStatus.TITLESCREEN);
             SoundManager.startBGM();
         });
         loader.start();
-
-
+//        try {
+//            loader.join();
+//        } catch (InterruptedException e) {
+//
+//            LoggerUtil.log(e);
+//
+//        }
+        System.out.println("start");
+        logicThread.start();
     }
 
     private String formatString(Double num, String format) {
@@ -246,6 +264,7 @@ public class GamePanel extends Canvas {
                 if (tickScreen.isExit()) {
                     setTitleScreen(new TitleScreen());
                     setGameStatus(GameStatus.TITLESCREEN);
+                    LoggerUtil.log("open title screen");
                 } else {
                     setGame((Game) tickScreen);
                 }
@@ -258,15 +277,18 @@ public class GamePanel extends Canvas {
                         case MAP_EDITOR:
                             setMapEditor(new MapEditor());
                             setGameStatus(GameStatus.MAP_EDITOR);
+                            LoggerUtil.log("open mapEditor");
                             break;
                         case SETTINGS:
                             setSettings(settings = new Settings(settingsManager));
                             setGameStatus(GameStatus.SETTINGS);
+                            LoggerUtil.log("open settings");
                             break;
                         case CUSTOM:
                             if (titleScreen.getSelectedFile() == null) break;
                             setGame(new Game(getTitleScreen().getSelectedFile()));
                             setGameStatus(GameStatus.GAME);
+                            LoggerUtil.log("open custom");
                             break;
                     }
                     getTitleScreen().resetSelections();
@@ -280,6 +302,7 @@ public class GamePanel extends Canvas {
                 setMapEditor((MapEditor) tickScreen);
                 if (getMapEditor().isExit()) {
                     setGameStatus(GameStatus.TITLESCREEN);
+                    LoggerUtil.log("open title screen");
                 }
                 break;
             case SETTINGS:
@@ -288,6 +311,7 @@ public class GamePanel extends Canvas {
                 setSettings((Settings) tickScreen);
                 if (getSettings().isExit()) {
                     setGameStatus(GameStatus.TITLESCREEN);
+                    LoggerUtil.log("open title screen");
                 }
                 break;
         }
@@ -333,7 +357,10 @@ public class GamePanel extends Canvas {
         DrawUtil.fillText("fps:" + formatString(performanceStorage.getFPS(), "00000.00") + " tps:" + formatString(performanceStorage.getTPS(), "00"), 5, 0, Fonts.DEFAULT, 10, StringAlignment.TOP_LEFT, 0xFFFFFFFF);
         DrawUtil.fillText("fps1%:" + formatString(performanceStorage.getPeakDT(), "0000.00") + " fps0.1%:" + formatString(performanceStorage.getPeakPeakDT(), "0000.00"), 5, 10, Fonts.DEFAULT, 10, StringAlignment.TOP_LEFT, 0xFFFFFFFF);
         DrawUtil.fillText("ttu:" + formatString(performanceStorage.getTickTimeUsed(), "0000.00") + "%" + " ttu1%:" + formatString(performanceStorage.getTickTimeUsedLow(), "0000.00") + "%" + " late frames:" + performanceStorage.getLateFrames(), 5, 20, Fonts.DEFAULT, 10, StringAlignment.TOP_LEFT, 0xFFFFFFFF);
-        DrawUtil.fillText("BGM: " + SoundManager.getBgmName(), 1915, 0, Fonts.DEFAULT, 10, StringAlignment.TOP_RIGHT, 0xFFFFFFFF);
+
+        DrawUtil.fillText(hardwarePerformance.getCpuStats(), 1915, 0, Fonts.DEFAULT, 10, StringAlignment.TOP_RIGHT, 0xFFFFFFFF);
+        DrawUtil.fillText(hardwarePerformance.getRamStats(), 1915, 10, Fonts.DEFAULT, 10, StringAlignment.TOP_RIGHT, 0xFFFFFFFF);
+        DrawUtil.fillText("BGM: " + SoundManager.getBgmName(), 1915, 20, Fonts.DEFAULT, 10, StringAlignment.TOP_RIGHT, 0xFFFFFFFF);
     }
 
     enum GameStatus {
@@ -369,6 +396,7 @@ public class GamePanel extends Canvas {
                     }
                     performanceStorage.addTFrame();
                     performanceStorage.addTickTimeUsed(currentTime); //targetFrameInterval accounted for percentantage change
+                    hardwarePerformance.tick();
                     continue;
                 }
                 waited = true;
@@ -460,7 +488,7 @@ class PerformanceStorage {
         }
         loggerCooldown--;
         if (loggerCooldown <= 0){
-            LoggerUtil.logPerformance(getFPS(), getPeakDT(), getPeakPeakDT(), getTPS(), getTickTimeUsed(), getTickTimeUsedLow(), getLateFrames());
+            LoggerUtil.log(LogType.PERFORMANCE, "fps:", getFPS(), "dt1%:", getPeakDT(), "dt0.1%:", getPeakPeakDT(), "tps:",  getTPS(), "ttu:", getTickTimeUsed(), "ttu1%:", getTickTimeUsedLow(), "late frames:", getLateFrames());
         }
     }
 
@@ -542,4 +570,52 @@ class PerformanceStorage {
     public int getLateFrames() {
         return lateFrames.get();
     }
+}
+class HardwarePerformance{
+    SystemInfo si = new SystemInfo();
+    HardwareAbstractionLayer hal = si.getHardware();
+    Sensors sensors = hal.getSensors();
+    CentralProcessor cpu = hal.getProcessor();
+
+
+    private double cpuLoad;
+    private double cpuTemp;
+    private String cpuStats = "";
+    private String ramStats = "";
+    public synchronized String getCpuStats(){
+        return cpuStats;
+    }
+    public synchronized String getRamStats(){
+        return ramStats;
+    }
+
+    private String cpuName;
+    private long[] prevTicks = cpu.getSystemCpuLoadTicks();
+
+    private double ramTotal;
+    private double ramUnused;
+    private double ramUsed;
+    public HardwarePerformance(){
+        cpuName = cpu.getProcessorIdentifier().getName();
+    }
+    private long lastStatsUpdate = System.nanoTime();
+    public synchronized void tick(){
+        long now = System.nanoTime();
+        long delta = now - lastStatsUpdate;
+
+        if (delta >= 500000000L) {
+            ramTotal = hal.getMemory().getTotal()/1073741824d;
+            ramUnused = hal.getMemory().getAvailable()/1073741824d;
+            ramUsed = si.getOperatingSystem().getProcess(si.getOperatingSystem().getProcessId()).getResidentMemory()/1073741824d;
+            cpuLoad = cpu.getSystemCpuLoadBetweenTicks(prevTicks);
+            prevTicks = cpu.getSystemCpuLoadTicks();
+            cpuTemp = sensors.getCpuTemperature();
+            lastStatsUpdate = now;
+            LoggerUtil.log(PerformanceType.HARDWARE, "ram total:", ramTotal, "ram unused:", ramUnused,"ram used:", ramUsed, "cpu load:", cpuLoad, "cpuTemp:", cpuTemp);
+            cpuStats = "cpu load:"+ String.format("%.2f", cpuLoad*100)+ " cpuTemp:"+ String.format("%.2f", cpuTemp);
+            ramStats = "used:"+ String.format("%.2f", ramUsed)+ " ram unused:"+ String.format("%.2f", ramUnused);
+        }
+
+    }
+
 }

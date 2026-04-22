@@ -42,7 +42,7 @@ public class SoundManager {
                         }
                     });
         } catch (IOException e) {
-            LoggerUtil.logError(e);
+            LoggerUtil.log(e);
         }
     }
 
@@ -111,7 +111,7 @@ public class SoundManager {
                 }
 
             } catch (InterruptedException e) {
-                LoggerUtil.logError(e);
+                LoggerUtil.log(e);
             }
         }
     }

@@ -76,7 +76,7 @@ public class ModelLoaderUtil {
             try {
                 latch.await();
             } catch (InterruptedException e) {
-                LoggerUtil.logError(e);
+                LoggerUtil.log(e);
             }
         }
         return images;

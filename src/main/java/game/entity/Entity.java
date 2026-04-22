@@ -147,6 +147,8 @@ public abstract class Entity {
         }
     }
 
+    public abstract void drawTarget();
+
     public long getRadius() {
         return model.getScaledHalfWidth();
     }

@@ -16,9 +16,7 @@ import javafx.geometry.Rectangle2D;
 import tile.TileManager;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
-import utils.CollisionUtil;
-import utils.DrawUtil;
-import utils.NumUtil;
+import utils.*;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -57,7 +55,7 @@ public class Game extends Screen {
     public Game(File map, int playerNum) {
         exit = false;
         units = new ArrayList<>();
-        for (int i = 0; i < 20000; i++) {
+        for (int i = 0; i < 25000; i++) {
             units.add(new Marine((int) (StrictMath.random() * 7680), (int) (StrictMath.random() * 4320), players.BLUE));
         }
         buildings = new ArrayList<>();
@@ -157,20 +155,20 @@ public class Game extends Screen {
 
     private void calculatePhysics() {
         for (int iter = 0; iter < 1; iter++) {
-//            long t1 = System.nanoTime();
+            long t1 = System.nanoTime();
             setSpatialGrid();
-//            long t2 = System.nanoTime();
+            long t2 = System.nanoTime();
 
             List<CollisionResult> collisions = pool.invoke(new CollisionDetectionTask(0, units.size()));
-//            long t3 = System.nanoTime();
+            long t3 = System.nanoTime();
 
             for (CollisionResult res : collisions) {
                 applyPush(res.u1, -res.moveX, -res.moveY);
                 applyPush(res.u2, res.moveX, res.moveY);
             }
-//            long t4 = System.nanoTime();
-
-//            System.out.println("spatial grid: " + (t2-t1)/1000000d + "detect: " + (t3-t2)/1000000d + "ms  resolve: " + (t4-t3)/1000000d + "collisions amount: " + collisions.size());
+            long t4 = System.nanoTime();
+            if (tickNum % 2 == 0) LoggerUtil.log(PerformanceType.PHYSICS, "spatial grid:", (t2-t1)/1000000d, "detect:", (t3-t2)/1000000d, "resolve:", (t4-t3)/1000000d, "collisions:", collisions.size());
+//            System.out.println("spatial grid: " + (t2-t1)/1000000d + "detect: " + (t3-t2)/1000000d + "resolve: " + (t4-t3)/1000000d + "collisions amount: " + collisions.size());
         }
         for (Unit unit : units) {
             if (unit.getX() >= mapWidth) unit.setX(mapWidth-1);
@@ -181,6 +179,7 @@ public class Game extends Screen {
     }
 
     public void updateOnFrame() {
+        long t1 = System.nanoTime();
         Replay.addTick(InputHandler.getInputs(), tickNum);
         tickNum++;
         for (Input input : InputHandler.getInputs()) {
@@ -225,6 +224,7 @@ public class Game extends Screen {
                     break;
             }
         }
+        long t2 = System.nanoTime();
 
 //        for (Building building : buildings) {
 //            building.updateOnFrame();
@@ -234,18 +234,25 @@ public class Game extends Screen {
 //        }
         buildings.parallelStream().forEach(Building::updateOnFrame);
         units.parallelStream().forEach(Unit::updateOnFrame);
+        long t3 = System.nanoTime();
 
         calculatePhysics();
         if (!InputHandler.MouseDown()) {
             selectedRectangle = null;
         }
+        long t4 = System.nanoTime();
+        if (tickNum % 2 == 0) LoggerUtil.log(PerformanceType.TICK, "input:", (t2-t1)/1000000d, "update:", (t3-t2)/1000000d, "physics:" + (t4-t3)/1000000d);
+//        System.out.println("input: " + (t2-t1)/1000000d + "update: " + (t3-t2)/1000000d + "ms  physics: " + (t4-t3)/1000000d);
     }
 
     public void draw() {
         DrawUtil.setGameViewport(gameViewport);
 
-        visibleEntities.clear();
+        for (Unit unit : units){
+            unit.drawTarget();
+        }
 
+        visibleEntities.clear();
         long viewX = gameViewport.getX();
         long viewY = gameViewport.getY();
         long viewWidth = 19200000;

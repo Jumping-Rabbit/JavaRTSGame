@@ -1,94 +1,90 @@
 package utils;
 
-import com.sun.javafx.tk.quantum.PerformanceLogger;
-
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class LoggerUtil {
-    private static BufferedWriter performanceLogger;
-    private static BufferedWriter errorLogger;
-    private static BufferedWriter eventLogger;
+    private static BufferedWriter logger;
     private static ExecutorService executor;
     private static StringBuilder logBuilder;
     public static void init(){
         try {
-            performanceLogger = new BufferedWriter(new FileWriter("resources/logs/performanceLog.txt"));
-            errorLogger = new BufferedWriter(new FileWriter("resources/logs/errorLog.txt"));
-            eventLogger = new BufferedWriter(new FileWriter("resources/logs/eventLog.txt"));
+            logger = new BufferedWriter(new FileWriter("resources/logs/log.txt", true));
             executor = Executors.newSingleThreadExecutor(runnable -> {
                 Thread thread = new Thread(runnable);
                 thread.setDaemon(true);
                 return thread;
             });
         } catch (IOException e) {
-            LoggerUtil.logError(e);
+            LoggerUtil.log(e);
         }
     }
-    public static void logPerformance(double fps, double fps1, double fps01, double tps, double ttu, double ttu1, int lateFrames){
+    /**logs anything*/
+    public static void log(LogType logType, Object... objects){
         executor.execute(() -> {
             try {
-                logBuilder = new StringBuilder(100);
-                logBuilder.append(Instant.now().toString());
-                logBuilder.append(" fps:");
-                logBuilder.append(fps);
-                logBuilder.append(" fps1:");
-                logBuilder.append(fps1);
-                logBuilder.append(" fps01:");
-                logBuilder.append(fps01);
-                logBuilder.append(" tps:");
-                logBuilder.append(tps);
-                logBuilder.append(" ttu:");
-                logBuilder.append(ttu);
-                logBuilder.append(" ttu1:");
-                logBuilder.append(ttu1);
-                logBuilder.append(" lf:");
-                logBuilder.append(lateFrames);
-                performanceLogger.write(logBuilder.toString());
-                performanceLogger.newLine();
+                StringBuilder body = new StringBuilder();
+                for (Object object : objects){
+                    body.append(object);
+                }
+                logger.write("[" + Instant.now().toString() +"] " + logType.getString() + body);
+                logger.newLine();
             } catch (IOException e) {
-                logError(e);
+                log(e);
             }
         });
     }
-    public static void logError(Exception err){
+    /**logs performance*/
+    public static void log(PerformanceType performanceType, Object... objects){
+        executor.execute(() -> {
+            try {
+                StringBuilder body = new StringBuilder();
+                for (Object object : objects){
+                    body.append(object);
+                }
+                logger.write("[" + Instant.now().toString() +"] " + LogType.PERFORMANCE.getString() + performanceType.getString() + body);
+                logger.newLine();
+            } catch (IOException e) {
+                log(e);
+            }
+        });
+    }
+    /**logs an error*/
+    public static void log(Exception err){
         executor.execute(() -> {
             try {
                 logBuilder = new StringBuilder(100);
-                logBuilder.append(Instant.now().toString());
-                logBuilder.append(" ");
                 logBuilder.append(err.getMessage());
-                errorLogger.write(logBuilder.toString());
-                errorLogger.newLine();
+                logger.write("[" + Instant.now().toString() +"] " + LogType.ERROR.getString() + logBuilder);
+                logger.newLine();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         });
     }
-    public static void logEvent(String string){
+
+    /**logs an event*/
+    public static void log(String string){
         executor.execute(() -> {
             try {
                 logBuilder = new StringBuilder(100);
                 logBuilder.append(Instant.now().toString());
                 logBuilder.append(" ");
                 logBuilder.append(string);
-                eventLogger.write(logBuilder.toString());
-                eventLogger.newLine();
+                logger.write("[" + Instant.now().toString() +"] " + LogType.EVENT.getString() + logBuilder);
+                logger.newLine();
             } catch (IOException e) {
-                logError(e);
+                log(e);
             }
         });
     }
     public static void flush() {
         try {
-            performanceLogger.flush();
-            errorLogger.flush();
-            eventLogger.flush();
+            logger.flush();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

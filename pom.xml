@@ -74,6 +74,11 @@
             <artifactId>jackson-databind</artifactId>
             <version>3.1.0</version>
         </dependency>
+        <dependency>
+            <groupId>com.github.oshi</groupId>
+            <artifactId>oshi-core-java25</artifactId>
+            <version>6.11.1</version>
+        </dependency>
 
     </dependencies>
 
