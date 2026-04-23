@@ -8,21 +8,24 @@ import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 import utils.LoggerUtil;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Replay {
     private static File file;
     private static ObjectMapper objectMapper = new ObjectMapper();
-    private static JsonNode root;
+    private static ExecutorService executor;
+    private static PrintWriter writer;
 
     public static void newReplay(File map) {
+        //            thread.setDaemon(true);
         LocalDateTime time = LocalDateTime.now();
         String directory = "resources/replays/" + DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss").format(time);//use -SSSSSSSSS for nanosecs
         try {
@@ -32,17 +35,29 @@ public class Replay {
             LoggerUtil.log(e);
         }
 
-        file = new File(directory + "/replay.json");
+        file = new File(directory + "/replay.jsonl");
         try {
             FileUtils.copyDirectory(map, new File(directory));
         } catch (IOException e) {
             LoggerUtil.log(e);
         }
-        objectMapper.writerWithDefaultPrettyPrinter().writeValue(file, objectMapper.createObjectNode());
-        root = objectMapper.readTree(file);
+        executor = Executors.newSingleThreadExecutor(Thread::new);
+        try {
+            writer = new PrintWriter(new BufferedWriter(new FileWriter(directory + "/replay.jsonl")));
+        } catch (IOException e) {
+            LoggerUtil.log(e);
+        }
+
+
+
+//        objectMapper.writerWithDefaultPrettyPrinter().writeValue(file, objectMapper.createObjectNode());
+//        root = objectMapper.readTree(file);
     }
 
     public static void addTick(ArrayDeque<Input> inputs, long tickNum) {
+        if (executor == null || executor.isShutdown() || executor.isTerminated()) {
+            return;
+        }
         ArrayNode newTick = objectMapper.createArrayNode();
         for (Input input : inputs) {
             ObjectNode node = objectMapper.createObjectNode();
@@ -54,23 +69,39 @@ public class Replay {
             node.put("scroll", input.getScroll());
             node.put("shift", input.getIsShiftHeld());
             node.put("key", input.getKey().getKeyHandlerString());
+            node.put("action", input.getAction().name());
             newTick.add(node);
         }
 
-        root = ((ObjectNode) root).set(String.valueOf(tickNum), newTick);
-        try {
-            objectMapper.writerWithDefaultPrettyPrinter().writeValue(file, root);
-        } catch (Exception e) {
-            LoggerUtil.log(e);
-        }
+//        root = ((ObjectNode) root).set(String.valueOf(tickNum), newTick);
+        executor.execute(() -> {
+            try {
+                writer.println(objectMapper.writeValueAsString(newTick));
+            } catch (Exception e) {
+                LoggerUtil.log(e);
+            }
+        });
     }
 
     public static void openReplay(File file) {
         Replay.file = file;
-        root = objectMapper.readTree(file);
+//        root = objectMapper.readTree(file); change to jsonL
     }
 
     public static ArrayList<Input> getTick() {
-        return null;
+        return null;//change to jsonL
+    }
+
+    public static void flush(){
+        if (executor != null)
+        executor.shutdown();
+        try {
+            if (executor.awaitTermination(5, java.util.concurrent.TimeUnit.SECONDS)) {
+                writer.flush();
+                writer.close();
+            }
+        } catch (InterruptedException e) {
+            LoggerUtil.log(e);
+        }
     }
 }

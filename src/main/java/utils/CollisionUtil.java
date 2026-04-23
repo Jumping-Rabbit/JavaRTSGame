@@ -37,28 +37,17 @@ public class CollisionUtil {
     }
 
     public static boolean RectCircleCollision(double x1, double y1, double r1, double x2, double y2, double width2, double height2) {
-        var distX = StrictMath.abs((x1 + r1) - x2 - width2 / 2);
-        var distY = StrictMath.abs((y1 + r1) - y2 - height2 / 2);
+        double centerX = x1 + r1;
+        double centerY = y1 + r1;
 
-        if (distX > (width2 / 2 + r1)) {
-            return false;
-        }
-        if (distY > (height2 / 2 + r1)) {
-            return false;
-        }
+        double closestX = Math.max(x2, Math.min(centerX, x2 + width2));
+        double closestY = Math.max(y2, Math.min(centerY, y2 + height2));
 
-        if (distX <= (width2 / 2)) {
-            return true;
-        }
-        if (distY <= (height2 / 2)) {
-            return true;
-        }
+        double distanceX = centerX - closestX;
+        double distanceY = centerY - closestY;
 
-        var dx = distX - width2 / 2;
-        var dy = distY - height2 / 2;
-        return (dx * dx + dy * dy <= (r1 * r1));
+        return (distanceX * distanceX + distanceY * distanceY) < (r1 * r1);
     }
-
     public static boolean RectLineCollision(double x11, double y11, double x12, double y12, double x2, double y2, double width2, double height2) {
         return LineLineCollision(x11, y11, x12, y12, x2, y2, x2, y2 + height2) || //left
                 LineLineCollision(x11, y11, x12, y12, x2, y2, x2 + width2, y2) || //top
@@ -89,10 +78,12 @@ public class CollisionUtil {
     }
 
     public static boolean PointCircleCollision(double x1, double y1, double x2, double y2, double r2) {
-        double distX = x1 - x2;
-        double distY = y1 - y2;
-        double distSq = (distX * distX) + (distY * distY);//bounding box check not good becuase calculating the
-        return distSq <= r2 * r2;//bounding box is about as expensive as just checking it without it
+        double centerX = x2 + r2;
+        double centerY = y2 + r2;
+        double distX = x1 - centerX;
+        double distY = y1 - centerY;
+        double distSq = (distX * distX) + (distY * distY);
+        return distSq <= (r2 * r2);
     }
 
     public static boolean CircleLineCollision() {

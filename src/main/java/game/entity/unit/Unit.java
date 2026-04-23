@@ -110,8 +110,8 @@ public abstract class Unit extends Entity {
     public void drawTarget(){
         if (unitState != UnitState.MOVING){
             return;
-        }//TODO:cull
-        DrawUtil.Game.fillCircleScaled(targetX-50000, targetX-50000, targetY-50000, targetY-50000, 100000, 0x00FF00FF);
+        }
+        DrawUtil.Game.fillCircleScaledCull(targetX-50000, targetX-50000, targetY-50000, targetY-50000, 100000, 0x00FF00FF);
     }
 
     public void updateOnFrame() {

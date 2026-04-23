@@ -7,7 +7,7 @@
     "displayMode" : "windowed"
   },
   "audio" : {
-    "masterVolume" : 50,
+    "masterVolume" : 0,
     "BGMVolume" : 0,
     "SFXVolume" : 10
   }

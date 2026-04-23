@@ -43,6 +43,10 @@ public class Game extends Screen {
     long tickNum;
     long mapWidth;
     long mapHeight;
+    long[] hotX;
+    long[] hotY;
+    long[] hotRad;
+    long[] hotNIC;
 
     public Game(File map) {
         var objectMapper = new ObjectMapper();
@@ -55,7 +59,7 @@ public class Game extends Screen {
     public Game(File map, int playerNum) {
         exit = false;
         units = new ArrayList<>();
-        for (int i = 0; i < 25000; i++) {
+        for (int i = 0; i < 20000; i++) {
             units.add(new Marine((int) (StrictMath.random() * 7680), (int) (StrictMath.random() * 4320), players.BLUE));
         }
         buildings = new ArrayList<>();
@@ -156,10 +160,19 @@ public class Game extends Screen {
     private void calculatePhysics() {
         for (int iter = 0; iter < 1; iter++) {
             long t1 = System.nanoTime();
-            setSpatialGrid();
+            hotX = new long[units.size()];
+            hotY = new long[units.size()];
+            hotRad = new long[units.size()];
+            hotNIC = new long[units.size()];
+            for (int i = 0; i < units.size(); i++){
+                Unit unit = units.get(i);
+                hotX[i] = unit.getX();
+                hotY[i] = unit.getY();
+                hotRad[i] = unit.getCollisionRadius();
+                hotNIC[i] = unit.nextInCell;
+            }
             long t2 = System.nanoTime();
-
-            List<CollisionResult> collisions = pool.invoke(new CollisionDetectionTask(0, units.size()));
+            List<CollisionResult> collisions = pool.invoke(new CollisionDetectionTask(0, units.size(), hotX, hotY, hotRad, hotNIC));
             long t3 = System.nanoTime();
 
             for (CollisionResult res : collisions) {
@@ -167,7 +180,7 @@ public class Game extends Screen {
                 applyPush(res.u2, res.moveX, res.moveY);
             }
             long t4 = System.nanoTime();
-            if (tickNum % 2 == 0) LoggerUtil.log(PerformanceType.PHYSICS, "spatial grid:", (t2-t1)/1000000d, "detect:", (t3-t2)/1000000d, "resolve:", (t4-t3)/1000000d, "collisions:", collisions.size());
+            if (tickNum % 2 == 0) LoggerUtil.log(PerformanceType.PHYSICS, "set hot:", (t2-t1)/1000000d, "detect:", (t3-t2)/1000000d, "resolve:", (t4-t3)/1000000d, "collisions:", collisions.size());
 //            System.out.println("spatial grid: " + (t2-t1)/1000000d + "detect: " + (t3-t2)/1000000d + "resolve: " + (t4-t3)/1000000d + "collisions amount: " + collisions.size());
         }
         for (Unit unit : units) {
@@ -181,27 +194,71 @@ public class Game extends Screen {
     public void updateOnFrame() {
         long t1 = System.nanoTime();
         Replay.addTick(InputHandler.getInputs(), tickNum);
+        long t2 = System.nanoTime();
+        setSpatialGrid();
+        long t3 = System.nanoTime();
         tickNum++;
         for (Input input : InputHandler.getInputs()) {
             switch (input.getInputType()) {
-                case LEFT_CLICK:
+                case LEFT_CLICK: {
                     clearSelected();
-                    for (Unit unit : units) {
-                        if (CollisionUtil.PointCircleCollision(DTL(input.getX()) + gameViewport.getX(), DTL(input.getY()) + gameViewport.getY(), NumUtil.interpolate(unit.getLastX(), unit.getX(), DrawUtil.getFactor()) + unit.getRadius(), NumUtil.interpolate(unit.getLastY(), unit.getY(), DrawUtil.getFactor()) + unit.getRadius(), unit.getRadius())) {
-                            addSelected(unit);
-                        }
-                    }
-                    break;
-                case DRAG:
-                    clearSelected();
-                    selectedRectangle = new Rectangle2D(StrictMath.min(input.getX(), input.getStartX()), StrictMath.min(input.getY(), input.getStartY()), StrictMath.abs(input.getX() - input.getStartX()), StrictMath.abs(input.getY() - input.getStartY()));
-                    for (Unit unit : units) {
-                        if (CollisionUtil.RectCircleCollision(NumUtil.interpolate(unit.getX(), unit.getLastX(), DrawUtil.getFactor()) + unit.getRadius(), NumUtil.interpolate(unit.getY(), unit.getLastY(), DrawUtil.getFactor()) + unit.getRadius(), unit.getRadius(), selectedRectangle)) {
-                            addSelected(unit);
-                        }
-                    }
+                    long clickX = DTL(input.getX() + gameViewport.getX());
+                    long clickY = DTL(input.getY() + gameViewport.getY());
 
+                    long gridX = clickX >> SHIFT;
+                    long gridY = clickY >> SHIFT;
+                    int clickIdx = cellHeads.get((gridX << 32) | (gridY & 0xFFFFFFFFL));
+
+                    while (clickIdx != -1) {
+                        Unit unit = units.get(clickIdx);
+                        double x = NumUtil.interpolate(unit.getLastX(), unit.getX(), DrawUtil.getFactor());
+                        double y = NumUtil.interpolate(unit.getLastY(), unit.getY(), DrawUtil.getFactor());
+
+                        if (CollisionUtil.PointCircleCollision(clickX, clickY, x, y, unit.getCollisionRadius())) {
+                            addSelected(unit);
+                        }
+                        clickIdx = unit.nextInCell;
+                    }
                     break;
+                }
+
+                case DRAG: {
+                    clearSelected();
+                    selectedRectangle = new Rectangle2D(
+                            StrictMath.min(input.getX(), input.getStartX()),
+                            StrictMath.min(input.getY(), input.getStartY()),
+                            StrictMath.abs(input.getX() - input.getStartX()),
+                            StrictMath.abs(input.getY() - input.getStartY())
+                    );
+
+                    double rectX = DTL(selectedRectangle.getMinX() + gameViewport.getX());
+                    double rectY = DTL(selectedRectangle.getMinY() + gameViewport.getY());
+                    double rectWidth = DTL(selectedRectangle.getWidth());
+                    double rectHeight = DTL(selectedRectangle.getHeight());
+
+                    int startX = (int) ((long)rectX >> SHIFT);
+                    int endX   = (int) ((long)(rectX + rectWidth) >> SHIFT);
+                    int startY = (int) ((long)rectY >> SHIFT);
+                    int endY   = (int) ((long)(rectY+rectHeight) >> SHIFT);
+
+                    for (int gx = startX; gx <= endX; gx++) {
+                        for (int gy = startY; gy <= endY; gy++) {
+                            int boxIdx = cellHeads.get(((long) gx << 32) | (gy & 0xFFFFFFFFL));
+
+                            while (boxIdx != -1) {
+                                Unit unit = units.get(boxIdx);
+                                double x = NumUtil.interpolate(unit.getX(), unit.getLastX(), DrawUtil.getFactor());
+                                double y = NumUtil.interpolate(unit.getY(), unit.getLastY(), DrawUtil.getFactor());
+
+                                if (CollisionUtil.RectCircleCollision(x, y, unit.getCollisionRadius(), rectX, rectY, rectWidth, rectHeight)) {
+                                    addSelected(unit);
+                                }
+                                boxIdx = unit.nextInCell;
+                            }
+                        }
+                    }
+                    break;
+                }
                 case RIGHT_CLICK:
                     for (Entity entity : selectedEntities) {
                         entity.clearCommands();//make shift button work
@@ -224,7 +281,7 @@ public class Game extends Screen {
                     break;
             }
         }
-        long t2 = System.nanoTime();
+        long t4 = System.nanoTime();
 
 //        for (Building building : buildings) {
 //            building.updateOnFrame();
@@ -234,14 +291,14 @@ public class Game extends Screen {
 //        }
         buildings.parallelStream().forEach(Building::updateOnFrame);
         units.parallelStream().forEach(Unit::updateOnFrame);
-        long t3 = System.nanoTime();
+        long t5 = System.nanoTime();
 
         calculatePhysics();
         if (!InputHandler.MouseDown()) {
             selectedRectangle = null;
         }
-        long t4 = System.nanoTime();
-        if (tickNum % 2 == 0) LoggerUtil.log(PerformanceType.TICK, "input:", (t2-t1)/1000000d, "update:", (t3-t2)/1000000d, "physics:" + (t4-t3)/1000000d);
+        long t6 = System.nanoTime();
+        if (tickNum % 2 == 0) LoggerUtil.log(PerformanceType.TICK, "replay:", (t2-t1)/1000000d,"spatial grid:", (t3-t2)/1000000d, "input:", (t4-t3)/1000000d, "update:", (t5-t4)/1000000d, "physics:" + (t6-t5)/1000000d);
 //        System.out.println("input: " + (t2-t1)/1000000d + "update: " + (t3-t2)/1000000d + "ms  physics: " + (t4-t3)/1000000d);
     }
 
@@ -253,8 +310,8 @@ public class Game extends Screen {
         }
 
         visibleEntities.clear();
-        long viewX = gameViewport.getX();
-        long viewY = gameViewport.getY();
+        long viewX = NumUtil.DTL(gameViewport.getX());
+        long viewY = NumUtil.DTL(gameViewport.getY());
         long viewWidth = 19200000;
         long viewHeight = 10800000;
 
@@ -319,12 +376,17 @@ public class Game extends Screen {
     }
 
     private class CollisionDetectionTask extends RecursiveTask<List<CollisionResult>> {
-        private static final int THRESHOLD = 512;
+        private static final int THRESHOLD = 2048;
         private final int start, end;
+        private final long[] xArr, yArr, rArr, nArr;
 
-        CollisionDetectionTask(int start, int end) {
+        CollisionDetectionTask(int start, int end, long[] xArr, long[] yArr, long[] rArr, long [] nArr) {
             this.start = start;
             this.end = end;
+            this.xArr = xArr;
+            this.yArr = yArr;
+            this.rArr = rArr;
+            this.nArr = nArr;
         }
 
         @Override
@@ -334,8 +396,8 @@ public class Game extends Screen {
             }
 
             int mid = (start + end) / 2;
-            CollisionDetectionTask left = new CollisionDetectionTask(start, mid);
-            CollisionDetectionTask right = new CollisionDetectionTask(mid, end);
+            CollisionDetectionTask left = new CollisionDetectionTask(start, mid, xArr, yArr, rArr, nArr);
+            CollisionDetectionTask right = new CollisionDetectionTask(mid, end, xArr, yArr, rArr, nArr);
             left.fork();
 
             List<CollisionResult> results = right.compute();
@@ -343,18 +405,15 @@ public class Game extends Screen {
             return results;
         }
 
-
-
         private List<CollisionResult> detectSequentially() {
             List<CollisionResult> results = new ArrayList<>();
             for (int i = start; i < end; i++) {
-                Unit unit1 = units.get(i);
+                long x1 = xArr[i];
+                long y1 = yArr[i];
+                long r1 = rArr[i];
 
-                long r1 = unit1.getCollisionRadius();
-                long x1 = unit1.getX();
-                long y1 = unit1.getY();
-                long gx = unit1.getX() >> SHIFT;
-                long gy = unit1.getY() >> SHIFT;
+                long gx = x1 >> SHIFT;
+                long gy = y1 >> SHIFT;
 
                 for (long nx = gx - 1; nx <= gx + 1; nx++) {
                     for (long ny = gy - 1; ny <= gy + 1; ny++) {
@@ -362,31 +421,31 @@ public class Game extends Screen {
                         int currentIndex = cellHeads.get(key);
 
                         while (currentIndex != -1) {
-                            Unit unit2 = units.get(currentIndex);
+                            if (i < currentIndex) {
+                                long rSum = r1 + rArr[currentIndex];
+                                long dx = xArr[currentIndex] - x1;
+                                long dy = yArr[currentIndex] - y1;
 
-                            if (unit1.id < unit2.id) {
-                                long r2 = unit2.getCollisionRadius();
-                                long rSum = r1 + r2;
-                                long dx = unit2.getX() - x1;
-                                if (dx == 0) dx = 1;
-                                long dy = unit2.getY() - y1;
-                                if (dy == 0) dy = 1;
+                                if (StrictMath.abs(dx) < rSum && StrictMath.abs(dy) < rSum) {
 
-                                long distSq = dx * dx + dy * dy;
-                                long rSumSq = rSum * rSum;
+                                    long distSq = dx * dx + dy * dy;
+                                    long rSumSq = rSum * rSum;
 
-                                if (distSq < rSumSq) {
-                                    long distance = StrictMath.max(NumUtil.sqrtFast(distSq), 1);
+                                    if (distSq < rSumSq && distSq > 0) {
+                                        long distance = NumUtil.sqrtFast(distSq);
+                                        if (distance == 0) distance = 1;
 
-                                    long overlap = rSum - distance;
-                                    long pushAmount = (long) (overlap * 0.75);
+                                        long overlap = rSum - distance;
+                                        long pushAmount = (long) (overlap * 0.75);
 
-                                    long moveX = (dx * pushAmount) / distance;
-                                    long moveY = (dy * pushAmount) / distance;
-                                    results.add(new CollisionResult(unit1, unit2, moveX, moveY));
+                                        long moveX = (dx * pushAmount) / distance;
+                                        long moveY = (dy * pushAmount) / distance;
+
+                                        results.add(new CollisionResult(units.get(i), units.get(currentIndex), moveX, moveY));
+                                    }
                                 }
                             }
-                            currentIndex = unit2.nextInCell;
+                            currentIndex = (int) nArr[currentIndex];
                         }
                     }
                 }

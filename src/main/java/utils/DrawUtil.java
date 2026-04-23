@@ -399,11 +399,11 @@ public class DrawUtil {
     public static class Game{
         /** puts the offset from gameViewport*/
         private static long putXGO (long x){
-            return x - gameViewport.getX();
+            return x - NumUtil.DTL(gameViewport.getX());
         }
         /** puts the offset from gameViewport*/
         private static long putYGO (long y){
-            return y - gameViewport.getY();
+            return y - NumUtil.DTL(gameViewport.getY());
         }
         /** puts the offset from gameViewport*/
         private static double putXGO (double x){

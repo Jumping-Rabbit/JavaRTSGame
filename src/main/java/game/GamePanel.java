@@ -380,26 +380,25 @@ public class GamePanel extends Canvas {
 
         @Override
         public void run() {
-            long currentTime;
-            long targetFrameInterval = 50000000;//20 tps
+            long targetFrameInterval = 50_000_000L; // 20 TPS
             long targetTime = System.nanoTime() + targetFrameInterval;
-            boolean waited = true;
             while (logicThread != null) {
-                currentTime = System.nanoTime();
+                long currentTime = System.nanoTime();
                 if (currentTime >= targetTime) {
-                    targetTime += targetFrameInterval;
-                    updateOnFrame();
-                    if (!waited) {
+                    if (currentTime > targetTime + 2000000) {
                         performanceStorage.addLateFrame();
-                    } else {
-                        waited = false;
                     }
+                    updateOnFrame();
                     performanceStorage.addTFrame();
-                    performanceStorage.addTickTimeUsed(currentTime); //targetFrameInterval accounted for percentantage change
+                    performanceStorage.addTickTimeUsed(currentTime);
                     hardwarePerformance.tick();
-                    continue;
+                    targetTime += targetFrameInterval;
+                    if (currentTime > targetTime + targetFrameInterval) {
+                        targetTime = currentTime + targetFrameInterval;
+                    }
+                } else {
+                    Thread.onSpinWait();
                 }
-                waited = true;
             }
         }
     }
@@ -444,8 +443,8 @@ public class GamePanel extends Canvas {
             }
         }
     }
-
 }
+
 
 class PerformanceStorage {
     private final AtomicInteger dFrameCount = new AtomicInteger(0);
