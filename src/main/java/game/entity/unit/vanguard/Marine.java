@@ -37,34 +37,6 @@ public class Marine extends Unit {
         unitState = UnitState.IDLE;
     }
 
-    private Marine(Marine marine) {
-        super(marine.id);
-        player = marine.player;
-        x = marine.x;
-        y = marine.y;
-        z = marine.z;
-        lastX = marine.x;
-        lastY = marine.y;
-        lastZ = marine.z;
-        hp = marine.hp;
-        armor = marine.armor;
-        speed = marine.speed;
-        turnSpeed = marine.turnSpeed;
-        direction = marine.direction;
-        lastDirection = marine.lastDirection;
-        damage = marine.damage;
-        attackSpeed = marine.attackSpeed;
-        ticksUntilAttack = marine.ticksUntilAttack;
-        effects = new ArrayList<>();
-        effects.addAll(marine.effects);
-        unitState = marine.unitState;
-
-        targetDirection = marine.targetDirection;
-        targetX = marine.targetX;
-        targetY = marine.targetY;
-        commands = marine.commands;
-        isSelected = marine.isSelected;
-    }
 
     public static void init() {
         hasCollision = true;
@@ -73,11 +45,6 @@ public class Marine extends Unit {
         tags = EnumSet.of(Tags.LIGHT, Tags.BIOLOGICAL, Tags.RANGED);
         model = Models.vanguardMarine;
         maxHp = NumUtil.DTL(40);
-    }
-
-    @Override
-    public Entity copy() {
-        return new Marine(this);
     }
 
 }

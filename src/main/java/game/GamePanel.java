@@ -259,14 +259,11 @@ public class GamePanel extends Canvas {
         InputHandler.tick();
         switch (gameStatus) {
             case GAME:
-                tickScreen = getGame().copy();
-                tickScreen.updateOnFrame();
-                if (tickScreen.isExit()) {
+                game.updateOnFrame();
+                if (game.isExit()) {
                     setTitleScreen(new TitleScreen());
                     setGameStatus(GameStatus.TITLESCREEN);
                     LoggerUtil.log("open title screen");
-                } else {
-                    setGame((Game) tickScreen);
                 }
                 break;
             case TITLESCREEN:
@@ -338,7 +335,7 @@ public class GamePanel extends Canvas {
 //        System.out.println("h");
         switch (getGameStatus()) {
             case GAME:
-                getGame().draw();
+                game.draw();
                 break;
             case TITLESCREEN:
                 getTitleScreen().draw();
@@ -382,21 +379,24 @@ public class GamePanel extends Canvas {
         public void run() {
             long targetFrameInterval = 50_000_000L; // 20 TPS
             long targetTime = System.nanoTime() + targetFrameInterval;
+            boolean waited = false;
             while (logicThread != null) {
                 long currentTime = System.nanoTime();
                 if (currentTime >= targetTime) {
-                    if (currentTime > targetTime + 2000000) {
+                    if (!waited){
                         performanceStorage.addLateFrame();
                     }
+                    waited = false;
                     updateOnFrame();
                     performanceStorage.addTFrame();
                     performanceStorage.addTickTimeUsed(currentTime);
                     hardwarePerformance.tick();
                     targetTime += targetFrameInterval;
-                    if (currentTime > targetTime + targetFrameInterval) {
-                        targetTime = currentTime + targetFrameInterval;
+                    if (currentTime > targetTime + targetFrameInterval*5) {
+                        targetTime = currentTime;
                     }
                 } else {
+                    waited = true;
                     Thread.onSpinWait();
                 }
             }

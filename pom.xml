@@ -104,10 +104,14 @@
 
                         <option>-XX:+UseZGC</option>
                         <option>-XX:+ZGenerational</option>
-                        <option>-Xms512m</option>
+                        <option>-Xms4G</option>
                         <option>-Xmx4G</option>
-                        <option>-XX:+UseStringDeduplication</option>
+<!--                        <option>-XX:+UseStringDeduplication</option>-->
                         <option>-XX:-OmitStackTraceInFastThrow</option>
+                        <option>-XX:CompilerTier2BudgetingWarmupCPUPercent=100</option>
+                        <option>-XX:+UseThreadPriorities</option>
+                        <option>-XX:ThreadPriorityPolicy=1</option>
+                        <option>-XX:+UseCriticalJavaThreadPriority</option>
 
                         <option>-XX:+PrintCommandLineFlags</option>
                     </options>

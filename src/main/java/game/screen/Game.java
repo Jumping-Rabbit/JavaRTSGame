@@ -8,10 +8,12 @@ import game.entity.building.Building;
 import game.entity.players;
 import game.entity.unit.Unit;
 import game.entity.unit.vanguard.Marine;
+import game.entity.unit.vanguard.Marine;
 import inputHandler.*;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import javafx.geometry.Rectangle2D;
 import tile.TileManager;
 import tools.jackson.databind.JsonNode;
@@ -26,18 +28,18 @@ import java.util.concurrent.RecursiveTask;
 
 import static utils.NumUtil.DTL;
 
-public class Game extends Screen {
+public class Game {
     private static final int SHIFT = 22;
     private static final int THREAD_COUNT = Math.max(1, Runtime.getRuntime().availableProcessors() - 2);
     private static final ForkJoinPool pool = new ForkJoinPool(THREAD_COUNT);
-    private final ArrayList<Entity> visibleEntities = new ArrayList<>(1000);
-    private final Long2IntMap cellHeads;
+    private final ObjectArrayList<Entity> visibleEntities = new ObjectArrayList<>(1000);
+    private final Long2IntMap cellHeads1;
+    private final Long2IntMap cellHeads2;
     File map;
     GameState gameState = GameState.RUNNING;
     GameViewport gameViewport;//get x and y from map
     TileManager tileManager;
-    ArrayList<Unit> units;
-    ArrayList<Building> buildings;
+    ObjectArrayList<Entity> entities;
     ArrayList<Entity> selectedEntities;
     Rectangle2D selectedRectangle = null;
     long tickNum;
@@ -47,6 +49,8 @@ public class Game extends Screen {
     long[] hotY;
     long[] hotRad;
     long[] hotNIC;
+    volatile boolean isSnapshot1 = true;
+    boolean exit = false;
 
     public Game(File map) {
         var objectMapper = new ObjectMapper();
@@ -58,15 +62,14 @@ public class Game extends Screen {
 
     public Game(File map, int playerNum) {
         exit = false;
-        units = new ArrayList<>();
+        entities = new ObjectArrayList<>(22000);
         for (int i = 0; i < 20000; i++) {
-            units.add(new Marine((int) (StrictMath.random() * 7680), (int) (StrictMath.random() * 4320), players.BLUE));
+            entities.add(new Marine((int) (StrictMath.random() * 7680), (int) (StrictMath.random() * 4320), players.BLUE));
         }
-        buildings = new ArrayList<>();
         selectedEntities = new ArrayList<>();
-        selectedEntities.addAll(units);
-        for (Unit unit : units){
-            unit.setIsSelected(true);
+        selectedEntities.addAll(entities);
+        for (Entity entity : entities){
+            entity.setIsSelected(true);
         }
 
         tileManager = new TileManager(map);
@@ -81,51 +84,14 @@ public class Game extends Screen {
         DrawUtil.setGameViewport(gameViewport);
         tickNum = 0;
         Replay.newReplay(map);
-        cellHeads = new Long2IntOpenHashMap();
-        cellHeads.defaultReturnValue(-1);
-//        unitsById = new Int2ObjectOpenHashMap<>();
+        cellHeads1 = new Long2IntOpenHashMap();
+        cellHeads1.defaultReturnValue(-1);
+        cellHeads2 = new Long2IntOpenHashMap();
+        cellHeads2.defaultReturnValue(-1);
+//        entitiesById = new Int2ObjectOpenHashMap<>();
         System.out.println("physics threads: " + THREAD_COUNT);
     }
 
-    private Game(Game game) {
-        selectedRectangle = game.selectedRectangle;
-        map = game.map;
-        gameState = game.gameState;
-        gameViewport = game.gameViewport;
-        tileManager = game.tileManager;
-        selectedEntities = new ArrayList<>();
-        units = new ArrayList<>();
-        mapWidth = game.mapWidth;
-        mapHeight = game.mapHeight;
-        Int2ObjectOpenHashMap<Unit> idToNewUnit = new Int2ObjectOpenHashMap<>(game.units.size());
-
-        units = new ArrayList<>(game.units.size());
-        for (Unit unit : game.units) {
-            Unit copiedUnit = (Unit) unit.copy();
-            idToNewUnit.put(unit.id, copiedUnit);
-            units.add(copiedUnit);
-        }
-
-        selectedEntities = new ArrayList<>(game.selectedEntities.size());
-        for (Entity entity : game.selectedEntities) {
-            Unit copiedUnit = idToNewUnit.get(entity.id);
-            if (copiedUnit != null) {
-                selectedEntities.add(copiedUnit);
-                copiedUnit.setIsSelected(true);
-            }
-        }
-
-
-        buildings = game.buildings;
-        exit = game.exit;
-        tickNum = game.tickNum;
-        cellHeads = new Long2IntOpenHashMap();
-        cellHeads.defaultReturnValue(-1);
-    }
-
-    public Screen copy() {
-        return new Game(this);
-    }
 
     private void clearSelected(){
         for (Entity entity : selectedEntities){
@@ -139,55 +105,76 @@ public class Game extends Screen {
         entity.setIsSelected(true);
     }
 
-
-    private void setSpatialGrid() {
-        cellHeads.clear();
-        for (int i = 0; i < units.size(); i++) {
-            Unit u = units.get(i);
-            long key = (u.getX() >> 22) << 32 | (u.getY() >> 22) & 0xFFFFFFFFL;
-            u.nextInCell = cellHeads.getOrDefault(key, -1);
-            cellHeads.put(key, i);
-        }
+    public boolean isExit(){
+        return exit;
     }
 
-    private void applyPush(Unit u, long dx, long dy) {
+
+    private void setSpatialGrid() {
+        if (isSnapshot1){
+            cellHeads2.clear();
+            for (int i = 0; i < entities.size(); i++) {
+                Entity entity = entities.get(i);
+                long key = (entity.getX() >> 22) << 32 | (entity.getY() >> 22) & 0xFFFFFFFFL;
+                entity.nextInCell2 = cellHeads2.getOrDefault(key, -1);
+                cellHeads2.put(key, i);
+            }
+        } else {
+            cellHeads1.clear();
+            for (int i = 0; i < entities.size(); i++) {
+                Entity entity = entities.get(i);
+                long key = (entity.getX() >> 22) << 32 | (entity.getY() >> 22) & 0xFFFFFFFFL;
+                entity.nextInCell1 = cellHeads1.getOrDefault(key, -1);
+                cellHeads1.put(key, i);
+            }
+        }
+
+    }
+
+    private void applyPush(Entity entity, long x, long y) {
 //        u.changeX(dx);
 //        u.changeY(dy);
-        u.changeXImmediate(dx);
-        u.changeYImmediate(dy);
+        entity.changeX(x);
+        entity.changeY(y);
+//        System.out.println(x);
     }
 
     private void calculatePhysics() {
-        for (int iter = 0; iter < 1; iter++) {
+        for (int iter = 0; iter < 1; iter++) {//increase if physics acts up
             long t1 = System.nanoTime();
-            hotX = new long[units.size()];
-            hotY = new long[units.size()];
-            hotRad = new long[units.size()];
-            hotNIC = new long[units.size()];
-            for (int i = 0; i < units.size(); i++){
-                Unit unit = units.get(i);
-                hotX[i] = unit.getX();
-                hotY[i] = unit.getY();
-                hotRad[i] = unit.getCollisionRadius();
-                hotNIC[i] = unit.nextInCell;
+            hotX = new long[entities.size()];
+            hotY = new long[entities.size()];
+            hotRad = new long[entities.size()];
+            hotNIC = new long[entities.size()];
+            for (int i = 0; i < entities.size(); i++){
+                Entity entity = entities.get(i);
+                hotX[i] = entity.getX();
+                hotY[i] = entity.getY();
+                hotRad[i] = entity.getCollisionRadius();
+                if (isSnapshot1){
+                    hotNIC[i] = entity.nextInCell2;
+                } else {
+                    hotNIC[i] = entity.nextInCell1;
+                }
+
             }
             long t2 = System.nanoTime();
-            List<CollisionResult> collisions = pool.invoke(new CollisionDetectionTask(0, units.size(), hotX, hotY, hotRad, hotNIC));
+            List<CollisionResult> collisions = pool.invoke(new CollisionDetectionTask(0, entities.size(), hotX, hotY, hotRad, hotNIC));
             long t3 = System.nanoTime();
 
             for (CollisionResult res : collisions) {
-                applyPush(res.u1, -res.moveX, -res.moveY);
-                applyPush(res.u2, res.moveX, res.moveY);
+                applyPush(res.entity1, -res.moveX, -res.moveY);
+                applyPush(res.entity2, res.moveX, res.moveY);
             }
             long t4 = System.nanoTime();
             if (tickNum % 2 == 0) LoggerUtil.log(PerformanceType.PHYSICS, "set hot:", (t2-t1)/1000000d, "detect:", (t3-t2)/1000000d, "resolve:", (t4-t3)/1000000d, "collisions:", collisions.size());
 //            System.out.println("spatial grid: " + (t2-t1)/1000000d + "detect: " + (t3-t2)/1000000d + "resolve: " + (t4-t3)/1000000d + "collisions amount: " + collisions.size());
         }
-        for (Unit unit : units) {
-            if (unit.getX() >= mapWidth) unit.setX(mapWidth-1);
-            else if (unit.getX() <= 0) unit.setX(1);
-            if (unit.getY() >= mapHeight) unit.setY(mapHeight-1);
-            else if (unit.getY() <= 0) unit.setY(1);
+        for (Entity entity : entities) {
+            if (entity.getX() >= mapWidth) entity.setX(mapWidth-1);
+            else if (entity.getX() <= 0) entity.setX(1);
+            if (entity.getY() >= mapHeight) entity.setY(mapHeight-1);
+            else if (entity.getY() <= 0) entity.setY(1);
         }
     }
 
@@ -195,8 +182,6 @@ public class Game extends Screen {
         long t1 = System.nanoTime();
         Replay.addTick(InputHandler.getInputs(), tickNum);
         long t2 = System.nanoTime();
-        setSpatialGrid();
-        long t3 = System.nanoTime();
         tickNum++;
         for (Input input : InputHandler.getInputs()) {
             switch (input.getInputType()) {
@@ -207,17 +192,28 @@ public class Game extends Screen {
 
                     long gridX = clickX >> SHIFT;
                     long gridY = clickY >> SHIFT;
-                    int clickIdx = cellHeads.get((gridX << 32) | (gridY & 0xFFFFFFFFL));
+                    int clickIdx;
+                    if (isSnapshot1){
+                        clickIdx = cellHeads2.get((gridX << 32) | (gridY & 0xFFFFFFFFL));
+                    } else {
+                        clickIdx = cellHeads1.get((gridX << 32) | (gridY & 0xFFFFFFFFL));
+                    }
+
 
                     while (clickIdx != -1) {
-                        Unit unit = units.get(clickIdx);
-                        double x = NumUtil.interpolate(unit.getLastX(), unit.getX(), DrawUtil.getFactor());
-                        double y = NumUtil.interpolate(unit.getLastY(), unit.getY(), DrawUtil.getFactor());
+                        Entity entity = entities.get(clickIdx);
+                        double x = NumUtil.interpolate(entity.getLastX(), entity.getX(), DrawUtil.getFactor());
+                        double y = NumUtil.interpolate(entity.getLastY(), entity.getY(), DrawUtil.getFactor());
 
-                        if (CollisionUtil.PointCircleCollision(clickX, clickY, x, y, unit.getCollisionRadius())) {
-                            addSelected(unit);
+                        if (CollisionUtil.PointCircleCollision(clickX, clickY, x, y, entity.getCollisionRadius())) {
+                            addSelected(entity);
                         }
-                        clickIdx = unit.nextInCell;
+                        if (isSnapshot1){
+                            clickIdx = entity.nextInCell2;
+                        } else {
+                            clickIdx = entity.nextInCell1;
+                        }
+
                     }
                     break;
                 }
@@ -243,17 +239,27 @@ public class Game extends Screen {
 
                     for (int gx = startX; gx <= endX; gx++) {
                         for (int gy = startY; gy <= endY; gy++) {
-                            int boxIdx = cellHeads.get(((long) gx << 32) | (gy & 0xFFFFFFFFL));
+                            int boxIdx;
+                            if (isSnapshot1){
+                                boxIdx = cellHeads2.get(((long) gx << 32) | (gy & 0xFFFFFFFFL));
+                            } else {
+                                boxIdx = cellHeads1.get(((long) gx << 32) | (gy & 0xFFFFFFFFL));
+                            }
 
                             while (boxIdx != -1) {
-                                Unit unit = units.get(boxIdx);
-                                double x = NumUtil.interpolate(unit.getX(), unit.getLastX(), DrawUtil.getFactor());
-                                double y = NumUtil.interpolate(unit.getY(), unit.getLastY(), DrawUtil.getFactor());
+                                Entity entity = entities.get(boxIdx);
+                                double x = NumUtil.interpolate(entity.getX(), entity.getLastX(), DrawUtil.getFactor());
+                                double y = NumUtil.interpolate(entity.getY(), entity.getLastY(), DrawUtil.getFactor());
 
-                                if (CollisionUtil.RectCircleCollision(x, y, unit.getCollisionRadius(), rectX, rectY, rectWidth, rectHeight)) {
-                                    addSelected(unit);
+                                if (CollisionUtil.RectCircleCollision(x, y, entity.getCollisionRadius(), rectX, rectY, rectWidth, rectHeight)) {
+                                    addSelected(entity);
                                 }
-                                boxIdx = unit.nextInCell;
+                                if (isSnapshot1){
+                                    boxIdx = entity.nextInCell2;
+                                } else {
+                                    boxIdx = entity.nextInCell1;
+                                }
+
                             }
                         }
                     }
@@ -262,7 +268,7 @@ public class Game extends Screen {
                 case RIGHT_CLICK:
                     for (Entity entity : selectedEntities) {
                         entity.clearCommands();//make shift button work
-                        entity.addCommand(new Command(InputType.RIGHT_CLICK, DTL(input.getX()) + gameViewport.getX(), DTL(input.getY()) + gameViewport.getY()));
+                        entity.addCommand(new Command(InputType.RIGHT_CLICK, DTL(input.getX()) + DTL(gameViewport.getX()), DTL(input.getY()) + DTL(gameViewport.getY())));
                     }
                     break;
                 case KEYPRESS:
@@ -281,32 +287,43 @@ public class Game extends Screen {
                     break;
             }
         }
+        long t3 = System.nanoTime();
+
+        entities.parallelStream().forEach(Entity::updateOnFrame);
         long t4 = System.nanoTime();
 
 //        for (Building building : buildings) {
 //            building.updateOnFrame();
 //        }
-//        for (Unit unit : units) {
-//            unit.updateOnFrame();
+//        for (Unit entity : entities) {
+//            entity.updateOnFrame();
 //        }
-        buildings.parallelStream().forEach(Building::updateOnFrame);
-        units.parallelStream().forEach(Unit::updateOnFrame);
+        setSpatialGrid();
+
         long t5 = System.nanoTime();
 
         calculatePhysics();
+        if (isSnapshot1){
+            entities.parallelStream().forEach(Entity::setSnapshot2);
+            isSnapshot1 = false;
+        } else {
+            entities.parallelStream().forEach(Entity::setSnapshot1);
+            isSnapshot1 = true;
+        }
+
         if (!InputHandler.MouseDown()) {
             selectedRectangle = null;
         }
         long t6 = System.nanoTime();
-        if (tickNum % 2 == 0) LoggerUtil.log(PerformanceType.TICK, "replay:", (t2-t1)/1000000d,"spatial grid:", (t3-t2)/1000000d, "input:", (t4-t3)/1000000d, "update:", (t5-t4)/1000000d, "physics:" + (t6-t5)/1000000d);
+        if (tickNum % 2 == 0) LoggerUtil.log(PerformanceType.TICK, "replay:", (t2-t1)/1000000d,"input:", (t3-t2)/1000000d, "update:", (t4-t3)/1000000d, "spatial grid:", (t5-t4)/1000000d, "physics:" + (t6-t5)/1000000d);
 //        System.out.println("input: " + (t2-t1)/1000000d + "update: " + (t3-t2)/1000000d + "ms  physics: " + (t4-t3)/1000000d);
     }
 
     public void draw() {
         DrawUtil.setGameViewport(gameViewport);
 
-        for (Unit unit : units){
-            unit.drawTarget();
+        for (Entity entity : entities){
+            entity.drawTarget();
         }
 
         visibleEntities.clear();
@@ -323,33 +340,36 @@ public class Game extends Screen {
         for (int gx = minGridX; gx <= maxGridX; gx++) {
             for (int gy = minGridY; gy <= maxGridY; gy++) {
                 long key = ((long) gx << 32) | (gy & 0xFFFFFFFFL);
-                int currentIndex = cellHeads.get(key);
+                int currentIndex;
+                if (isSnapshot1){
+                    currentIndex = cellHeads1.get(key);
+                    while (currentIndex != -1) {
+                        Entity entity = entities.get(currentIndex);
+                        visibleEntities.add(entity);
 
-                while (currentIndex != -1) {
-                    Unit unit = units.get(currentIndex);
-                    visibleEntities.add(unit);
+                        currentIndex = entity.nextInCell1;
+                    }
+                } else {
+                    currentIndex = cellHeads2.get(key);
+                    while (currentIndex != -1) {
+                        Entity entity = entities.get(currentIndex);
+                        visibleEntities.add(entity);
 
-                    currentIndex = unit.nextInCell;
+                        currentIndex = entity.nextInCell2;
+                    }
                 }
-            }
-        }
 
-        for (Building building : buildings) {
-            if (CollisionUtil.RectRectCollision(0, 0, viewWidth, viewHeight,
-                    building.getX() - viewX, building.getY() - viewY,
-                    building.getDiameter(), building.getModel().getHeight())) {
-                visibleEntities.add(building);
+
             }
         }
 
         visibleEntities.sort(Entity.Y_COMPARATOR);
-        for (int i = 0; i < visibleEntities.size(); i++) {
-            if (visibleEntities.get(i).isSelected()) {
-                visibleEntities.get(i).drawSelectedRing();
+        for (Entity visibleEntity : visibleEntities) {
+            if (visibleEntity.isSelected()) {
+                visibleEntity.drawSelectedRing(isSnapshot1);
             }
-            visibleEntities.get(i).draw();
-            visibleEntities.get(i).drawHeathBar();
-
+            visibleEntity.draw(isSnapshot1);
+            visibleEntity.drawHeathBar(isSnapshot1);
         }
 
         if (selectedRectangle != null) {
@@ -364,12 +384,12 @@ public class Game extends Screen {
     }
 
     private static class CollisionResult {
-        Unit u1, u2;
+        Entity entity1, entity2;
         long moveX, moveY;
 
-        CollisionResult(Unit u1, Unit u2, long moveX, long moveY) {
-            this.u1 = u1;
-            this.u2 = u2;
+        CollisionResult(Entity entity1, Entity entity2, long moveX, long moveY) {
+            this.entity1 = entity1;
+            this.entity2 = entity2;
             this.moveX = moveX;
             this.moveY = moveY;
         }
@@ -418,7 +438,13 @@ public class Game extends Screen {
                 for (long nx = gx - 1; nx <= gx + 1; nx++) {
                     for (long ny = gy - 1; ny <= gy + 1; ny++) {
                         long key = (nx << 32) | (ny & 0xFFFFFFFFL);
-                        int currentIndex = cellHeads.get(key);
+                        int currentIndex;
+                        if (isSnapshot1){
+                            currentIndex = cellHeads2.get(key);
+                        } else {
+                            currentIndex = cellHeads1.get(key);
+                        }
+
 
                         while (currentIndex != -1) {
                             if (i < currentIndex) {
@@ -441,7 +467,7 @@ public class Game extends Screen {
                                         long moveX = (dx * pushAmount) / distance;
                                         long moveY = (dy * pushAmount) / distance;
 
-                                        results.add(new CollisionResult(units.get(i), units.get(currentIndex), moveX, moveY));
+                                        results.add(new CollisionResult(entities.get(i), entities.get(currentIndex), moveX, moveY));
                                     }
                                 }
                             }

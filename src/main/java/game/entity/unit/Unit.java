@@ -30,8 +30,6 @@ public abstract class Unit extends Entity {
     protected long targetY;
     protected long targetDirection;
     protected Entity attackTarget;
-    private Long newX;
-    private Long newY;
 
     @Override
     public EnumSet<Tags> getTags(){
@@ -60,39 +58,13 @@ public abstract class Unit extends Entity {
     }
 
     public void changeX(long change) {
-        if (newX == null) {
-            newX = x + change;
-        } else {
-            newX += change;
-        }
+        x+= change;
     }
 
     public void changeY(long change) {
-        if (newY == null) {
-            newY = y + change;
-        } else {
-            newY += change;
-        }
+        y+=change;
     }
 
-    public void changeXImmediate(long change) {
-        x += change;
-    }
-
-    public void changeYImmediate(long change) {
-        y += change;
-    }
-
-    public void tick() {
-        if (newX != null) {
-            x = newX;
-            newX = null;
-        }
-        if (newY != null) {
-            y = newY;
-            newY = null;
-        }
-    }
 
     public UnitState getUnitState() {
         return unitState;
@@ -102,9 +74,7 @@ public abstract class Unit extends Entity {
         this.unitState = unitState;
     }
 
-    public void draw() {
-        DrawUtil.Game.fillModelScaled(model, x, lastX, y, lastY, z, lastZ, direction, lastDirection);
-    }
+
 
     @Override
     public void drawTarget(){
