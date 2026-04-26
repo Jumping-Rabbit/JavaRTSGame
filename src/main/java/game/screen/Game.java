@@ -4,13 +4,12 @@ import game.GameViewport;
 import game.Replay;
 import game.entity.Command;
 import game.entity.Entity;
-import game.entity.building.Building;
+import game.entity.Tags;
+import game.entity.building.vanguard.VanguardBarracks;
 import game.entity.players;
 import game.entity.unit.Unit;
-import game.entity.unit.vanguard.Marine;
-import game.entity.unit.vanguard.Marine;
+import game.entity.unit.vanguard.VanguardMarine;
 import inputHandler.*;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -63,8 +62,11 @@ public class Game {
     public Game(File map, int playerNum) {
         exit = false;
         entities = new ObjectArrayList<>(22000);
-        for (int i = 0; i < 20000; i++) {
-            entities.add(new Marine((int) (StrictMath.random() * 7680), (int) (StrictMath.random() * 4320), players.BLUE));
+        for (int i = 0; i < 2000; i++) {
+            entities.add(new VanguardMarine((int) (StrictMath.random() * 7680), (int) (StrictMath.random() * 4320), players.BLUE));
+        }
+        for (int i = 0; i < 200; i++) {
+            entities.add(new VanguardBarracks((int) (StrictMath.random() * 7680), (int) (StrictMath.random() * 4320), players.BLUE));
         }
         selectedEntities = new ArrayList<>();
         selectedEntities.addAll(entities);
@@ -134,6 +136,7 @@ public class Game {
     private void applyPush(Entity entity, long x, long y) {
 //        u.changeX(dx);
 //        u.changeY(dy);
+        if (entity.getTags().contains(Tags.UNMOVABLE)) return;
         entity.changeX(x);
         entity.changeY(y);
 //        System.out.println(x);
@@ -323,7 +326,9 @@ public class Game {
         DrawUtil.setGameViewport(gameViewport);
 
         for (Entity entity : entities){
-            entity.drawTarget();
+            if (entity instanceof Unit){
+                ((Unit)entity).drawTarget();
+            }
         }
 
         visibleEntities.clear();

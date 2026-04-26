@@ -1,3 +1,4 @@
+import game.entity.Entity;
 import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Rectangle2D;
@@ -21,22 +22,29 @@ import java.util.stream.Stream;
 
 public class ModelToImageConverter {
 
+    enum entityType{
+        UNIT,
+        BUILDING;
+    }
     private static final boolean DEBUG_PIVOT = false;
-    private static final double SCALE = 400d;
-    private static final double IMAGE_SIZE = 1024;
-    private static final int CAMERA_BIAS_X = -4;
-    private static final int CAMERA_BIAS_Y = 0;
+    private static final double IMAGE_SIZE = 512;
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     public static void main(String[] args) {
         Platform.startup(() -> {
         });
-
-        Path root = Paths.get("test/resources/models");
         Path outputRoot = Paths.get("resources/models");
-
         System.out.println("Cleaning up old .png files...");
         clearExistingFiles(outputRoot, ".png");
+        process("test/resources/models/unit", entityType.UNIT);
+        process("test/resources/models/building", entityType.BUILDING);
+        System.out.println("All conversions complete.");
+        Platform.exit();
+        System.exit(0);
+    }
+    public static void process(String dir, entityType type){
+        Path root = Paths.get(dir);
+
 
         try (Stream<Path> paths = Files.walk(root)) {
             paths.filter(p -> p.toString().toLowerCase().endsWith(".obj"))
@@ -48,40 +56,14 @@ public class ModelToImageConverter {
 
                         System.out.println("Processing Model: " + modelName);
 
-                        double[] pivot = loadPivotConfig(modelName);
-
                         Node model = loadMesh(objFile);
                         if (model != null) {
-                            WritableImage[] images = getSnapshots(model, pivot[0], pivot[1]);
+                            WritableImage[] images = getSnapshots(model, type);
                             processModelParallel(images, modelName);
                         }
                     });
         } catch (IOException e) {
             e.printStackTrace();
-        }
-
-        System.out.println("All conversions complete.");
-        Platform.exit();
-        System.exit(0);
-    }
-
-    private static double[] loadPivotConfig(String modelName) {
-        File configFile = new File("resources/models/" + modelName + "/modelConfig.json");
-
-        if (!configFile.exists()) {
-            System.out.println("[" + modelName + "] No modelConfig.json found — using center pivot.");
-            return new double[]{0, 0};
-        }
-
-        try {
-            JsonNode root = MAPPER.readTree(configFile);
-            double ox = root.path("pivotOffsetX").asDouble(0);
-            double oy = root.path("pivotOffsetY").asDouble(0);
-            System.out.println("[" + modelName + "] Pivot loaded: " + ox + ", " + oy);
-            return new double[]{ox, oy};
-        } catch (Exception e) {
-            System.err.println("[" + modelName + "] Failed to read modelConfig.json: " + e.getMessage());
-            return new double[]{0, 0};
         }
     }
 
@@ -89,7 +71,7 @@ public class ModelToImageConverter {
         File dir = new File("resources/models/" + modelName);
         dir.mkdirs();
 
-        java.util.stream.IntStream.range(0, 16).parallel().forEach(i -> {
+        java.util.stream.IntStream.range(0, images.length).parallel().forEach(i -> {
             File outputPng = new File(dir, modelName + "_" + i + ".png");
             try {
                 ImageIO.write(SwingFXUtils.fromFXImage(images[i], null), "png", outputPng);
@@ -108,20 +90,12 @@ public class ModelToImageConverter {
         }
     }
 
-    private static WritableImage[] getSnapshots(Node model, double pivotOffsetX, double pivotOffsetY) {
+    private static WritableImage[] getSnapshots(Node model, entityType type) {
         model.getTransforms().clear();
 
-        model.setTranslateX(pivotOffsetX);
-        model.setTranslateY(pivotOffsetY);
-        model.setTranslateZ(0);
-
         Rotate ySpin = new Rotate(0, Rotate.Y_AXIS);
-        Rotate xTilt = new Rotate(60, Rotate.X_AXIS);
+        Rotate xTilt = new Rotate(45, Rotate.X_AXIS);
         model.getTransforms().addAll(xTilt, ySpin);
-
-        model.setScaleX(SCALE);
-        model.setScaleY(SCALE);
-        model.setScaleZ(SCALE);
 
         AmbientLight ambient = new AmbientLight(Color.WHITE);
         Group root3D = new Group(model, ambient);
@@ -135,19 +109,35 @@ public class ModelToImageConverter {
         params.setCamera(camera);
         params.setDepthBuffer(true);
         params.setViewport(new Rectangle2D(-IMAGE_SIZE / 2, -IMAGE_SIZE / 2, IMAGE_SIZE, IMAGE_SIZE));
+        if (type == entityType.UNIT){
+            WritableImage[] images = new WritableImage[16];
+            for (int i = 0; i < 16; i++) {
+                final int index = i;
+                ySpin.setAngle(index * 22.5);
 
-        WritableImage[] images = new WritableImage[16];
-        for (int i = 0; i < 16; i++) {
-            final int index = i;
-            ySpin.setAngle(index * 22.5);
-
+                java.util.concurrent.CountDownLatch latch = new java.util.concurrent.CountDownLatch(1);
+                Platform.runLater(() -> {
+                    try {
+                        WritableImage raw = root3D.snapshot(params, new WritableImage((int) IMAGE_SIZE, (int) IMAGE_SIZE));
+                        images[index] = raw;//trim(raw, (int) (IMAGE_SIZE / 2), (int) (IMAGE_SIZE / 2));
+                    } finally {
+                        latch.countDown();
+                    }
+                });
+                try {
+                    latch.await();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            return images;
+        } else {
+            WritableImage[] images = new WritableImage[1];
             java.util.concurrent.CountDownLatch latch = new java.util.concurrent.CountDownLatch(1);
             Platform.runLater(() -> {
                 try {
                     WritableImage raw = root3D.snapshot(params, new WritableImage((int) IMAGE_SIZE, (int) IMAGE_SIZE));
-                    images[index] = trim(raw,
-                            (int) (IMAGE_SIZE / 2) + CAMERA_BIAS_X,
-                            (int) (IMAGE_SIZE / 2) + CAMERA_BIAS_Y);
+                    images[0] = raw;//trim(raw, (int) (IMAGE_SIZE / 2), (int) (IMAGE_SIZE / 2));
                 } finally {
                     latch.countDown();
                 }
@@ -157,57 +147,12 @@ public class ModelToImageConverter {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+            return images;
         }
 
-        return images;
     }
 
-    private static WritableImage trim(WritableImage source, int originX, int originY) {
-        int w = (int) source.getWidth();
-        int h = (int) source.getHeight();
-        PixelReader reader = source.getPixelReader();
 
-        int maxR = 0;
-        boolean found = false;
-
-        for (int y = 0; y < h; y++) {
-            for (int x = 0; x < w; x++) {
-                if (((reader.getArgb(x, y) >> 24) & 0xFF) > 10) {
-                    int r = Math.max(Math.abs(x - originX), Math.abs(y - originY));
-                    if (r > maxR) maxR = r;
-                    found = true;
-                }
-            }
-        }
-
-        if (!found) return source;
-
-        int halfSize = maxR + 2;
-        int squareSize = halfSize * 2;
-        WritableImage output = new WritableImage(squareSize, squareSize);
-        PixelWriter writer = output.getPixelWriter();
-
-        for (int y = 0; y < squareSize; y++) {
-            for (int x = 0; x < squareSize; x++) {
-                int srcX = originX - halfSize + x;
-                int srcY = originY - halfSize + y;
-                if (srcX >= 0 && srcX < w && srcY >= 0 && srcY < h) {
-                    writer.setArgb(x, y, reader.getArgb(srcX, srcY));
-                }
-            }
-        }
-
-        if (DEBUG_PIVOT) {
-            int mid = squareSize / 2;
-            for (int i = -2; i <= 2; i++) {
-                for (int j = -2; j <= 2; j++) {
-                    output.getPixelWriter().setArgb(mid + i, mid + j, 0xFFFF0000);
-                }
-            }
-        }
-
-        return output;
-    }
 
     private static void clearExistingFiles(Path outputPath, String extension) {
         if (!Files.exists(outputPath)) return;

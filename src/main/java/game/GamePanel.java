@@ -1,6 +1,9 @@
 package game;
 
-import game.entity.unit.vanguard.Marine;
+import game.entity.Entity;
+import game.entity.Init;
+import game.entity.building.vanguard.VanguardBarracks;
+import game.entity.unit.vanguard.VanguardMarine;
 import game.screen.*;
 import inputHandler.Actions;
 import inputHandler.Input;
@@ -9,16 +12,18 @@ import javafx.application.Platform;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.text.FontSmoothingType;
+import org.reflections.Reflections;
 import oshi.ffm.SystemInfo;
 import oshi.hardware.CentralProcessor;
-import oshi.hardware.GraphicsCard;
 import oshi.hardware.HardwareAbstractionLayer;
 import oshi.hardware.Sensors;
 import utils.*;
 
+import java.lang.reflect.Method;
 import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -174,10 +179,18 @@ public class GamePanel extends Canvas {
         this.settings = settings;
     }
 
+    private void initEntity(Class<? extends Entity> entity, LoadingScreen loadingScreen){
+
+
+
+    }
+
     public void startGameThread() {
+        Reflections reflections = new Reflections("game.entity");
+        Set<Class<?>> childClasses = reflections.getTypesAnnotatedWith(Init.class);
         drawThread = new Thread(new drawThread(performanceStorage));
         logicThread = new Thread(new logicThread(performanceStorage));
-        loadingScreen = new LoadingScreen(7 + Models.values().length * 16);
+        loadingScreen = new LoadingScreen(6 + (Models.getUnitAmount() * 16) + Models.getBuildingAmount()+ childClasses.size());
         drawThread.start();
 
         try {
@@ -186,16 +199,26 @@ public class GamePanel extends Canvas {
             LoggerUtil.log(e);
         }
         Thread loader = new Thread(() -> {
+            long initTime = System.nanoTime();
             loadingScreen.addText("init Logger");
             long startTime = System.nanoTime();
             LoggerUtil.init();
             System.out.println("logger time: " + (System.nanoTime()-startTime)/1000000000d);
             loadingScreen.increment();
-            loadingScreen.addText("init Marine");
-            startTime = System.nanoTime();
-            Marine.init();
-            System.out.println("marine time: " + (System.nanoTime()-startTime)/1000000000d);
-            loadingScreen.increment();
+
+            for (Class<?> clazz : childClasses) {
+                try {
+                    loadingScreen.addText("init " + clazz.getSimpleName());
+                    startTime = System.nanoTime();
+                    Method staticMethod = clazz.getDeclaredMethod("init");
+                    staticMethod.invoke(null);
+                    System.out.println(clazz.getSimpleName() +" time: " + (System.nanoTime()-startTime)/1000000000d);
+                    loadingScreen.increment();
+                }catch (Exception e) {
+                    LoggerUtil.log(e);
+                }
+            }
+
             loadingScreen.addText("init Sounds");
             startTime = System.nanoTime();
             SoundManager.init();
@@ -224,13 +247,14 @@ public class GamePanel extends Canvas {
             startTime = System.nanoTime();
             DrawUtil.init(loadingScreen);
             System.out.println("DrawUtil time: " + (System.nanoTime()-startTime)/1000000000d);
-            loadingScreen.addText("done");
-            LoggerUtil.log("startup");
+            double initTotalTime = (System.nanoTime()-initTime)/1000000000d;
+            loadingScreen.addText("done   time: " + initTotalTime);
+            LoggerUtil.log("startup time: " + initTotalTime);
             SystemInfo si = new SystemInfo();
             LoggerUtil.log(LogType.EVENT, "os:", si.getOperatingSystem(), "cpu:", si.getHardware().getProcessor().getProcessorIdentifier().getName(), "gpu:", si.getHardware().getGraphicsCards().getFirst().getName(), "ram:", si.getHardware().getMemory().getTotal());
-
+            System.out.println("start   time: " + initTotalTime);
             try {
-                Thread.sleep(500);
+                Thread.sleep(250);
             } catch (InterruptedException e) {
                 LoggerUtil.log(e);
             }
@@ -245,7 +269,7 @@ public class GamePanel extends Canvas {
 //            LoggerUtil.log(e);
 //
 //        }
-        System.out.println("start");
+
         logicThread.start();
     }
 

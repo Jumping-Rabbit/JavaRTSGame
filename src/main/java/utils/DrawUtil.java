@@ -174,10 +174,7 @@ public class DrawUtil {
     public static void fillModelScaled(Models modelKey, long xScaled, long yScaled, long zScaled, long directionScaled){
         double scale = Viewport.getScale();
         WritableImage model = modelMap.get(modelKey)[(int) (StrictMath.floorMod((int) (LTD(directionScaled)+11.25), 360)/22.5)];
-        double imageSize = model.getWidth();
-        double halfImageSize = model.getWidth() / 2;
-        double modelWidth = modelKey.getWidth();
-        gc.drawImage(model, projectX(LTD(xScaled) - halfImageSize + modelWidth), projectY(LTD(yScaled) - halfImageSize), imageSize * scale, imageSize * scale);
+        gc.drawImage(model, projectX(LTD(xScaled) - 128 + modelKey.getHalfWidth()), projectY(LTD(yScaled) - 128 + modelKey.getHalfHeight()), 256 * scale, 256 * scale);
     }
 
 
@@ -279,10 +276,7 @@ public class DrawUtil {
     public static void fillModel(Models modelKey, double x, double y, double z, double direction){
         double scale = Viewport.getScale();
         WritableImage model = modelMap.get(modelKey)[(int) (StrictMath.floorMod((int) (direction+11.25), 360)/22.5)];
-        double imageSize = model.getWidth();
-        double halfImageSize = model.getWidth() / 2;
-        double modelWidth = modelKey.getWidth();
-        gc.drawImage(model, projectX(x - halfImageSize + modelWidth), projectY(y - halfImageSize), imageSize * scale, imageSize * scale);
+        gc.drawImage(model, projectX(x - 128 + modelKey.getHalfWidth()), projectY(y - 128 + modelKey.getHalfHeight()), 256 * scale, 256 * scale);
     }
 
 

@@ -10,18 +10,18 @@ import java.util.Comparator;
 import java.util.EnumSet;
 
 import static utils.NumUtil.LTD;
+import static utils.NumUtil.unScale;
 
 public abstract class Entity {
     public static final Comparator<Entity> Y_COMPARATOR = Comparator.comparingLong(Entity::getY);
     protected static boolean hasCollision;
-    protected static Models model;
     protected static ArrayList<InputType> validCommandTypes = new ArrayList<>();
     private static int idNum = 0;
     final public int id;
     public int nextInCell1 = -1;
     public int nextInCell2 = -1;
     public abstract EnumSet<Tags> getTags();
-    public abstract long getMaxHp();
+    protected abstract Models getModel();
     protected long x;//first 4 digit is decimal
     protected long y;
     protected long z;
@@ -35,8 +35,10 @@ public abstract class Entity {
     protected Snapshot snapshot1;
     protected Snapshot snapshot2;
     protected ArrayList<Command> commands = new ArrayList<>();
-
-
+    protected long armor;
+    protected abstract long getMaxHp();
+    protected EnumSet<Tags> tags;
+    protected ArrayList<Effects> effects;
     public Snapshot getSnapshot(boolean isSnapshot1) {
         if (isSnapshot1){
             return snapshot1;
@@ -118,15 +120,11 @@ public abstract class Entity {
         this.z += z;
     }
 
-    public Models getModel() {
-        return model;
-    }
-
     public void draw(boolean isSnapshot1) {
         if (isSnapshot1){
-            DrawUtil.Game.fillModelScaled(model, snapshot1.x, snapshot1.lastX, snapshot1.y, snapshot1.lastY, snapshot1.z, snapshot1.lastZ, snapshot1.direction, snapshot1.lastDirection);
+            DrawUtil.Game.fillModelScaled(getModel(), snapshot1.x, snapshot1.lastX, snapshot1.y, snapshot1.lastY, snapshot1.z, snapshot1.lastZ, snapshot1.direction, snapshot1.lastDirection);
         } else {
-            DrawUtil.Game.fillModelScaled(model, snapshot2.x, snapshot2.lastX, snapshot2.y, snapshot2.lastY, snapshot2.z, snapshot2.lastZ, snapshot2.direction, snapshot2.lastDirection);
+            DrawUtil.Game.fillModelScaled(getModel(), snapshot2.x, snapshot2.lastX, snapshot2.y, snapshot2.lastY, snapshot2.z, snapshot2.lastZ, snapshot2.direction, snapshot2.lastDirection);
         }
 
     }
@@ -150,11 +148,10 @@ public abstract class Entity {
     }
 
     public void drawSelectedRing(boolean isSnapshot1) {
-        double offset = model.getBoundingDiff()+model.getBoundingOffset();
         if (isSnapshot1){
-            DrawUtil.Game.fillCircle(LTD(snapshot1.x) + offset-2, LTD(snapshot1.lastX) + offset-2, LTD(snapshot1.y) - offset-2, LTD(snapshot1.lastY) - offset-2, model.getBoundingRadius()+2, 0x00FF0067);
+            DrawUtil.Game.fillCircle(LTD(snapshot1.x)-2, LTD(snapshot1.lastX) -2, LTD(snapshot1.y)-2, LTD(snapshot1.lastY)-2, getModel().getBoundingRadius()+2, 0x00FF0067);
         }else {
-            DrawUtil.Game.fillCircle(LTD(snapshot2.x) + offset-2, LTD(snapshot2.lastX) + offset-2, LTD(snapshot2.y) - offset-2, LTD(snapshot2.lastY) - offset-2, model.getBoundingRadius()+2, 0x00FF0067);
+            DrawUtil.Game.fillCircle(LTD(snapshot2.x)-2, LTD(snapshot2.lastX) -2, LTD(snapshot2.y)-2, LTD(snapshot2.lastY) -2, getModel().getBoundingRadius()+2, 0x00FF0067);
         }
     }
 
@@ -163,10 +160,8 @@ public abstract class Entity {
             return;
         }
 
-
-        double offset = model.getBoundingDiff()+model.getBoundingOffset();
-        double scale = getCollisionDiameter()/(getMaxHp()/20d);
         long maxHp = getMaxHp();
+        double scale = getCollisionDiameter()/(maxHp/20d);
 //        System.out.println(getCollisionDiameter() + ":" + getMaxHp() + ":" + scale + ":" + ((double)getCollisionDiameter())/((double)getMaxHp()));
 
         int color;
@@ -181,38 +176,46 @@ public abstract class Entity {
         } else {
             color = 0xFF0000FF;
         }
+        double tempX;
+        double tempY;
+        double tempLastX;
+        double tempLastY;
+        double tempHp;
         if (isSnapshot1){
-            DrawUtil.Game.fillRect(LTD(snapshot1.x) + offset, LTD(snapshot1.lastX) + offset, LTD(snapshot1.y-getRadius())-7, LTD(snapshot1.lastY-getRadius())-7, (LTD(snapshot1.hp)/20d)*scale, 5, color);
-            DrawUtil.Game.strokeRect(LTD(snapshot1.x) + offset, LTD(snapshot1.lastX) + offset, LTD(snapshot1.y-getRadius())-7, LTD(snapshot1.lastY-getRadius())-7, LTD(getCollisionDiameter()), 5, 0x000000FF, 1);
-            for(double i = scale; i < LTD(getCollisionDiameter()); i+=scale){
-                DrawUtil.Game.fillLine(LTD(snapshot1.x) + i + offset, LTD(snapshot1.lastX) + i + offset, LTD(snapshot1.y-getRadius())-7, LTD(snapshot1.lastY-getRadius())-7, LTD(snapshot1.x) + i + offset, LTD(snapshot1.lastX) + i + offset, LTD(snapshot1.y-getRadius())-2, LTD(snapshot1.lastY-getRadius())-2, 0x000000FF);
-            }
+            tempX = LTD(snapshot1.x);
+            tempY = LTD(snapshot1.y);
+            tempLastX = LTD(snapshot1.lastX);
+            tempLastY = LTD(snapshot1.lastY);
+            tempHp = LTD(snapshot1.hp);
         } else {
-            DrawUtil.Game.fillRect(LTD(snapshot2.x) + offset, LTD(snapshot2.lastX) + offset, LTD(snapshot2.y-getRadius())-7, LTD(snapshot2.lastY-getRadius())-7, (LTD(snapshot2.hp)/20d)*scale, 5, color);
-            DrawUtil.Game.strokeRect(LTD(snapshot2.x) + offset, LTD(snapshot2.lastX) + offset, LTD(snapshot2.y-getRadius())-7, LTD(snapshot2.lastY-getRadius())-7, LTD(getCollisionDiameter()), 5, 0x000000FF, 1);
-            for(double i = scale; i < LTD(getCollisionDiameter()); i+=scale){
-                DrawUtil.Game.fillLine(LTD(snapshot2.x) + i + offset, LTD(snapshot2.lastX) + i + offset, LTD(snapshot2.y-getRadius())-7, LTD(snapshot2.lastY-getRadius())-7, LTD(snapshot2.x) + i + offset, LTD(snapshot2.lastX) + i + offset, LTD(snapshot2.y-getRadius())-2, LTD(snapshot2.lastY-getRadius())-2, 0x000000FF);
-            }
+            tempX = LTD(snapshot2.x);
+            tempY = LTD(snapshot2.y);
+            tempLastX = LTD(snapshot2.lastX);
+            tempLastY = LTD(snapshot2.lastY);
+            tempHp = LTD(snapshot2.hp);
+        }
+        DrawUtil.Game.fillRect(tempX, tempLastX, tempY - LTD(getRadius())-7, tempLastY - LTD(getRadius())-7, (tempHp/20d)*scale, 5, color);
+        DrawUtil.Game.strokeRect(tempX, tempLastX, tempY - LTD(getRadius())-7, tempLastY-LTD(getRadius())-7, LTD(getCollisionDiameter()), 5, 0x000000FF, 1);
+        for(double i = scale; i < LTD(getCollisionDiameter()); i+=scale){
+            DrawUtil.Game.fillLine(tempX + i, tempLastX + i, tempY - LTD(getRadius())-7, tempLastY - LTD(getRadius())-7, tempX + i, tempLastX + i, tempY - LTD(getRadius())-2, tempLastY - LTD(getRadius())-2, 0x000000FF);
         }
 
     }
 
-    public abstract void drawTarget();
-
     public long getRadius() {
-        return model.getScaledHalfWidth();
+        return getModel().getScaledHalfWidth();
     }
 
     public long getCollisionRadius() {
-        return model.getBoundingRadiusScaled();
+        return getModel().getBoundingRadiusScaled();
     }
 
     public long getDiameter() {
-        return model.getScaledWidth();
+        return getModel().getScaledWidth();
     }
 
     public long getCollisionDiameter() {
-        return model.getBoundingDiameterScaled();
+        return getModel().getBoundingDiameterScaled();
     }
 
 }

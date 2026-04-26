@@ -79,6 +79,11 @@
             <artifactId>oshi-core-java25</artifactId>
             <version>6.11.1</version>
         </dependency>
+        <dependency>
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId>
+            <version>0.10.2</version>
+        </dependency>
 
     </dependencies>
 

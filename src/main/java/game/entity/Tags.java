@@ -8,5 +8,6 @@ public enum Tags {
     MECHANICAL,
     MELEE,
     RANGED,
-    INVULNERABLE
+    INVULNERABLE,
+    UNMOVABLE
 }

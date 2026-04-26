@@ -1,26 +1,35 @@
 package game.entity.unit.vanguard;
 
-import game.entity.Entity;
+import game.entity.Init;
 import game.entity.Tags;
 import game.entity.players;
 import game.entity.unit.Unit;
 import game.entity.unit.UnitState;
 import inputHandler.InputType;
-import utils.DrawUtil;
 import utils.Models;
 import utils.NumUtil;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
-
-public class Marine extends Unit {
-    public Marine(long x, long y, players player) {
+@Init
+public class VanguardMarine extends Unit {
+    private static Models model;
+    private static long maxHp;
+    @Override
+    protected long getMaxHp(){
+        return maxHp;
+    }
+    @Override
+    protected Models getModel(){
+        return model;
+    }
+    public VanguardMarine(long x, long y, players player) {
         super();
 
         this.x = NumUtil.DTL(x);
         this.y = NumUtil.DTL(y);
         this.z = 0;
-
+        tags = EnumSet.of(Tags.LIGHT, Tags.BIOLOGICAL, Tags.RANGED);
         lastZ = 0;
         lastX = NumUtil.DTL(x);
         lastY = NumUtil.DTL(y);
@@ -42,9 +51,10 @@ public class Marine extends Unit {
         hasCollision = true;
         validCommandTypes = new ArrayList<>();
         validCommandTypes.add(InputType.RIGHT_CLICK);
-        tags = EnumSet.of(Tags.LIGHT, Tags.BIOLOGICAL, Tags.RANGED);
+
         model = Models.vanguardMarine;
         maxHp = NumUtil.DTL(40);
+        Models.vanguardMarine.set(10, 10, 6, Models.ModelType.UNIT);
     }
 
 }

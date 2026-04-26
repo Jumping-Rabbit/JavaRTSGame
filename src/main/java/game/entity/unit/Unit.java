@@ -14,10 +14,8 @@ import static utils.NumUtil.LTD;
 public abstract class Unit extends Entity {
 
     protected static ArrayList<Abilities> abilities;
-    protected static EnumSet<Tags> tags;
-    protected ArrayList<Effects> effects;
-    protected long armor;
-    protected static long maxHp;
+
+
     protected long speed;
     protected long turnSpeed;
     protected long damage;
@@ -34,10 +32,6 @@ public abstract class Unit extends Entity {
     @Override
     public EnumSet<Tags> getTags(){
         return tags;
-    }
-    @Override
-    public long getMaxHp(){
-        return maxHp;
     }
 
     protected Unit(int id) {
@@ -75,8 +69,6 @@ public abstract class Unit extends Entity {
     }
 
 
-
-    @Override
     public void drawTarget(){
         if (unitState != UnitState.MOVING){
             return;
@@ -84,13 +76,14 @@ public abstract class Unit extends Entity {
         DrawUtil.Game.fillCircleScaledCull(targetX-50000, targetX-50000, targetY-50000, targetY-50000, 100000, 0x00FF00FF);
     }
 
+    @Override
     public void updateOnFrame() {
         if (!commands.isEmpty()) {
             for (Command command : commands) {
                 if (command.getInputType() == InputType.RIGHT_CLICK) {
                     unitState = UnitState.MOVING;
-                    targetX = command.getX() - model.getScaledHalfWidth();
-                    targetY = command.getY() - model.getScaledHalfWidth();
+                    targetX = command.getX() - getModel().getScaledHalfWidth();
+                    targetY = command.getY() - getModel().getScaledHalfWidth();
                     break;
                 }
             }
@@ -127,7 +120,8 @@ public abstract class Unit extends Entity {
                     else y += yChange;
                     long dx = x - targetX;
                     long dy = y - targetY;
-                    if ((dx * dx) + (dy * dy) <= (model.getScaledHalfWidth() * model.getScaledHalfWidth())) {
+                    long scaledHalfWidth = getModel().getScaledHalfWidth();
+                    if ((dx * dx) + (dy * dy) <= (scaledHalfWidth * scaledHalfWidth)) {
                         unitState = UnitState.IDLE;
                         removeCommand();
                     }
