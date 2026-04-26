@@ -19,9 +19,13 @@ public class DrawUtil {
     private static final ObjectMapper mapper = new ObjectMapper();
     private static EnumMap<Models, WritableImage[]> modelMap;
     static GameViewport gameViewport;
-    private static double factor = 0;
+    private static volatile double factor = 0;
     private static GraphicsContext gc;
     private static int color;
+
+    public static void startDraw(){
+        gameViewport.freeze();
+    }
 
     public static void init(LoadingScreen loadingScreen) {
         modelMap = ModelLoaderUtil.calculateModelImages(loadingScreen);
@@ -152,9 +156,10 @@ public class DrawUtil {
         gc.strokeOval(projectX(LTD(xScaled)), projectY(LTD(yScaled)), LTD(widthScaled)*scale, LTD(heightScaled)*scale);
     }
     /**draws a filled line, scaled inputs*/
-    public static void fillLineScaled(long startXScaled, long startYScaled, long endXScaled, long endYScaled, int color){
+    public static void fillLineScaled(long startXScaled, long startYScaled, long endXScaled, long endYScaled, int color, double thickness){
         double scale = Viewport.getScale();
         setColor(color);
+        setThickness(thickness);
         gc.strokeLine(projectX(LTD(startXScaled)), projectY(LTD(startYScaled)), projectX(LTD(endXScaled)), projectY(LTD(endYScaled)));
     }
     /**draws a filled text, scaled inputs*/
@@ -250,9 +255,10 @@ public class DrawUtil {
     }
 
     /**draws a filled line, scaled inputs*/
-    public static void fillLine(double startX, double startY, double endX, double endY, int color){
+    public static void fillLine(double startX, double startY, double endX, double endY, int color, double strokeWidth){
         double scale = Viewport.getScale();
         setColor(color);
+        setThickness(strokeWidth);
         gc.strokeLine(projectX(startX), projectY(startY), projectX(endX), projectY(endY));
     }
 
@@ -323,8 +329,8 @@ public class DrawUtil {
             DrawUtil.strokeOvalScaled(lerp(xCurrentScaled, xLastScaled), lerp(yCurrentScaled, yLastScaled), widthScaled, heightScaled, color, strokeWidth);
         }
         /**draws a filled line, scaled inputs*/
-        public static void fillLineScaled(long startXCurrentScaled, long startXLastScaled, long startYCurrentScaled, long startYLastScaled, long endXCurrentScaled, long endXLastScaled, long endYCurrentScaled, long endYLastScaled, int color){
-            DrawUtil.fillLineScaled(lerp(startXCurrentScaled, startXLastScaled), lerp(startYCurrentScaled, startYLastScaled), lerp(endXCurrentScaled, endXLastScaled), lerp(endYCurrentScaled, endYLastScaled), color);
+        public static void fillLineScaled(long startXCurrentScaled, long startXLastScaled, long startYCurrentScaled, long startYLastScaled, long endXCurrentScaled, long endXLastScaled, long endYCurrentScaled, long endYLastScaled, int color, double thickness){
+            DrawUtil.fillLineScaled(lerp(startXCurrentScaled, startXLastScaled), lerp(startYCurrentScaled, startYLastScaled), lerp(endXCurrentScaled, endXLastScaled), lerp(endYCurrentScaled, endYLastScaled), color, thickness);
         }
         /**draws a filled text, scaled inputs*/
         public static void fillTextScaled(String text, long xCurrentScaled, long xLastScaled, long yCurrentScaled, long yLastScaled, Fonts font, double size, StringAlignment alignment){
@@ -373,8 +379,8 @@ public class DrawUtil {
             DrawUtil.strokeOval(lerp(xCurrent, xLast), lerp(yCurrent, yLast), width, height, color, strokeWidth);
         }
         /**draws a filled line*/
-        public static void fillLine(double startXCurrent, double startXLast, double startYCurrent, double startYLast, double endXCurrent, double endXLast, double endYCurrent, double endYLast, int color){
-            DrawUtil.fillLine(lerp(startXCurrent, startXLast), lerp(startYCurrent, startYLast), lerp(endXCurrent, endXLast), lerp(endYCurrent, endYLast), color);
+        public static void fillLine(double startXCurrent, double startXLast, double startYCurrent, double startYLast, double endXCurrent, double endXLast, double endYCurrent, double endYLast, int color, double thickness){
+            DrawUtil.fillLine(lerp(startXCurrent, startXLast), lerp(startYCurrent, startYLast), lerp(endXCurrent, endXLast), lerp(endYCurrent, endYLast), color, thickness);
         }
         /**draws a filled text*/
         public static void fillText(String text, double xCurrent, double xLast, double yCurrent, double yLast, Fonts font, double size, StringAlignment alignment, int color){
@@ -393,19 +399,19 @@ public class DrawUtil {
     public static class Game{
         /** puts the offset from gameViewport*/
         private static long putXGO (long x){
-            return x - NumUtil.DTL(gameViewport.getX());
+            return x - NumUtil.DTL(lerp(gameViewport.getX(), gameViewport.getLastX()));
         }
         /** puts the offset from gameViewport*/
         private static long putYGO (long y){
-            return y - NumUtil.DTL(gameViewport.getY());
+            return y - NumUtil.DTL(lerp(gameViewport.getY(), gameViewport.getLastY()));
         }
         /** puts the offset from gameViewport*/
         private static double putXGO (double x){
-            return x - gameViewport.getX();
+            return x - lerp(gameViewport.getX(), gameViewport.getLastX());
         }
         /** puts the offset from gameViewport*/
         private static double putYGO (double y){
-            return y - gameViewport.getY();
+            return y - lerp(gameViewport.getY(), gameViewport.getLastY());
         }
 
         /**returns true if needs to be culled*/
@@ -452,8 +458,8 @@ public class DrawUtil {
             DrawUtil.strokeOvalScaled(putXGO(lerp(xCurrentScaled, xLastScaled)), putYGO(lerp(yCurrentScaled, yLastScaled)), widthScaled, heightScaled, color, strokeWidth);
         }
         /**draws a filled line, scaled inputs*/
-        public static void fillLineScaled(long startXCurrentScaled, long startXLastScaled, long startYCurrentScaled, long startYLastScaled, long endXCurrentScaled, long endXLastScaled, long endYCurrentScaled, long endYLastScaled, int color){
-            DrawUtil.fillLineScaled(putXGO(lerp(startXCurrentScaled, startXLastScaled)), putYGO(lerp(startYCurrentScaled, startYLastScaled)), putXGO(lerp(endXCurrentScaled, endXLastScaled)), putYGO(lerp(endYCurrentScaled, endYLastScaled)), color);
+        public static void fillLineScaled(long startXCurrentScaled, long startXLastScaled, long startYCurrentScaled, long startYLastScaled, long endXCurrentScaled, long endXLastScaled, long endYCurrentScaled, long endYLastScaled, int color, double thickness){
+            DrawUtil.fillLineScaled(putXGO(lerp(startXCurrentScaled, startXLastScaled)), putYGO(lerp(startYCurrentScaled, startYLastScaled)), putXGO(lerp(endXCurrentScaled, endXLastScaled)), putYGO(lerp(endYCurrentScaled, endYLastScaled)), color, thickness);
         }
         /**draws a filled text, scaled inputs*/
         public static void fillTextScaled(String text, long xCurrentScaled, long xLastScaled, long yCurrentScaled, long yLastScaled, Fonts font, double size, StringAlignment alignment){
@@ -502,8 +508,8 @@ public class DrawUtil {
             DrawUtil.strokeOval(putXGO(lerp(xCurrent, xLast)), putYGO(lerp(yCurrent, yLast)), width, height, color, strokeWidth);
         }
         /**draws a filled line*/
-        public static void fillLine(double startXCurrent, double startXLast, double startYCurrent, double startYLast, double endXCurrent, double endXLast, double endYCurrent, double endYLast, int color){
-            DrawUtil.fillLine(putXGO(lerp(startXCurrent, startXLast)), putYGO(lerp(startYCurrent, startYLast)), putXGO(lerp(endXCurrent, endXLast)), putYGO(lerp(endYCurrent, endYLast)), color);
+        public static void fillLine(double startXCurrent, double startXLast, double startYCurrent, double startYLast, double endXCurrent, double endXLast, double endYCurrent, double endYLast, int color, double thickness){
+            DrawUtil.fillLine(putXGO(lerp(startXCurrent, startXLast)), putYGO(lerp(startYCurrent, startYLast)), putXGO(lerp(endXCurrent, endXLast)), putYGO(lerp(endYCurrent, endYLast)), color, thickness);
         }
         /**draws a filled text*/
         public static void fillText(String text, double xCurrent, double xLast, double yCurrent, double yLast, Fonts font, double size, StringAlignment alignment, int color){
@@ -584,13 +590,13 @@ public class DrawUtil {
             return true;
         }
         /**draws a filled line, scaled inputs, returns false if culled*/
-        public static boolean fillLineScaledCull(long startXCurrentScaled, long startXLastScaled, long startYCurrentScaled, long startYLastScaled, long endXCurrentScaled, long endXLastScaled, long endYCurrentScaled, long endYLastScaled, int color){
+        public static boolean fillLineScaledCull(long startXCurrentScaled, long startXLastScaled, long startYCurrentScaled, long startYLastScaled, long endXCurrentScaled, long endXLastScaled, long endYCurrentScaled, long endYLastScaled, int color, double thickness){
             long startX = lerp(startXCurrentScaled, startXLastScaled);
             long startY = lerp(startYCurrentScaled, startYLastScaled);
             long endX = lerp(endXCurrentScaled, endXLastScaled);
             long endY = lerp(endYCurrentScaled, endYLastScaled);
             if (cull(startX, startY, endX-startX, endY-startX)) return false;
-            DrawUtil.fillLineScaled(putXGO(startX), putYGO(startY), putXGO(endX), putYGO(endY), color);
+            DrawUtil.fillLineScaled(putXGO(startX), putYGO(startY), putXGO(endX), putYGO(endY), color, thickness);
             return true;
         }
         /**draws a filled text, scaled inputs, returns false if culled*/
@@ -684,13 +690,13 @@ public class DrawUtil {
             return true;
         }
         /**draws a filled line, returns false if culled*/
-        public static boolean fillLineCull(double startXCurrent, double startXLast, double startYCurrent, double startYLast, double endXCurrent, double endXLast, double endYCurrent, double endYLast, int color){
+        public static boolean fillLineCull(double startXCurrent, double startXLast, double startYCurrent, double startYLast, double endXCurrent, double endXLast, double endYCurrent, double endYLast, int color, double thickness){
             double startX = lerp(startXCurrent, startXLast);
             double startY = lerp(startYCurrent, startYLast);
             double endX = lerp(endXCurrent, endXLast);
             double endY = lerp(endYCurrent, endYLast);
             if (cull(startX, startY, endX-startX, endY-startX)) return false;
-            DrawUtil.fillLine(putXGO(startX), putYGO(startY), putXGO(endX), putYGO(endY), color);
+            DrawUtil.fillLine(putXGO(startX), putYGO(startY), putXGO(endX), putYGO(endY), color, thickness);
             return true;
         }
         /**draws a filled text, returns false if culled*/

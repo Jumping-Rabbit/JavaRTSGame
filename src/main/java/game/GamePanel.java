@@ -33,7 +33,7 @@ public class GamePanel extends Canvas {
 
     //    double targetFPS = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDisplayMode().getRefreshRate(); // 0 or negative number means unlimited
     double targetFPS = 0;
-    volatile AtomicLong lastTickTime = new AtomicLong(System.nanoTime());//make atomic
+    volatile AtomicLong lastTickTime = new AtomicLong(System.nanoTime());
     private GameStatus gameStatus = GameStatus.START_LOADING;
 
 
@@ -343,7 +343,6 @@ public class GamePanel extends Canvas {
                 }
             }
         }
-
         lastTickTime.set(System.nanoTime());
     }
 

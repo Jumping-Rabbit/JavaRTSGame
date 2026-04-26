@@ -105,20 +105,21 @@
                 <configuration>
                     <mainClass>game.MainApp</mainClass>
                     <options>
-                        <option>--enable-native-access=ALL-UNNAMED</option>
-
-                        <option>-XX:+UseZGC</option>
-                        <option>-XX:+ZGenerational</option>
-                        <option>-Xms4G</option>
-                        <option>-Xmx4G</option>
-<!--                        <option>-XX:+UseStringDeduplication</option>-->
-                        <option>-XX:-OmitStackTraceInFastThrow</option>
-                        <option>-XX:CompilerTier2BudgetingWarmupCPUPercent=100</option>
-                        <option>-XX:+UseThreadPriorities</option>
-                        <option>-XX:ThreadPriorityPolicy=1</option>
-                        <option>-XX:+UseCriticalJavaThreadPriority</option>
-
-                        <option>-XX:+PrintCommandLineFlags</option>
+<!--                        <option>-XX:+PrintCommandLineFlags</option>-->
+<!--                        need to run though maven for this-->
+<!--                        all args:-->
+<!--                        -XX:+PrintCommandLineFlags-->
+<!--                        -XX:+UseZGC-->
+<!--                        -Xms4G-->
+<!--                        -Xmx4G-->
+<!--                        -XX:-OmitStackTraceInFastThrow-->
+<!--                        -XX:SoftMaxHeapSize=3G-->
+<!--                        -XX:-ZProactive-->
+<!--                        -XX:+UseCountedLoopSafepoints-->
+<!--                        -XX:LoopStripMiningIter=1000-->
+<!--                        -XX:-ZUncommit-->
+<!--                        -Xlog:gc*:file=gc.log:time,uptime:filecount=5,filesize=10M-->
+<!--                        &#45;&#45;enable-native-access=ALL-UNNAMED-->
                     </options>
                 </configuration>
             </plugin>

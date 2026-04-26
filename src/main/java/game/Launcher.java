@@ -16,6 +16,7 @@ public class Launcher extends Application {
 
     public static void close() {
         LoggerUtil.flush();
+        Replay.flush();
         Platform.exit();
         System.exit(0);
     }
@@ -104,14 +105,14 @@ public class Launcher extends Application {
         Launcher.stage.setScene(scene);
         Launcher.stage.show();
 
-        Launcher.stage.setOnCloseRequest(event -> {
-            close();
-        });
+
         stage.setAlwaysOnTop(true);
         stage.toFront();
         stage.requestFocus();
-        gamePanel.startGameThread();
         stage.setAlwaysOnTop(false);
-
+        gamePanel.startGameThread();
+        Launcher.stage.setOnCloseRequest(event -> {
+            close();
+        });
     }
 }

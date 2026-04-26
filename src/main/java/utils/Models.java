@@ -38,7 +38,6 @@ public enum Models {
                 count++;
             }
         }
-        System.out.println("b" + count);
         return count;
     }
     public static int getUnitAmount(){
@@ -48,7 +47,6 @@ public enum Models {
                 count++;
             }
         }
-        System.out.println("u" +count);
         return count;
     }
 

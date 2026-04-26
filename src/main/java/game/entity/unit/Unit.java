@@ -91,9 +91,9 @@ public abstract class Unit extends Entity {
             unitState = UnitState.IDLE;
         }
 
-        lastDirection = direction;
-        lastX = x;
-        lastY = y;
+//        lastDirection = direction;
+//        lastX = x;
+//        lastY = y;
         switch (unitState) {
             case MOVING:
                 targetDirection = NumUtil.atan2(targetY - y, targetX - x);

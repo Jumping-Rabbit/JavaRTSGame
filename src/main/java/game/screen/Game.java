@@ -1,5 +1,6 @@
 package game.screen;
 
+import game.Fonts;
 import game.GameViewport;
 import game.Replay;
 import game.entity.Command;
@@ -62,7 +63,7 @@ public class Game {
     public Game(File map, int playerNum) {
         exit = false;
         entities = new ObjectArrayList<>(22000);
-        for (int i = 0; i < 2000; i++) {
+        for (int i = 0; i < 10000; i++) {
             entities.add(new VanguardMarine((int) (StrictMath.random() * 7680), (int) (StrictMath.random() * 4320), players.BLUE));
         }
         for (int i = 0; i < 200; i++) {
@@ -270,7 +271,9 @@ public class Game {
                 }
                 case RIGHT_CLICK:
                     for (Entity entity : selectedEntities) {
-                        entity.clearCommands();//make shift button work
+                        if (!input.getIsShiftHeld()){
+                            entity.clearCommands();
+                        }
                         entity.addCommand(new Command(InputType.RIGHT_CLICK, DTL(input.getX()) + DTL(gameViewport.getX()), DTL(input.getY()) + DTL(gameViewport.getY())));
                     }
                     break;
@@ -278,33 +281,13 @@ public class Game {
                     if (input.getAction() == Actions.BACK) {
                         exit = true;
                     }
-                    if (input.getAction() == Actions.UP){
-                        gameViewport.changeY(-10);
-                    }else if (input.getAction() == Actions.LEFT){
-                        gameViewport.changeX(-10);
-                    } else if (input.getAction() == Actions.DOWN){
-                        gameViewport.changeY(10);
-                    }else if (input.getAction() == Actions.RIGHT){
-                        gameViewport.changeX(10);
-                    }
                     break;
             }
         }
         long t3 = System.nanoTime();
 
         entities.parallelStream().forEach(Entity::updateOnFrame);
-        long t4 = System.nanoTime();
-
-//        for (Building building : buildings) {
-//            building.updateOnFrame();
-//        }
-//        for (Unit entity : entities) {
-//            entity.updateOnFrame();
-//        }
         setSpatialGrid();
-
-        long t5 = System.nanoTime();
-
         calculatePhysics();
         if (isSnapshot1){
             entities.parallelStream().forEach(Entity::setSnapshot2);
@@ -313,17 +296,52 @@ public class Game {
             entities.parallelStream().forEach(Entity::setSnapshot1);
             isSnapshot1 = true;
         }
+        entities.parallelStream().forEach(e -> {
+            e.setLastX(e.getX());
+            e.setLastY(e.getY());
+            e.setLastDirection(e.getDirection());
+        });
+
 
         if (!InputHandler.MouseDown()) {
             selectedRectangle = null;
         }
+        long t4 = System.nanoTime();
+
+//        for (Building building : buildings) {
+//            building.updateOnFrame();
+//        }
+//        for (Unit entity : entities) {
+//            entity.updateOnFrame();
+//        }
+
+
+        long t5 = System.nanoTime();
+        gameViewport.updateOnFrame();
+
+
         long t6 = System.nanoTime();
-        if (tickNum % 2 == 0) LoggerUtil.log(PerformanceType.TICK, "replay:", (t2-t1)/1000000d,"input:", (t3-t2)/1000000d, "update:", (t4-t3)/1000000d, "spatial grid:", (t5-t4)/1000000d, "physics:" + (t6-t5)/1000000d);
+        if (tickNum % 2 == 0) LoggerUtil.log(PerformanceType.TICK, "replay:", (t2-t1)/1000000d,"input:", (t3-t2)/1000000d, "physics:", (t4-t3)/1000000d, "spatial grid:", (t5-t4)/1000000d, "update:" + (t6-t5)/1000000d);
 //        System.out.println("input: " + (t2-t1)/1000000d + "update: " + (t3-t2)/1000000d + "ms  physics: " + (t4-t3)/1000000d);
+    }
+
+    public void drawHud(){
+        DrawUtil.fillRect(0, 820, 1920, 260, 0x505050FF);
+        DrawUtil.fillLine(260, 880, 1570, 880, 0x000000FF, 4);
+        DrawUtil.fillLine(0, 820, 1920, 820, 0x000000FF, 4);
+        DrawUtil.fillLine(260, 820, 260, 1080, 0x000000FF, 4);
+        DrawUtil.fillLine(1570, 820, 1570, 1080, 0x000000FF, 4);
+        for (int i = 0; i < 20; i+= 1){
+            DrawUtil.fillLine(260+i*65.5, 880, 260+i*65.5, 820, 0x000000FF, 4);
+            DrawUtil.fillRect(260+i*65.5+15, 870, 30, 20, 0x505050FF);
+            DrawUtil.fillText(String.valueOf(i+1), 260+i*65.5 + 32.75, 880, Fonts.DEFAULT, 20, StringAlignment.CENTER_MIDDLE, 0xFFFFFFFF);
+        }
     }
 
     public void draw() {
         DrawUtil.setGameViewport(gameViewport);
+        DrawUtil.startDraw();
+        boolean isSnapshot1Draw = isSnapshot1;
 
         for (Entity entity : entities){
             if (entity instanceof Unit){
@@ -346,7 +364,7 @@ public class Game {
             for (int gy = minGridY; gy <= maxGridY; gy++) {
                 long key = ((long) gx << 32) | (gy & 0xFFFFFFFFL);
                 int currentIndex;
-                if (isSnapshot1){
+                if (isSnapshot1Draw){
                     currentIndex = cellHeads1.get(key);
                     while (currentIndex != -1) {
                         Entity entity = entities.get(currentIndex);
@@ -371,15 +389,16 @@ public class Game {
         visibleEntities.sort(Entity.Y_COMPARATOR);
         for (Entity visibleEntity : visibleEntities) {
             if (visibleEntity.isSelected()) {
-                visibleEntity.drawSelectedRing(isSnapshot1);
+                visibleEntity.drawSelectedRing(isSnapshot1Draw);
             }
-            visibleEntity.draw(isSnapshot1);
-            visibleEntity.drawHeathBar(isSnapshot1);
+            visibleEntity.draw(isSnapshot1Draw);
+            visibleEntity.drawHeathBar(isSnapshot1Draw);
         }
 
         if (selectedRectangle != null) {
             DrawUtil.fillRect(selectedRectangle, 0x00FF0040);
         }
+        drawHud();
     }
 
     public enum GameState {

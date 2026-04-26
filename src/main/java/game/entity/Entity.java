@@ -25,10 +25,33 @@ public abstract class Entity {
     protected long x;//first 4 digit is decimal
     protected long y;
     protected long z;
+
+    public void setLastX(long lastX) {
+        this.lastX = lastX;
+    }
+
+    public void setLastY(long lastY) {
+        this.lastY = lastY;
+    }
+
+    public void setLastZ(long lastZ) {
+        this.lastZ = lastZ;
+    }
+
     protected long lastX;
     protected long lastY;
     protected long lastZ;
+
+    public long getDirection() {
+        return direction;
+    }
+
     protected long direction;
+
+    public void setLastDirection(long lastDirection) {
+        this.lastDirection = lastDirection;
+    }
+
     protected long lastDirection;
     protected boolean isSelected = false;
     protected long hp;
@@ -197,7 +220,7 @@ public abstract class Entity {
         DrawUtil.Game.fillRect(tempX, tempLastX, tempY - LTD(getRadius())-7, tempLastY - LTD(getRadius())-7, (tempHp/20d)*scale, 5, color);
         DrawUtil.Game.strokeRect(tempX, tempLastX, tempY - LTD(getRadius())-7, tempLastY-LTD(getRadius())-7, LTD(getCollisionDiameter()), 5, 0x000000FF, 1);
         for(double i = scale; i < LTD(getCollisionDiameter()); i+=scale){
-            DrawUtil.Game.fillLine(tempX + i, tempLastX + i, tempY - LTD(getRadius())-7, tempLastY - LTD(getRadius())-7, tempX + i, tempLastX + i, tempY - LTD(getRadius())-2, tempLastY - LTD(getRadius())-2, 0x000000FF);
+            DrawUtil.Game.fillLine(tempX + i, tempLastX + i, tempY - LTD(getRadius())-7, tempLastY - LTD(getRadius())-7, tempX + i, tempLastX + i, tempY - LTD(getRadius())-2, tempLastY - LTD(getRadius())-2, 0x000000FF, 1);
         }
 
     }
