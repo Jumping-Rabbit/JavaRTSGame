@@ -1,9 +1,11 @@
 package game.entity;
 
 public enum Tags {
-    LIGHT,
-    MEDIUM,
-    HEAVY,
+    UNARMORED,
+    LIGHT_ARMORED,
+    MEDIUM_ARMORED,
+    HEAVY_ARMORED,
+    SUPER_HEAVY_ARMORED,
     BIOLOGICAL,
     MECHANICAL,
     MELEE,

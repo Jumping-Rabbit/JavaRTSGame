@@ -7,8 +7,10 @@ import game.entity.Command;
 import game.entity.Entity;
 import game.entity.Tags;
 import game.entity.building.vanguard.VanguardBarracks;
+import game.entity.building.vanguard.VanguardCommandCenter;
 import game.entity.players;
 import game.entity.unit.Unit;
+import game.entity.unit.vanguard.VanguardMUV;
 import game.entity.unit.vanguard.VanguardMarine;
 import inputHandler.*;
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
@@ -63,11 +65,17 @@ public class Game {
     public Game(File map, int playerNum) {
         exit = false;
         entities = new ObjectArrayList<>(22000);
-        for (int i = 0; i < 10000; i++) {
+        for (int i = 0; i < 5000; i++) {
             entities.add(new VanguardMarine((int) (StrictMath.random() * 7680), (int) (StrictMath.random() * 4320), players.BLUE));
+        }
+        for (int i = 0; i < 5000; i++) {
+            entities.add(new VanguardMUV((int) (StrictMath.random() * 7680), (int) (StrictMath.random() * 4320), players.BLUE));
         }
         for (int i = 0; i < 200; i++) {
             entities.add(new VanguardBarracks((int) (StrictMath.random() * 7680), (int) (StrictMath.random() * 4320), players.BLUE));
+        }
+        for (int i = 0; i < 200; i++) {
+            entities.add(new VanguardCommandCenter((int) (StrictMath.random() * 7680), (int) (StrictMath.random() * 4320), players.BLUE));
         }
         selectedEntities = new ArrayList<>();
         selectedEntities.addAll(entities);
@@ -270,9 +278,13 @@ public class Game {
                     break;
                 }
                 case RIGHT_CLICK:
+                    int formationIdx = 0;
                     for (Entity entity : selectedEntities) {
                         if (!input.getIsShiftHeld()){
                             entity.clearCommands();
+                        }
+                        if (entity instanceof Unit unit) {
+                            unit.setFormationIndex(formationIdx++);
                         }
                         entity.addCommand(new Command(InputType.RIGHT_CLICK, DTL(input.getX()) + DTL(gameViewport.getX()), DTL(input.getY()) + DTL(gameViewport.getY())));
                     }
@@ -369,7 +381,6 @@ public class Game {
                     while (currentIndex != -1) {
                         Entity entity = entities.get(currentIndex);
                         visibleEntities.add(entity);
-
                         currentIndex = entity.nextInCell1;
                     }
                 } else {
@@ -452,12 +463,12 @@ public class Game {
         private List<CollisionResult> detectSequentially() {
             List<CollisionResult> results = new ArrayList<>();
             for (int i = start; i < end; i++) {
-                long x1 = xArr[i];
-                long y1 = yArr[i];
+                long cx1 = xArr[i] + rArr[i];
+                long cy1 = yArr[i] + rArr[i];
                 long r1 = rArr[i];
 
-                long gx = x1 >> SHIFT;
-                long gy = y1 >> SHIFT;
+                long gx = xArr[i] >> SHIFT;
+                long gy = yArr[i] >> SHIFT;
 
                 for (long nx = gx - 1; nx <= gx + 1; nx++) {
                     for (long ny = gy - 1; ny <= gy + 1; ny++) {
@@ -469,15 +480,15 @@ public class Game {
                             currentIndex = cellHeads1.get(key);
                         }
 
-
                         while (currentIndex != -1) {
                             if (i < currentIndex) {
+                                long cx2 = xArr[currentIndex] + rArr[currentIndex];
+                                long cy2 = yArr[currentIndex] + rArr[currentIndex];
                                 long rSum = r1 + rArr[currentIndex];
-                                long dx = xArr[currentIndex] - x1;
-                                long dy = yArr[currentIndex] - y1;
+                                long dx = cx2 - cx1;
+                                long dy = cy2 - cy1;
 
                                 if (StrictMath.abs(dx) < rSum && StrictMath.abs(dy) < rSum) {
-
                                     long distSq = dx * dx + dy * dy;
                                     long rSumSq = rSum * rSum;
 
@@ -486,7 +497,7 @@ public class Game {
                                         if (distance == 0) distance = 1;
 
                                         long overlap = rSum - distance;
-                                        long pushAmount = (long) (overlap * 0.75);
+                                        long pushAmount = (long) (overlap * 0.5);
 
                                         long moveX = (dx * pushAmount) / distance;
                                         long moveY = (dy * pushAmount) / distance;

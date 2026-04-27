@@ -2,6 +2,7 @@ package inputHandler;
 
 import game.Sounds;
 import game.Viewport;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 
@@ -27,6 +28,16 @@ public class InputHandler {
     public static void tick() {
         inputsFinal = inputs;
         inputs = new ArrayDeque<>();
+        boolean hasMove = false;
+        for (Input input : inputsFinal){
+            if (input.getInputType() == InputType.MOVE){
+                hasMove = true;
+                break;
+            }
+        }
+        if (!hasMove){
+            inputsFinal.addLast(mouseHandler.getMoveInput());
+        }
     }
 
     ;
@@ -48,6 +59,17 @@ public class InputHandler {
         private double pressedY;
         private boolean isLeftDown = false;
         private boolean dragged = false;
+        private volatile double mouseX;
+        private volatile double mouseY;
+        private volatile boolean hasMove;
+
+        private void tick(){
+            hasMove = false;
+        }
+
+        private Input getMoveInput(){
+            return new Input(InputType.MOVE, mouseX, mouseY, false);
+        }
 
         public boolean mouseDown() {
             return isLeftDown;
@@ -62,15 +84,17 @@ public class InputHandler {
         public void handleMouse(MouseEvent e) {
             double mouseX = ((e.getX() - Viewport.getXOffset()) / Viewport.getScale());
             double mouseY = ((e.getY() - Viewport.getYOffset()) / Viewport.getScale());
+            this.mouseX = mouseX;
+            this.mouseY = mouseY;
 
-            if (e.getEventType() == javafx.scene.input.MouseEvent.MOUSE_PRESSED) {
-                if (e.getButton() == javafx.scene.input.MouseButton.PRIMARY) {
+            if (e.getEventType() == MouseEvent.MOUSE_PRESSED) {
+                if (e.getButton() == MouseButton.PRIMARY) {
                     isLeftDown = true;
                     pressedX = mouseX;
                     pressedY = mouseY;
                     Sounds.CLICK.play();
                 }
-            } else if (e.getEventType() == javafx.scene.input.MouseEvent.MOUSE_RELEASED) {
+            } else if (e.getEventType() == MouseEvent.MOUSE_RELEASED) {
 
                 if (!dragged) {
                     InputType type = switch (e.getButton()) {
@@ -80,16 +104,19 @@ public class InputHandler {
                     };
                     InputHandler.addInput(new Input(type, mouseX, mouseY, e.isShiftDown()));
                 }
-                if (e.getButton() == javafx.scene.input.MouseButton.PRIMARY) {
+                if (e.getButton() == MouseButton.PRIMARY) {
                     isLeftDown = false;
                     dragged = false;
                 }
                 ;
-            } else if (e.getEventType() == javafx.scene.input.MouseEvent.MOUSE_DRAGGED) {
+            } else if (e.getEventType() == MouseEvent.MOUSE_DRAGGED) {
                 if (isLeftDown) {
                     InputHandler.addInput(new Input(InputType.DRAG, pressedX, pressedY, mouseX, mouseY, e.isShiftDown()));
                     dragged = true;
                 }
+            } else if (e.getEventType() == MouseEvent.MOUSE_MOVED){
+                InputHandler.addInput(new Input(InputType.MOVE, mouseX, mouseY, e.isShiftDown()));
+                hasMove = true;
             }
         }
     }

@@ -27,7 +27,21 @@ public abstract class Unit extends Entity {
     protected long targetX;
     protected long targetY;
     protected long targetDirection;
+
+    public void setFormationIndex(int formationIndex) {
+        this.formationIndex = formationIndex;
+    }
+    public void changeFormationIndex(int amount){
+        formationIndex+=amount;
+    }
+
     protected Entity attackTarget;
+
+    public int getFormationIndex() {
+        return formationIndex;
+    }
+
+    protected int formationIndex = 0;
 
     @Override
     public EnumSet<Tags> getTags(){
@@ -82,9 +96,15 @@ public abstract class Unit extends Entity {
             for (Command command : commands) {
                 if (command.getInputType() == InputType.RIGHT_CLICK) {
                     unitState = UnitState.MOVING;
-                    targetX = command.getX() - getModel().getScaledHalfWidth();
-                    targetY = command.getY() - getModel().getScaledHalfWidth();
-                    break;
+
+                    int ring = (int) StrictMath.sqrt(formationIndex);
+                    long angle = (long)((formationIndex * 137.507) * NumUtil.SCALER) % NumUtil.DTL(360);
+                    long spreadRadius = getCollisionRadius() * ring;
+                    long offsetX = (long) (NumUtil.cos(angle) * spreadRadius);
+                    long offsetY = (long) (NumUtil.sin(angle) * spreadRadius);
+
+                    targetX = command.getX() - getModel().getScaledHalfWidth() + offsetX;
+                    targetY = command.getY() - getModel().getScaledHalfWidth() + offsetY;
                 }
             }
         } else {

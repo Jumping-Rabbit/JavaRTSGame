@@ -93,15 +93,9 @@ public class Replay {
     }
 
     public static void flush(){
-        if (executor != null)
+        if (executor == null) return;
         executor.shutdown();
-        try {
-            if (executor.awaitTermination(5, java.util.concurrent.TimeUnit.SECONDS)) {
-                writer.flush();
-                writer.close();
-            }
-        } catch (InterruptedException e) {
-            LoggerUtil.log(e);
-        }
+        writer.flush();
+        writer.close();
     }
 }

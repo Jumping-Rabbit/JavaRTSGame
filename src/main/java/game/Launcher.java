@@ -92,6 +92,7 @@ public class Launcher extends Application {
         gamePanel.widthProperty().bind(root.widthProperty());
         gamePanel.heightProperty().bind(root.heightProperty());
         root.getChildren().add(gamePanel);
+        root.setPickOnBounds(true);
         scene = new Scene(root);
 
         scene.setOnKeyPressed(event -> InputHandler.getKeyHandler().handleKeyPress(event));
@@ -99,6 +100,7 @@ public class Launcher extends Application {
         scene.setOnMousePressed(e -> InputHandler.getMouseHandler().handleMouse(e));
         scene.setOnMouseReleased(e -> InputHandler.getMouseHandler().handleMouse(e));
         scene.setOnMouseDragged(e -> InputHandler.getMouseHandler().handleMouse(e));
+        scene.setOnMouseMoved(e -> InputHandler.getMouseHandler().handleMouse(e));
         scene.setOnScroll(e -> InputHandler.getMouseHandler().handleScroll(e));
 
         Launcher.stage.setTitle("java game");

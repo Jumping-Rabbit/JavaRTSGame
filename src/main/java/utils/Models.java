@@ -6,7 +6,9 @@ import static utils.NumUtil.DTL;
 
 public enum Models {
     vanguardMarine(ModelType.UNIT),
-    vanguardBarracks(ModelType.BUILDING);
+    vanguardMUV(ModelType.UNIT),
+    vanguardBarracks(ModelType.BUILDING),
+    vanguardCommandCenter(ModelType.BUILDING);
 
     private double width;
     private double height;

@@ -172,9 +172,9 @@ public abstract class Entity {
 
     public void drawSelectedRing(boolean isSnapshot1) {
         if (isSnapshot1){
-            DrawUtil.Game.fillCircle(LTD(snapshot1.x)-2, LTD(snapshot1.lastX) -2, LTD(snapshot1.y)-2, LTD(snapshot1.lastY)-2, getModel().getBoundingRadius()+2, 0x00FF0067);
+            DrawUtil.Game.fillCircle(LTD(snapshot1.x), LTD(snapshot1.lastX) , LTD(snapshot1.y), LTD(snapshot1.lastY), getModel().getBoundingRadius(), 0x00FF0067);
         }else {
-            DrawUtil.Game.fillCircle(LTD(snapshot2.x)-2, LTD(snapshot2.lastX) -2, LTD(snapshot2.y)-2, LTD(snapshot2.lastY) -2, getModel().getBoundingRadius()+2, 0x00FF0067);
+            DrawUtil.Game.fillCircle(LTD(snapshot2.x), LTD(snapshot2.lastX) , LTD(snapshot2.y), LTD(snapshot2.lastY) , getModel().getBoundingRadius(), 0x00FF0067);
         }
     }
 

@@ -11,8 +11,9 @@ import utils.NumUtil;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
+
 @Init
-public class VanguardMarine extends Unit {
+public class VanguardMUV extends Unit {
     private static Models model;
     private static long maxHp;
     @Override
@@ -23,7 +24,7 @@ public class VanguardMarine extends Unit {
     protected Models getModel(){
         return model;
     }
-    public VanguardMarine(long x, long y, players player) {
+    public VanguardMUV(long x, long y, players player) {
         super();
 
         this.x = NumUtil.DTL(x);
@@ -52,9 +53,9 @@ public class VanguardMarine extends Unit {
         validCommandTypes = new ArrayList<>();
         validCommandTypes.add(InputType.RIGHT_CLICK);
 
-        model = Models.vanguardMarine;
+        model = Models.vanguardMUV;
         maxHp = NumUtil.DTL(40);
-        Models.vanguardMarine.set(10, 10, 6, Models.ModelType.UNIT);
+        Models.vanguardMUV.set(10, 10, 6, Models.ModelType.UNIT);
     }
 
 }

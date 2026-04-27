@@ -4,7 +4,6 @@ import game.entity.Init;
 import game.entity.Tags;
 import game.entity.building.Building;
 import game.entity.players;
-import game.entity.unit.UnitState;
 import inputHandler.InputType;
 import utils.Models;
 import utils.NumUtil;
@@ -30,7 +29,7 @@ public class VanguardBarracks extends Building {
         this.x = NumUtil.DTL(x);
         this.y = NumUtil.DTL(y);
         this.z = 0;
-        tags = EnumSet.of(Tags.HEAVY, Tags.MECHANICAL, Tags.UNMOVABLE);
+        tags = EnumSet.of(Tags.HEAVY_ARMORED, Tags.MECHANICAL, Tags.UNMOVABLE);
         lastZ = 0;
         lastX = NumUtil.DTL(x);
         lastY = NumUtil.DTL(y);
