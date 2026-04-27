@@ -9,8 +9,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.EnumSet;
 
-import static utils.NumUtil.LTD;
-import static utils.NumUtil.unScale;
+import static utils.NumUtil.*;
 
 public abstract class Entity {
     public static final Comparator<Entity> Y_COMPARATOR = Comparator.comparingLong(Entity::getY);
@@ -184,7 +183,7 @@ public abstract class Entity {
         }
 
         long maxHp = getMaxHp();
-        double scale = getCollisionDiameter()/(maxHp/20d);
+        double scale = getCollisionDiameter()/(maxHp/100d);
 //        System.out.println(getCollisionDiameter() + ":" + getMaxHp() + ":" + scale + ":" + ((double)getCollisionDiameter())/((double)getMaxHp()));
 
         int color;
@@ -217,11 +216,20 @@ public abstract class Entity {
             tempLastY = LTD(snapshot2.lastY);
             tempHp = LTD(snapshot2.hp);
         }
-        DrawUtil.Game.fillRect(tempX, tempLastX, tempY - LTD(getRadius())-7, tempLastY - LTD(getRadius())-7, (tempHp/20d)*scale, 5, color);
-        DrawUtil.Game.strokeRect(tempX, tempLastX, tempY - LTD(getRadius())-7, tempLastY-LTD(getRadius())-7, LTD(getCollisionDiameter()), 5, 0x000000FF, 1);
-        for(double i = scale; i < LTD(getCollisionDiameter()); i+=scale){
-            DrawUtil.Game.fillLine(tempX + i, tempLastX + i, tempY - LTD(getRadius())-7, tempLastY - LTD(getRadius())-7, tempX + i, tempLastX + i, tempY - LTD(getRadius())-2, tempLastY - LTD(getRadius())-2, 0x000000FF, 1);
+
+        DrawUtil.Game.fillRect(tempX, tempLastX, tempY - LTD(getRadius())-7, tempLastY - LTD(getRadius())-7, (tempHp/100d)*scale, 6, color);
+        DrawUtil.Game.strokeRect(tempX, tempLastX, tempY - LTD(getRadius())-7, tempLastY-LTD(getRadius())-7, LTD(getCollisionDiameter()), 6, 0x000000FF, 1);
+        if (scale > LTD(getCollisionDiameter())){
+            for(double i = scale/4; i < LTD(getCollisionDiameter()); i+=scale/4){
+                DrawUtil.Game.fillLineDotted(tempX + i, tempLastX + i, tempY - LTD(getRadius())-7, tempLastY - LTD(getRadius())-7, tempX + i, tempLastX + i, tempY - LTD(getRadius())-1, tempLastY - LTD(getRadius())-1, 0x000000FF, 1, 1, 3);
+            }
+        } else {
+
+            for(double i = scale; i < LTD(getCollisionDiameter()); i+=scale){
+                DrawUtil.Game.fillLine(tempX + i, tempLastX + i, tempY - LTD(getRadius())-7, tempLastY - LTD(getRadius())-7, tempX + i, tempLastX + i, tempY - LTD(getRadius())-1, tempLastY - LTD(getRadius())-1, 0x000000FF, 1);
+            }
         }
+
 
     }
 

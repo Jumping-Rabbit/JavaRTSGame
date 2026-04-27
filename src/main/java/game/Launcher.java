@@ -15,6 +15,7 @@ public class Launcher extends Application {
     private static Scene scene;
 
     public static void close() {
+        LoggerUtil.log("close program");
         LoggerUtil.flush();
         Replay.flush();
         Platform.exit();

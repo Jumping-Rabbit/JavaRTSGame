@@ -162,6 +162,15 @@ public class DrawUtil {
         setThickness(thickness);
         gc.strokeLine(projectX(LTD(startXScaled)), projectY(LTD(startYScaled)), projectX(LTD(endXScaled)), projectY(LTD(endYScaled)));
     }
+    /**draws a filled line, scaled inputs*/
+    public static void fillLineDottedScaled(long startXScaled, long startYScaled, long endXScaled, long endYScaled, int color, double thickness, double dotLength, double spaceLength){
+        double scale = Viewport.getScale();
+        setColor(color);
+        setThickness(thickness);
+        gc.setLineDashes(dotLength, spaceLength);
+        gc.strokeLine(projectX(LTD(startXScaled)), projectY(LTD(startYScaled)), projectX(LTD(endXScaled)), projectY(LTD(endYScaled)));
+        gc.setLineDashes(null);
+    }
     /**draws a filled text, scaled inputs*/
     public static void fillTextScaled(String text, long xScaled, long yScaled, Fonts font, double size, StringAlignment alignment){
         double scale = Viewport.getScale();
@@ -262,6 +271,16 @@ public class DrawUtil {
         gc.strokeLine(projectX(startX), projectY(startY), projectX(endX), projectY(endY));
     }
 
+    /**draws a filled line, scaled inputs*/
+    public static void fillLineDotted(double startX, double startY, double endX, double endY, int color, double strokeWidth, double dotLength, double spaceLength){
+        double scale = Viewport.getScale();
+        setColor(color);
+        setThickness(strokeWidth);
+        gc.setLineDashes(dotLength, spaceLength);
+        gc.strokeLine(projectX(startX), projectY(startY), projectX(endX), projectY(endY));
+        gc.setLineDashes(null);
+    }
+
     /**draws a filled text*/
     public static void fillText(String text, double x, double y, Fonts font, double size, StringAlignment alignment, int color){
         double scale = Viewport.getScale();
@@ -332,6 +351,11 @@ public class DrawUtil {
         public static void fillLineScaled(long startXCurrentScaled, long startXLastScaled, long startYCurrentScaled, long startYLastScaled, long endXCurrentScaled, long endXLastScaled, long endYCurrentScaled, long endYLastScaled, int color, double thickness){
             DrawUtil.fillLineScaled(lerp(startXCurrentScaled, startXLastScaled), lerp(startYCurrentScaled, startYLastScaled), lerp(endXCurrentScaled, endXLastScaled), lerp(endYCurrentScaled, endYLastScaled), color, thickness);
         }
+        /**draws a filled line, scaled inputs*/
+        public static void fillLineDottedScaled(long startXCurrentScaled, long startXLastScaled, long startYCurrentScaled, long startYLastScaled, long endXCurrentScaled, long endXLastScaled, long endYCurrentScaled, long endYLastScaled, int color, double thickness , double dotLength, double spaceLength){
+            DrawUtil.fillLineDottedScaled(lerp(startXCurrentScaled, startXLastScaled), lerp(startYCurrentScaled, startYLastScaled), lerp(endXCurrentScaled, endXLastScaled), lerp(endYCurrentScaled, endYLastScaled), color, thickness ,dotLength, spaceLength);
+        }
+
         /**draws a filled text, scaled inputs*/
         public static void fillTextScaled(String text, long xCurrentScaled, long xLastScaled, long yCurrentScaled, long yLastScaled, Fonts font, double size, StringAlignment alignment){
             DrawUtil.fillTextScaled(text, lerp(xCurrentScaled, xLastScaled), lerp(yCurrentScaled, yLastScaled), font, size, alignment);
@@ -381,6 +405,10 @@ public class DrawUtil {
         /**draws a filled line*/
         public static void fillLine(double startXCurrent, double startXLast, double startYCurrent, double startYLast, double endXCurrent, double endXLast, double endYCurrent, double endYLast, int color, double thickness){
             DrawUtil.fillLine(lerp(startXCurrent, startXLast), lerp(startYCurrent, startYLast), lerp(endXCurrent, endXLast), lerp(endYCurrent, endYLast), color, thickness);
+        }
+        /**draws a filled line*/
+        public static void fillLineDotted(double startXCurrent, double startXLast, double startYCurrent, double startYLast, double endXCurrent, double endXLast, double endYCurrent, double endYLast, int color, double thickness, double dotLength, double spaceLength){
+            DrawUtil.fillLineDotted(lerp(startXCurrent, startXLast), lerp(startYCurrent, startYLast), lerp(endXCurrent, endXLast), lerp(endYCurrent, endYLast), color, thickness, dotLength, spaceLength);
         }
         /**draws a filled text*/
         public static void fillText(String text, double xCurrent, double xLast, double yCurrent, double yLast, Fonts font, double size, StringAlignment alignment, int color){
@@ -461,6 +489,10 @@ public class DrawUtil {
         public static void fillLineScaled(long startXCurrentScaled, long startXLastScaled, long startYCurrentScaled, long startYLastScaled, long endXCurrentScaled, long endXLastScaled, long endYCurrentScaled, long endYLastScaled, int color, double thickness){
             DrawUtil.fillLineScaled(putXGO(lerp(startXCurrentScaled, startXLastScaled)), putYGO(lerp(startYCurrentScaled, startYLastScaled)), putXGO(lerp(endXCurrentScaled, endXLastScaled)), putYGO(lerp(endYCurrentScaled, endYLastScaled)), color, thickness);
         }
+        /**draws a filled line, scaled inputs*/
+        public static void fillLineDottedScaled(long startXCurrentScaled, long startXLastScaled, long startYCurrentScaled, long startYLastScaled, long endXCurrentScaled, long endXLastScaled, long endYCurrentScaled, long endYLastScaled, int color, double thickness, double dotLength, double spaceLength){
+            DrawUtil.fillLineDottedScaled(putXGO(lerp(startXCurrentScaled, startXLastScaled)), putYGO(lerp(startYCurrentScaled, startYLastScaled)), putXGO(lerp(endXCurrentScaled, endXLastScaled)), putYGO(lerp(endYCurrentScaled, endYLastScaled)), color, thickness, dotLength, spaceLength);
+        }
         /**draws a filled text, scaled inputs*/
         public static void fillTextScaled(String text, long xCurrentScaled, long xLastScaled, long yCurrentScaled, long yLastScaled, Fonts font, double size, StringAlignment alignment){
             DrawUtil.fillTextScaled(text, putXGO(lerp(xCurrentScaled, xLastScaled)), putYGO(lerp(yCurrentScaled, yLastScaled)), font, size, alignment);
@@ -510,6 +542,10 @@ public class DrawUtil {
         /**draws a filled line*/
         public static void fillLine(double startXCurrent, double startXLast, double startYCurrent, double startYLast, double endXCurrent, double endXLast, double endYCurrent, double endYLast, int color, double thickness){
             DrawUtil.fillLine(putXGO(lerp(startXCurrent, startXLast)), putYGO(lerp(startYCurrent, startYLast)), putXGO(lerp(endXCurrent, endXLast)), putYGO(lerp(endYCurrent, endYLast)), color, thickness);
+        }
+        /**draws a filled line*/
+        public static void fillLineDotted(double startXCurrent, double startXLast, double startYCurrent, double startYLast, double endXCurrent, double endXLast, double endYCurrent, double endYLast, int color, double thickness, double dotLength, double spaceLength){
+            DrawUtil.fillLineDotted(putXGO(lerp(startXCurrent, startXLast)), putYGO(lerp(startYCurrent, startYLast)), putXGO(lerp(endXCurrent, endXLast)), putYGO(lerp(endYCurrent, endYLast)), color, thickness, dotLength, spaceLength);
         }
         /**draws a filled text*/
         public static void fillText(String text, double xCurrent, double xLast, double yCurrent, double yLast, Fonts font, double size, StringAlignment alignment, int color){
@@ -597,6 +633,16 @@ public class DrawUtil {
             long endY = lerp(endYCurrentScaled, endYLastScaled);
             if (cull(startX, startY, endX-startX, endY-startX)) return false;
             DrawUtil.fillLineScaled(putXGO(startX), putYGO(startY), putXGO(endX), putYGO(endY), color, thickness);
+            return true;
+        }
+        /**draws a filled line, scaled inputs, returns false if culled*/
+        public static boolean fillLineDottedScaledCull(long startXCurrentScaled, long startXLastScaled, long startYCurrentScaled, long startYLastScaled, long endXCurrentScaled, long endXLastScaled, long endYCurrentScaled, long endYLastScaled, int color, double thickness, double dotLength, double spaceLength){
+            long startX = lerp(startXCurrentScaled, startXLastScaled);
+            long startY = lerp(startYCurrentScaled, startYLastScaled);
+            long endX = lerp(endXCurrentScaled, endXLastScaled);
+            long endY = lerp(endYCurrentScaled, endYLastScaled);
+            if (cull(startX, startY, endX-startX, endY-startX)) return false;
+            DrawUtil.fillLineDottedScaled(putXGO(startX), putYGO(startY), putXGO(endX), putYGO(endY), color, thickness, dotLength, spaceLength);
             return true;
         }
         /**draws a filled text, scaled inputs, returns false if culled*/
@@ -697,6 +743,16 @@ public class DrawUtil {
             double endY = lerp(endYCurrent, endYLast);
             if (cull(startX, startY, endX-startX, endY-startX)) return false;
             DrawUtil.fillLine(putXGO(startX), putYGO(startY), putXGO(endX), putYGO(endY), color, thickness);
+            return true;
+        }
+        /**draws a filled line, returns false if culled*/
+        public static boolean fillLineDottedCull(double startXCurrent, double startXLast, double startYCurrent, double startYLast, double endXCurrent, double endXLast, double endYCurrent, double endYLast, int color, double thickness, double dotLength, double spaceLength){
+            double startX = lerp(startXCurrent, startXLast);
+            double startY = lerp(startYCurrent, startYLast);
+            double endX = lerp(endXCurrent, endXLast);
+            double endY = lerp(endYCurrent, endYLast);
+            if (cull(startX, startY, endX-startX, endY-startX)) return false;
+            DrawUtil.fillLineDotted(putXGO(startX), putYGO(startY), putXGO(endX), putYGO(endY), color, thickness, dotLength, spaceLength);
             return true;
         }
         /**draws a filled text, returns false if culled*/

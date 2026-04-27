@@ -53,7 +53,7 @@ public class VanguardMarine extends Unit {
         validCommandTypes.add(InputType.RIGHT_CLICK);
 
         model = Models.vanguardMarine;
-        maxHp = NumUtil.DTL(40);
+        maxHp = NumUtil.DTL(50);
         Models.vanguardMarine.set(10, 10, 6, Models.ModelType.UNIT);
     }
 

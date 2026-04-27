@@ -54,7 +54,7 @@ public class VanguardMUV extends Unit {
         validCommandTypes.add(InputType.RIGHT_CLICK);
 
         model = Models.vanguardMUV;
-        maxHp = NumUtil.DTL(40);
+        maxHp = NumUtil.DTL(50);
         Models.vanguardMUV.set(10, 10, 6, Models.ModelType.UNIT);
     }
 
