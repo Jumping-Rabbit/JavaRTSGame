@@ -48,6 +48,6 @@ public class VanguardBarracks extends Building {
 
         model = Models.vanguardBarracks;
         maxHp = NumUtil.DTL(2000);
-        Models.vanguardBarracks.set(30, 20, 35, Models.ModelType.BUILDING);
+        Models.vanguardBarracks.set(55, 60, 30, Models.ModelType.BUILDING);
     }
 }

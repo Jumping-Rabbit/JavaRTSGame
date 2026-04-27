@@ -1,0 +1,13 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="jxl converter" type="Application" factoryName="Application">
+    <envs>
+      <env name="--enable-native-access" value="ALL-UNNAMED" />
+    </envs>
+    <option name="MAIN_CLASS_NAME" value="ModelToImageConverter" />
+    <module name="javaGame" />
+    <option name="PROGRAM_PARAMETERS" value="--enable-native-access=ALL-UNNAMED" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
