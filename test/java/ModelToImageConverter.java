@@ -36,6 +36,7 @@ public class ModelToImageConverter {
         Path outputRoot = Paths.get("resources/models");
         System.out.println("Cleaning up old .png files...");
         clearExistingFiles(outputRoot, ".png");
+        clearExistingFiles(Paths.get("resources/pictures"), ".png");
         process("test/resources/models/unit", entityType.UNIT);
         process("test/resources/models/building", entityType.BUILDING);
         System.out.println("All conversions complete.");
@@ -79,6 +80,12 @@ public class ModelToImageConverter {
                 e.printStackTrace();
             }
         });
+        File outputPng = new File("resources/pictures", modelName+ ".png");
+        try {
+            ImageIO.write(SwingFXUtils.fromFXImage(trim(images[0]), null), "png", outputPng);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private static Node loadMesh(File file) {
@@ -152,7 +159,52 @@ public class ModelToImageConverter {
 
     }
 
+    private static WritableImage trim(WritableImage source) {
+        int w = (int) source.getWidth();
+        int h = (int) source.getHeight();
+        PixelReader reader = source.getPixelReader();
 
+        int maxR = 0;
+        boolean found = false;
+
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                if (((reader.getArgb(x, y) >> 24) & 0xFF) > 10) {
+                    int r = Math.max(Math.abs(x-256), Math.abs(y-256));
+                    if (r > maxR) maxR = r;
+                    found = true;
+                }
+            }
+        }
+
+        if (!found) return source;
+
+        int halfSize = maxR + 2;
+        int squareSize = halfSize * 2;
+        WritableImage output = new WritableImage(squareSize, squareSize);
+        PixelWriter writer = output.getPixelWriter();
+
+        for (int y = 0; y < squareSize; y++) {
+            for (int x = 0; x < squareSize; x++) {
+                int srcX = 256 - halfSize + x;
+                int srcY =256 - halfSize + y;
+                if (srcX >= 0 && srcX < w && srcY >= 0 && srcY < h) {
+                    writer.setArgb(x, y, reader.getArgb(srcX, srcY));
+                }
+            }
+        }
+
+        if (DEBUG_PIVOT) {
+            int mid = squareSize / 2;
+            for (int i = -2; i <= 2; i++) {
+                for (int j = -2; j <= 2; j++) {
+                    output.getPixelWriter().setArgb(mid + i, mid + j, 0xFFFF0000);
+                }
+            }
+        }
+
+        return output;
+    }
 
     private static void clearExistingFiles(Path outputPath, String extension) {
         if (!Files.exists(outputPath)) return;

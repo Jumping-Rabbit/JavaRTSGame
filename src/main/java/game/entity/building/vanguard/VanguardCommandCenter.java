@@ -3,7 +3,7 @@ package game.entity.building.vanguard;
 import game.entity.Init;
 import game.entity.Tags;
 import game.entity.building.Building;
-import game.entity.players;
+import game.entity.PlayerColor;
 import inputHandler.InputType;
 import utils.Models;
 import utils.NumUtil;
@@ -20,11 +20,11 @@ public class VanguardCommandCenter extends Building {
         return maxHp;
     }
     @Override
-    protected Models getModel(){
+    public Models getModel(){
         return model;
     }
-    public VanguardCommandCenter(long x, long y, players player) {
-        super();
+    public VanguardCommandCenter(long x, long y, PlayerColor player) {
+        super(player);
         this.x = NumUtil.DTL(x);
         this.y = NumUtil.DTL(y);
         this.z = 0;
@@ -32,7 +32,6 @@ public class VanguardCommandCenter extends Building {
         lastZ = 0;
         lastX = NumUtil.DTL(x);
         lastY = NumUtil.DTL(y);
-        this.player = player;
         hp = NumUtil.DTL(Math.random()*2000);
         armor = NumUtil.DTL(3);
         direction = NumUtil.DTL(0);

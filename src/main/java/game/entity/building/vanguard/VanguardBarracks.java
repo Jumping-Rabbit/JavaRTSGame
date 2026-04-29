@@ -3,7 +3,7 @@ package game.entity.building.vanguard;
 import game.entity.Init;
 import game.entity.Tags;
 import game.entity.building.Building;
-import game.entity.players;
+import game.entity.PlayerColor;
 import inputHandler.InputType;
 import utils.Models;
 import utils.NumUtil;
@@ -20,11 +20,11 @@ public class VanguardBarracks extends Building {
         return maxHp;
     }
     @Override
-    protected Models getModel(){
+    public Models getModel(){
         return model;
     }
-    public VanguardBarracks(long x, long y, players player) {
-        super();
+    public VanguardBarracks(long x, long y, PlayerColor player) {
+        super(player);
 
         this.x = NumUtil.DTL(x);
         this.y = NumUtil.DTL(y);
@@ -33,7 +33,6 @@ public class VanguardBarracks extends Building {
         lastZ = 0;
         lastX = NumUtil.DTL(x);
         lastY = NumUtil.DTL(y);
-        this.player = player;
         hp = NumUtil.DTL(Math.random()*2000);
         armor = NumUtil.DTL(3);
         direction = NumUtil.DTL(0);

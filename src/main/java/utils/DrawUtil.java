@@ -3,11 +3,12 @@ package utils;
 import game.Fonts;
 import game.GameViewport;
 import game.Viewport;
+import game.entity.PlayerColor;
 import game.screen.LoadingScreen;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.image.Image;
-import javafx.scene.image.WritableImage;
+import javafx.scene.image.*;
 import javafx.scene.paint.Color;
 import tools.jackson.databind.ObjectMapper;
 
@@ -18,6 +19,11 @@ import static utils.NumUtil.LTD;
 public class DrawUtil {
     private static final ObjectMapper mapper = new ObjectMapper();
     private static EnumMap<Models, WritableImage[]> modelMap;
+    private static EnumMap<Models, WritableImage> modelPictureMap;
+    private static Object2ObjectOpenHashMap<PlayerColor, EnumMap<Models, WritableImage[]>> playersModelPictureMap;
+    private static Object2ObjectOpenHashMap<PlayerColor, EnumMap<Models, WritableImage[]>> playersColoredModelPictureMap;
+    private static Object2ObjectOpenHashMap<PlayerColor, EnumMap<Models, WritableImage[]>> playersModelMap;
+
     static GameViewport gameViewport;
     private static volatile double factor = 0;
     private static GraphicsContext gc;
@@ -29,6 +35,95 @@ public class DrawUtil {
 
     public static void init(LoadingScreen loadingScreen) {
         modelMap = ModelLoaderUtil.calculateModelImages(loadingScreen);
+        modelPictureMap = ModelLoaderUtil.calculateModelPicture(loadingScreen);
+    }
+
+    public static void loadColoredModelPictures(LoadingScreen loadingScreen, PlayerColor... players){
+        playersColoredModelPictureMap = new Object2ObjectOpenHashMap<>();
+        for (PlayerColor player : players) {
+            EnumMap<Models, WritableImage[]> playerColoredModelPictureMap = new EnumMap<>(Models.class);
+            for (Models model : Models.values()) {
+                WritableImage[] coloredPicture = new WritableImage[5];
+                WritableImage source = modelPictureMap.get(model);
+                PixelReader reader = source.getPixelReader();
+                for (int i = 0; i < 5; i++) {
+                    coloredPicture[i] = new WritableImage(reader, (int) source.getWidth(), (int) source.getHeight());
+                    PixelWriter pictureWriter = coloredPicture[i].getPixelWriter();
+                    for (int x = 0; x < (int) source.getWidth(); x++) {
+                        for (int y = 0; y < (int) source.getHeight(); y++) {
+                            Color color = reader.getColor(x, y);
+                            double newHue = switch (i) {
+                                case 0 -> 120;
+                                case 1 -> 89.88;
+                                case 2 -> 60;
+                                case 3 -> 30.12;
+                                default -> 0;
+                            };
+
+                            Color newColor = Color.hsb(newHue, color.getSaturation(), color.getBrightness(), color.getOpacity());
+                            pictureWriter.setColor(x, y, newColor);
+                        }
+                    }
+                    loadingScreen.increment();
+                }
+                playerColoredModelPictureMap.put(model, coloredPicture);
+            }
+            playersColoredModelPictureMap.put(player, playerColoredModelPictureMap);
+        }
+    }
+    public static void loadModelPictures(LoadingScreen loadingScreen, PlayerColor... players){
+        playersModelPictureMap = new Object2ObjectOpenHashMap<>();
+        for (PlayerColor player : players) {
+            EnumMap<Models, WritableImage[]> playerModelPictureMap = new EnumMap<>(Models.class);
+            for (Models model : Models.values()) {
+                WritableImage[] picture = new WritableImage[5];
+                WritableImage source = modelPictureMap.get(model);
+                PixelReader reader = source.getPixelReader();
+                for (int i = 0; i < 5; i++) {
+                    picture[i] = new WritableImage(reader, (int) source.getWidth(), (int) source.getHeight());
+                    PixelWriter pictureWriter = picture[i].getPixelWriter();
+                    for (int x = 0; x < (int) source.getWidth(); x++) {
+                        for (int y = 0; y < (int) source.getHeight(); y++) {
+                            Color color = reader.getColor(x, y);
+                            Color newColor = Color.hsb(player.getHue(), color.getSaturation(), color.getBrightness(), color.getOpacity());
+                            pictureWriter.setColor(x, y, newColor);
+                        }
+                    }
+                    loadingScreen.increment();
+                }
+                playerModelPictureMap.put(model, picture);
+            }
+            playersModelPictureMap.put(player, playerModelPictureMap);
+        }
+    }
+
+    public static void colorUnits(LoadingScreen loadingScreen, PlayerColor... players){
+        playersModelMap = new Object2ObjectOpenHashMap<>();
+        for (PlayerColor player : players){
+            System.out.println(player.toString());
+            EnumMap<Models, WritableImage[]> playerModelMap = new EnumMap<>(Models.class);
+            for (Models sourcesKey : modelMap.keySet()){
+                WritableImage[] newSources = new WritableImage[modelMap.get(sourcesKey).length];
+                int count = 0;
+                for (WritableImage source : modelMap.get(sourcesKey)){
+                    PixelReader reader = source.getPixelReader();
+                    WritableImage image = new WritableImage(reader, (int)source.getWidth(), (int)source.getHeight());
+                    PixelWriter pictureWriter = image.getPixelWriter();
+                    for (int x = 0; x < (int)source.getWidth(); x++){
+                        for (int y = 0; y < (int)source.getHeight(); y++){
+                            Color oldColor = reader.getColor(x, y);
+                            Color newColor = Color.hsb(player.getHue(), oldColor.getSaturation(), oldColor.getBrightness(), oldColor.getOpacity());
+                            pictureWriter.setColor(x, y, newColor);
+                        }
+                    }
+                    newSources[count] = image;
+                    count++;
+                    loadingScreen.increment();
+                }
+                playerModelMap.put(sourcesKey, newSources);
+            }
+            playersModelMap.put(player, playerModelMap);
+        }
     }
 
     public static synchronized double getFactor() {
@@ -184,10 +279,16 @@ public class DrawUtil {
         double scale = Viewport.getScale();
         gc.drawImage(image, projectX(LTD(xScaled)), projectY(LTD(yScaled)), (LTD(widthScaled) * scale), (LTD(heightScaled) * scale));
     }
-    /**draws a model, scaled inputs*/
-    public static void fillModelScaled(Models modelKey, long xScaled, long yScaled, long zScaled, long directionScaled){
+    /**draws a model image, scaled inputs*/
+    public static void fillModelImageScaled(Models modelKey, PlayerColor color, long xScaled, long yScaled, long directionScaled){
         double scale = Viewport.getScale();
-        WritableImage model = modelMap.get(modelKey)[(int) (StrictMath.floorMod((int) (LTD(directionScaled)+11.25), 360)/22.5)];
+        WritableImage model = playersModelMap.get(color).get(modelKey)[(int) (StrictMath.floorMod((int) (LTD(directionScaled)+11.25), 360)/22.5)];
+        gc.drawImage(model, projectX(LTD(xScaled) - 128 + modelKey.getHalfWidth()), projectY(LTD(yScaled) - 128 + modelKey.getHalfHeight()), 256 * scale, 256 * scale);
+    }
+    /**draws a model, scaled inputs*/
+    public static void fillModelScaled(Models modelKey, PlayerColor color, long xScaled, long yScaled, long zScaled, long directionScaled){
+        double scale = Viewport.getScale();
+        WritableImage model = playersModelMap.get(color).get(modelKey)[(int) (StrictMath.floorMod((int) (LTD(directionScaled)+11.25), 360)/22.5)];
         gc.drawImage(model, projectX(LTD(xScaled) - 128 + modelKey.getHalfWidth()), projectY(LTD(yScaled) - 128 + modelKey.getHalfHeight()), 256 * scale, 256 * scale);
     }
 
@@ -298,9 +399,9 @@ public class DrawUtil {
     }
 
     /**draws a model*/
-    public static void fillModel(Models modelKey, double x, double y, double z, double direction){
+    public static void fillModel(Models modelKey, PlayerColor color, double x, double y, double z, double direction){
         double scale = Viewport.getScale();
-        WritableImage model = modelMap.get(modelKey)[(int) (StrictMath.floorMod((int) (direction+11.25), 360)/22.5)];
+        WritableImage model = playersModelMap.get(color).get(modelKey)[(int) (StrictMath.floorMod((int) (direction+11.25), 360)/22.5)];
         gc.drawImage(model, projectX(x - 128 + modelKey.getHalfWidth()), projectY(y - 128 + modelKey.getHalfHeight()), 256 * scale, 256 * scale);
     }
 
@@ -365,8 +466,8 @@ public class DrawUtil {
             DrawUtil.fillImageScaled(image, lerp(xCurrentScaled, xLastScaled), lerp(yCurrentScaled, yLastScaled), width, height);
         }
         /**draws a model, scaled inputs*/
-        public static void fillModelScaled(Models modelKey, long xCurrentScaled, long xLastScaled, long yCurrentScaled, long yLastScaled, long zCurrentScaled, long zLastScaled, long directionCurrentScaled, long directionLastScaled){
-            DrawUtil.fillModelScaled(modelKey, lerp(xCurrentScaled, xLastScaled), lerp(yCurrentScaled, yLastScaled), lerp(zCurrentScaled, zLastScaled), lerp(directionCurrentScaled, directionLastScaled));
+        public static void fillModelScaled(Models modelKey, PlayerColor color, long xCurrentScaled, long xLastScaled, long yCurrentScaled, long yLastScaled, long zCurrentScaled, long zLastScaled, long directionCurrentScaled, long directionLastScaled){
+            DrawUtil.fillModelScaled(modelKey, color, lerp(xCurrentScaled, xLastScaled), lerp(yCurrentScaled, yLastScaled), lerp(zCurrentScaled, zLastScaled), lerp(directionCurrentScaled, directionLastScaled));
         }
 
 
@@ -419,8 +520,8 @@ public class DrawUtil {
             DrawUtil.fillImage(image, lerp(xCurrent, xLast), lerp(yCurrent, yLast), width, height);
         }
         /**draws a model*/
-        public static void fillModel(Models modelKey, double xCurrent, double xLast, double yCurrent, double yLast, double zCurrent, double zLast, double directionCurrent, double directionLast){
-            DrawUtil.fillModel(modelKey, lerp(xCurrent, xLast), lerp(yCurrent, yLast), lerp(zCurrent, zLast), lerp(directionCurrent, directionLast));
+        public static void fillModel(Models modelKey, PlayerColor color, double xCurrent, double xLast, double yCurrent, double yLast, double zCurrent, double zLast, double directionCurrent, double directionLast){
+            DrawUtil.fillModel(modelKey, color, lerp(xCurrent, xLast), lerp(yCurrent, yLast), lerp(zCurrent, zLast), lerp(directionCurrent, directionLast));
         }
     }
 
@@ -502,8 +603,8 @@ public class DrawUtil {
             DrawUtil.fillImageScaled(image, putXGO(lerp(xCurrentScaled, xLastScaled)), putYGO(lerp(yCurrentScaled, yLastScaled)), width, height);
         }
         /**draws a model, scaled inputs*/
-        public static void fillModelScaled(Models modelKey, long xCurrentScaled, long xLastScaled, long yCurrentScaled, long yLastScaled, long zCurrentScaled, long zLastScaled, long directionCurrentScaled, long directionLastScaled){
-            DrawUtil.fillModelScaled(modelKey, putXGO(lerp(xCurrentScaled, xLastScaled)), putYGO(lerp(yCurrentScaled, yLastScaled)), lerp(zCurrentScaled, zLastScaled), lerp(directionCurrentScaled, directionLastScaled));
+        public static void fillModelScaled(Models modelKey, PlayerColor color, long xCurrentScaled, long xLastScaled, long yCurrentScaled, long yLastScaled, long zCurrentScaled, long zLastScaled, long directionCurrentScaled, long directionLastScaled){
+            DrawUtil.fillModelScaled(modelKey, color, putXGO(lerp(xCurrentScaled, xLastScaled)), putYGO(lerp(yCurrentScaled, yLastScaled)), lerp(zCurrentScaled, zLastScaled), lerp(directionCurrentScaled, directionLastScaled));
         }
 
 
@@ -556,8 +657,8 @@ public class DrawUtil {
             DrawUtil.fillImage(image, putXGO(lerp(xCurrent, xLast)), putYGO(lerp(yCurrent, yLast)), width, height);
         }
         /**draws a model*/
-        public static void fillModel(Models modelKey, double xCurrent, double xLast, double yCurrent, double yLast, double zCurrent, double zLast, double directionCurrent, double directionLast){
-            DrawUtil.fillModel(modelKey, putXGO(lerp(xCurrent, xLast)), putYGO(lerp(yCurrent, yLast)), lerp(zCurrent, zLast), lerp(directionCurrent, directionLast));
+        public static void fillModel(Models modelKey, PlayerColor color, double xCurrent, double xLast, double yCurrent, double yLast, double zCurrent, double zLast, double directionCurrent, double directionLast){
+            DrawUtil.fillModel(modelKey, color, putXGO(lerp(xCurrent, xLast)), putYGO(lerp(yCurrent, yLast)), lerp(zCurrent, zLast), lerp(directionCurrent, directionLast));
         }
 
 
@@ -662,11 +763,11 @@ public class DrawUtil {
             return true;
         }
         /**draws a model, scaled inputs, returns false if culled*/
-        public static boolean fillModelScaledCull(Models modelKey, long xCurrentScaled, long xLastScaled, long yCurrentScaled, long yLastScaled, long zCurrentScaled, long zLastScaled, long directionCurrentScaled, long directionLastScaled){
+        public static boolean fillModelScaledCull(Models modelKey, PlayerColor color, long xCurrentScaled, long xLastScaled, long yCurrentScaled, long yLastScaled, long zCurrentScaled, long zLastScaled, long directionCurrentScaled, long directionLastScaled){
             long x = lerp(xCurrentScaled, xLastScaled);
             long y = lerp(yCurrentScaled, yLastScaled);//do something with z here
 //            if (cull(x, y, widthScaled, heightScaled)) return;//TODO:fix this
-            DrawUtil.fillModelScaled(modelKey, putXGO(x), putYGO(y), lerp(zCurrentScaled, zLastScaled), lerp(directionCurrentScaled, directionLastScaled));
+            DrawUtil.fillModelScaled(modelKey, color, putXGO(x), putYGO(y), lerp(zCurrentScaled, zLastScaled), lerp(directionCurrentScaled, directionLastScaled));
             return true;
         }
 
@@ -772,11 +873,11 @@ public class DrawUtil {
             return true;
         }
         /**draws a model, returns false if culled*/
-        public static boolean fillModelCull(Models modelKey, double xCurrent, double xLast, double yCurrent, double yLast, double zCurrent, double zLast, double directionCurrent, double directionLast){
+        public static boolean fillModelCull(Models modelKey, PlayerColor color, double xCurrent, double xLast, double yCurrent, double yLast, double zCurrent, double zLast, double directionCurrent, double directionLast){
             double x = lerp(xCurrent, xLast);
             double y = lerp(yCurrent, yLast);
 //            if (cull(x, y, width, height)) return;//TODO: fix
-            DrawUtil.fillModel(modelKey, putXGO(x), putYGO(y), lerp(zCurrent, zLast), lerp(directionCurrent, directionLast));
+            DrawUtil.fillModel(modelKey, color, putXGO(x), putYGO(y), lerp(zCurrent, zLast), lerp(directionCurrent, directionLast));
             return true;
         }
 

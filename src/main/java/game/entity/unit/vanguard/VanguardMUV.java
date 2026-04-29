@@ -2,7 +2,7 @@ package game.entity.unit.vanguard;
 
 import game.entity.Init;
 import game.entity.Tags;
-import game.entity.players;
+import game.entity.PlayerColor;
 import game.entity.unit.Unit;
 import game.entity.unit.UnitState;
 import inputHandler.InputType;
@@ -21,11 +21,11 @@ public class VanguardMUV extends Unit {
         return maxHp;
     }
     @Override
-    protected Models getModel(){
+    public Models getModel(){
         return model;
     }
-    public VanguardMUV(long x, long y, players player) {
-        super();
+    public VanguardMUV(long x, long y, PlayerColor player) {
+        super(player);
 
         this.x = NumUtil.DTL(x);
         this.y = NumUtil.DTL(y);
@@ -34,7 +34,7 @@ public class VanguardMUV extends Unit {
         lastZ = 0;
         lastX = NumUtil.DTL(x);
         lastY = NumUtil.DTL(y);
-        this.player = player;
+
         hp = NumUtil.DTL(Math.random()*40);
         armor = NumUtil.DTL(1);
         speed = NumUtil.DTL(10);

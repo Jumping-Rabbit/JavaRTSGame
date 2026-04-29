@@ -1,15 +1,12 @@
 package game.entity.unit;
 
 import game.entity.*;
-import game.screen.Game;
 import inputHandler.InputType;
 import utils.DrawUtil;
 import utils.NumUtil;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
-
-import static utils.NumUtil.LTD;
 
 public abstract class Unit extends Entity {
 
@@ -21,7 +18,6 @@ public abstract class Unit extends Entity {
     protected long damage;
     protected long attackSpeed;//in ticks
     protected long ticksUntilAttack;
-    protected players player;
 
     protected UnitState unitState;
     protected long targetX;
@@ -48,12 +44,8 @@ public abstract class Unit extends Entity {
         return tags;
     }
 
-    protected Unit(int id) {
-        super(id);
-    }
-
-    public Unit() {
-        super();
+    public Unit(PlayerColor color) {
+        super(color);
     }
 
 

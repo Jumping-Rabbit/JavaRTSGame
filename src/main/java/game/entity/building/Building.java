@@ -2,14 +2,14 @@ package game.entity.building;
 
 import game.entity.Entity;
 import game.entity.Tags;
-import game.entity.players;
+import game.entity.PlayerColor;
 
 import java.util.EnumSet;
 
 public abstract class Building extends Entity {
 
-    public Building() {
-        super();
+    public Building(PlayerColor color) {
+        super(color);
     }
     @Override
     public EnumSet<Tags> getTags(){
@@ -22,7 +22,6 @@ public abstract class Building extends Entity {
         lastZ = z;
     }
     protected long timer;
-    protected players player;
     protected Building(int id) {
         super(id);
     }

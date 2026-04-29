@@ -20,10 +20,11 @@ public abstract class Entity {
     public int nextInCell1 = -1;
     public int nextInCell2 = -1;
     public abstract EnumSet<Tags> getTags();
-    protected abstract Models getModel();
+    public abstract Models getModel();
     protected long x;//first 4 digit is decimal
     protected long y;
     protected long z;
+    protected PlayerColor playerColor;
 
     public void setLastX(long lastX) {
         this.lastX = lastX;
@@ -83,11 +84,12 @@ public abstract class Entity {
         return isSelected;
     }
 
-    public Entity() {
+    public Entity(PlayerColor playerColor) {
         id = idNum;
         idNum++;
         snapshot1 = new Snapshot();
         snapshot2 = new Snapshot();
+        this.playerColor=playerColor;
     }
 
     protected Entity(int id) {
@@ -144,9 +146,9 @@ public abstract class Entity {
 
     public void draw(boolean isSnapshot1) {
         if (isSnapshot1){
-            DrawUtil.Game.fillModelScaled(getModel(), snapshot1.x, snapshot1.lastX, snapshot1.y, snapshot1.lastY, snapshot1.z, snapshot1.lastZ, snapshot1.direction, snapshot1.lastDirection);
+            DrawUtil.Game.fillModelScaled(getModel(), playerColor, snapshot1.x, snapshot1.lastX, snapshot1.y, snapshot1.lastY, snapshot1.z, snapshot1.lastZ, snapshot1.direction, snapshot1.lastDirection);
         } else {
-            DrawUtil.Game.fillModelScaled(getModel(), snapshot2.x, snapshot2.lastX, snapshot2.y, snapshot2.lastY, snapshot2.z, snapshot2.lastZ, snapshot2.direction, snapshot2.lastDirection);
+            DrawUtil.Game.fillModelScaled(getModel(), playerColor, snapshot2.x, snapshot2.lastX, snapshot2.y, snapshot2.lastY, snapshot2.z, snapshot2.lastZ, snapshot2.direction, snapshot2.lastDirection);
         }
 
     }

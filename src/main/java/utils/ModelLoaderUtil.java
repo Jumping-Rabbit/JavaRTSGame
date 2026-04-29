@@ -3,6 +3,7 @@ package utils;
 import game.screen.LoadingScreen;
 import javafx.application.Platform;
 import javafx.scene.image.Image;
+import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -28,8 +29,16 @@ public class ModelLoaderUtil {
     static EnumMap<Models, WritableImage[]> calculateModelImages(LoadingScreen loadingScreen) {
         EnumMap<Models, WritableImage[]> modelsMap = new EnumMap<>(Models.class);
         for (Models modelKey : Models.values()) {
-            loadingScreen.addText("Loading: " + modelKey);
+            loadingScreen.addText("Loading Model: " + modelKey);
             modelsMap.put(modelKey, loadPngs(modelKey.toString(), loadingScreen, modelKey.getModelType()));
+        }
+        return modelsMap;
+    }
+    static EnumMap<Models, WritableImage> calculateModelPicture(LoadingScreen loadingScreen) {
+        EnumMap<Models, WritableImage> modelsMap = new EnumMap<>(Models.class);
+        for (Models modelKey : Models.values()) {
+            loadingScreen.addText("Loading Picture: " + modelKey);
+            modelsMap.put(modelKey, loadPicture(modelKey.toString(), loadingScreen));
         }
         return modelsMap;
     }
@@ -65,5 +74,26 @@ public class ModelLoaderUtil {
         } catch (InterruptedException e) {
             LoggerUtil.log(e);
         }
+    }
+    private static WritableImage loadPicture(String modelName, LoadingScreen loadingScreen){
+        File pngFile = new File("resources/pictures/" + modelName + ".png");
+        CountDownLatch latch = new CountDownLatch(1);
+        final WritableImage[] image = new WritableImage[1];
+        Platform.runLater(() -> {
+            try {
+                Image src = new Image(pngFile.toURI().toString(), false);
+                image[0] = new WritableImage(src.getPixelReader(), (int) src.getWidth(), (int) src.getHeight());
+                loadingScreen.increment();
+                loadingScreen.draw();
+            } finally {
+                latch.countDown();
+            }
+        });
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            LoggerUtil.log(e);
+        }
+        return image[0];
     }
 }

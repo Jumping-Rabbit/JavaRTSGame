@@ -179,18 +179,12 @@ public class GamePanel extends Canvas {
         this.settings = settings;
     }
 
-    private void initEntity(Class<? extends Entity> entity, LoadingScreen loadingScreen){
-
-
-
-    }
-
     public void startGameThread() {
         Reflections reflections = new Reflections("game.entity");
         Set<Class<?>> childClasses = reflections.getTypesAnnotatedWith(Init.class);
         drawThread = new Thread(new drawThread(performanceStorage));
         logicThread = new Thread(new logicThread(performanceStorage));
-        loadingScreen = new LoadingScreen(6 + (Models.getUnitAmount() * 16) + Models.getBuildingAmount()+ childClasses.size());
+        loadingScreen = new LoadingScreen(6 + (Models.getUnitAmount() * 17) + Models.getBuildingAmount()*2+ childClasses.size());
         drawThread.start();
 
         try {
@@ -279,9 +273,15 @@ public class GamePanel extends Canvas {
     }
 
     public void updateOnFrame() {
+        long startTime = System.nanoTime();
         Viewport.calculateViewport(this.getWidth(), this.getHeight());
         InputHandler.tick();
         switch (gameStatus) {
+            case GAME_LOADING:
+                if (game.isLoadingFinished()){
+                    setGameStatus(GameStatus.GAME);
+                }
+                break;
             case GAME:
                 game.updateOnFrame();
                 if (game.isExit()) {
@@ -308,7 +308,7 @@ public class GamePanel extends Canvas {
                         case CUSTOM:
                             if (titleScreen.getSelectedFile() == null) break;
                             setGame(new Game(getTitleScreen().getSelectedFile()));
-                            setGameStatus(GameStatus.GAME);
+                            setGameStatus(GameStatus.GAME_LOADING);
                             LoggerUtil.log("open custom");
                             break;
                     }
@@ -343,7 +343,7 @@ public class GamePanel extends Canvas {
                 }
             }
         }
-        lastTickTime.set(System.nanoTime());
+        lastTickTime.set(startTime);
     }
 
     public void draw() {
@@ -357,7 +357,7 @@ public class GamePanel extends Canvas {
         DrawUtil.fillBackground();
 //        System.out.println("h");
         switch (getGameStatus()) {
-            case GAME:
+            case GAME, GAME_LOADING:
                 game.draw();
                 break;
             case TITLESCREEN:
@@ -371,6 +371,7 @@ public class GamePanel extends Canvas {
                 break;
             case START_LOADING:
                 loadingScreen.draw();
+                break;
         }
         DrawUtil.fillOffsetEdge();
 
@@ -388,7 +389,8 @@ public class GamePanel extends Canvas {
         SETTINGS,
         GAME,
         MAP_EDITOR,
-        START_LOADING
+        START_LOADING,
+        GAME_LOADING
     }
 
     class logicThread implements Runnable {
@@ -402,25 +404,22 @@ public class GamePanel extends Canvas {
         public void run() {
             long targetFrameInterval = 50_000_000L; // 20 TPS
             long targetTime = System.nanoTime() + targetFrameInterval;
-            boolean waited = false;
             while (logicThread != null) {
                 long currentTime = System.nanoTime();
                 if (currentTime >= targetTime) {
-                    if (!waited){
+                    long tickStartTarget = targetTime;
+                    targetTime += targetFrameInterval;
+                    if (currentTime > targetTime + targetFrameInterval * 5) {
+                        targetTime = currentTime;
+                    }
+                    if (currentTime > tickStartTarget + targetFrameInterval) {
                         performanceStorage.addLateFrame();
                     }
-                    waited = false;
+
                     updateOnFrame();
                     performanceStorage.addTFrame();
                     performanceStorage.addTickTimeUsed(currentTime);
                     hardwarePerformance.tick();
-                    targetTime += targetFrameInterval;
-                    if (currentTime > targetTime + targetFrameInterval*5) {
-                        targetTime = currentTime;
-                    }
-                } else {
-                    waited = true;
-                    Thread.onSpinWait();
                 }
             }
         }

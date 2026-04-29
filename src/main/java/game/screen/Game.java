@@ -8,13 +8,14 @@ import game.entity.Entity;
 import game.entity.Tags;
 import game.entity.building.vanguard.VanguardBarracks;
 import game.entity.building.vanguard.VanguardCommandCenter;
-import game.entity.players;
+import game.entity.PlayerColor;
 import game.entity.unit.Unit;
 import game.entity.unit.vanguard.VanguardMUV;
 import game.entity.unit.vanguard.VanguardMarine;
 import inputHandler.*;
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import javafx.geometry.Rectangle2D;
 import tile.TileManager;
@@ -24,6 +25,7 @@ import utils.*;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
@@ -34,7 +36,7 @@ public class Game {
     private static final int SHIFT = 22;
     private static final int THREAD_COUNT = Math.max(1, Runtime.getRuntime().availableProcessors() - 2);
     private static final ForkJoinPool pool = new ForkJoinPool(THREAD_COUNT);
-    private final ObjectArrayList<Entity> visibleEntities = new ObjectArrayList<>(1000);
+    private final ObjectArrayList<Entity> visibleEntities = new ObjectArrayList<>(12000);
     private final Long2IntMap cellHeads1;
     private final Long2IntMap cellHeads2;
     File map;
@@ -53,29 +55,32 @@ public class Game {
     long[] hotNIC;
     volatile boolean isSnapshot1 = true;
     boolean exit = false;
+    boolean isLoadingFinished = false;
+    LoadingScreen loadingScreen;
+    PlayerColor[] playerColors;
 
     public Game(File map) {
         var objectMapper = new ObjectMapper();
         JsonNode root = objectMapper.readTree(new File(map.getPath() + "/map.json"));
         JsonNode playersData = root.path("playerData");
-        this(map, (int) StrictMath.floor(StrictMath.random() * playersData.size()));
+        this(map, 0);//(int) StrictMath.floor(StrictMath.random() * playersData.size()));
 
     }
 
     public Game(File map, int playerNum) {
         exit = false;
-        entities = new ObjectArrayList<>(22000);
-        for (int i = 0; i < 5000; i++) {
-            entities.add(new VanguardMarine((int) (StrictMath.random() * 7680), (int) (StrictMath.random() * 4320), players.BLUE));
+        entities = new ObjectArrayList<>(12000);
+        for (int i = 0; i < 2500; i++) {
+            entities.add(new VanguardMarine((int) (StrictMath.random() * 7680), (int) (StrictMath.random() * 4320), PlayerColor.BLUE));
         }
-        for (int i = 0; i < 5000; i++) {
-            entities.add(new VanguardMUV((int) (StrictMath.random() * 7680), (int) (StrictMath.random() * 4320), players.BLUE));
+        for (int i = 0; i < 2500; i++) {
+            entities.add(new VanguardMUV((int) (StrictMath.random() * 7680), (int) (StrictMath.random() * 4320), PlayerColor.RED));
         }
-        for (int i = 0; i < 200; i++) {
-            entities.add(new VanguardBarracks((int) (StrictMath.random() * 7680), (int) (StrictMath.random() * 4320), players.BLUE));
+        for (int i = 0; i < 100; i++) {
+            entities.add(new VanguardBarracks((int) (StrictMath.random() * 7680), (int) (StrictMath.random() * 4320), PlayerColor.BLUE));
         }
-        for (int i = 0; i < 200; i++) {
-            entities.add(new VanguardCommandCenter((int) (StrictMath.random() * 7680), (int) (StrictMath.random() * 4320), players.BLUE));
+        for (int i = 0; i < 100; i++) {
+            entities.add(new VanguardCommandCenter((int) (StrictMath.random() * 7680), (int) (StrictMath.random() * 4320), PlayerColor.RED));
         }
         selectedEntities = new ArrayList<>();
         selectedEntities.addAll(entities);
@@ -100,7 +105,48 @@ public class Game {
         cellHeads2 = new Long2IntOpenHashMap();
         cellHeads2.defaultReturnValue(-1);
 //        entitiesById = new Int2ObjectOpenHashMap<>();
+        int playerColorsNum = playersData.asArray().size();
+        playerColors = new PlayerColor[playerColorsNum];
+        for (int i = 0; i < playerColorsNum; i++){
+            playerColors[i] = PlayerColor.fromValue(playersData.get(i).get("color").asString());
+        }
         System.out.println("physics threads: " + THREAD_COUNT);
+        load();
+    }
+
+    private void load(){
+        loadingScreen = new LoadingScreen(Models.values().length*5 + Models.getUnitAmount()*32 + Models.getBuildingAmount()*2);
+        Thread loader = new Thread(() -> {
+            try {
+                Thread.sleep(125);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            long totalTime = System.nanoTime();
+            loadingScreen.addText("loading Icons");
+            long startTime = System.nanoTime();
+
+            DrawUtil.loadModelPictures(loadingScreen, playerColors);
+            System.out.println("load model pictures time:" + (System.nanoTime()-startTime)/1000000000d);
+            loadingScreen.addText("loading Units");
+            startTime = System.nanoTime();
+            DrawUtil.colorUnits(loadingScreen, playerColors);
+            DrawUtil.loadColoredModelPictures(loadingScreen, playerColors);
+            System.out.println("load colored model and model pictures time:" + (System.nanoTime()-startTime)/1000000000d);
+            System.out.println("total time:" + (System.nanoTime()-totalTime)/1000000000d);
+            try {
+                Thread.sleep(250);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            isLoadingFinished = true;
+        });
+        loader.start();
+
+    }
+
+    public boolean isLoadingFinished(){
+        return isLoadingFinished;
     }
 
 
@@ -278,15 +324,53 @@ public class Game {
                     break;
                 }
                 case RIGHT_CLICK:
-                    int formationIdx = 0;
+                    long commandX = DTL(input.getX()) + DTL(gameViewport.getX());
+                    long commandY = DTL(input.getY()) + DTL(gameViewport.getY());
+
+                    List<Unit> selectedUnits = new ArrayList<>();
                     for (Entity entity : selectedEntities) {
-                        if (!input.getIsShiftHeld()){
-                            entity.clearCommands();
+                        if (!input.getIsShiftHeld()) entity.clearCommands();
+                        if (entity instanceof Unit u) selectedUnits.add(u);
+                    }
+
+                    if (!selectedUnits.isEmpty()) {
+                        long centroidX = 0, centroidY = 0;
+                        for (Unit u : selectedUnits) { centroidX += u.getX(); centroidY += u.getY(); }
+                        centroidX /= selectedUnits.size();
+                        centroidY /= selectedUnits.size();
+                        long fcx = centroidX, fcy = centroidY;
+
+                        selectedUnits.sort(Comparator.comparingLong(a -> NumUtil.atan2(a.getY() - fcy, a.getX() - fcx)));
+
+                        int formationSize = selectedUnits.size();
+                        long spacing = selectedUnits.getFirst().getCollisionRadius() * 2;
+
+                        List<long[]> slots = new ArrayList<>();
+                        slots.add(new long[]{commandX, commandY});
+                        int ring = 1;
+                        while (slots.size() < formationSize) {
+                            int slotsInRing = (int) StrictMath.round(2 * StrictMath.PI * ring);
+                            for (int s = 0; s < slotsInRing && slots.size() < formationSize; s++) {
+                                long angle = (long)(((double) s / slotsInRing) * 360 * NumUtil.SCALER);
+                                long slotX = commandX + (long)(NumUtil.cos(angle) * spacing * ring);
+                                long slotY = commandY + (long)(NumUtil.sin(angle) * spacing * ring);
+                                slots.add(new long[]{slotX, slotY});
+                            }
+                            ring++;
                         }
-                        if (entity instanceof Unit unit) {
-                            unit.setFormationIndex(formationIdx++);
+
+                        List<long[]> centerSlot = slots.subList(0, 1);
+                        List<long[]> ringSlots = new ArrayList<>(slots.subList(1, slots.size()));
+                        ringSlots.sort(Comparator.comparingLong(a -> NumUtil.atan2(a[1] - commandY, a[0] - commandX)));
+
+                        List<long[]> sortedSlots = new ArrayList<>();
+                        sortedSlots.addAll(centerSlot);
+                        sortedSlots.addAll(ringSlots);
+
+                        for (int i = 0; i < selectedUnits.size(); i++) {
+                            long[] slot = sortedSlots.get(i);
+                            selectedUnits.get(i).addCommand(new Command(InputType.RIGHT_CLICK, slot[0], slot[1]));
                         }
-                        entity.addCommand(new Command(InputType.RIGHT_CLICK, DTL(input.getX()) + DTL(gameViewport.getX()), DTL(input.getY()) + DTL(gameViewport.getY())));
                     }
                     break;
                 case KEYPRESS:
@@ -348,11 +432,31 @@ public class Game {
             DrawUtil.fillRect(260+i*65.5+15, 870, 30, 20, 0x505050FF);
             DrawUtil.fillText(String.valueOf(i+1), 260+i*65.5 + 32.75, 880, Fonts.DEFAULT, 20, StringAlignment.CENTER_MIDDLE, 0xFFFFFFFF);
         }
+        int counter = 0;
+        if (selectedEntities.size() > 20*3){//col * row, more than can compress
+            Object2IntOpenHashMap<Models> ModelAmount = new Object2IntOpenHashMap<>();
+            for (Entity entity : selectedEntities){
+                ModelAmount.put(entity.getModel(), ModelAmount.getOrDefault(entity.getModel(), 0));
+            }
+            for (Models model :ModelAmount.keySet()){
+                DrawUtil.strokeRect(265 + counter*65, 890+((counter/10)%10)*60, 65, 60, 0x0096FFFF, 4);
+                counter++;
+            }
+            //compressed
+        } else {
+
+            //uncompressed
+        }
+
+
     }
 
     public void draw() {
-        DrawUtil.setGameViewport(gameViewport);
         DrawUtil.startDraw();
+        if (!isLoadingFinished){
+            loadingScreen.draw();
+            return;
+        }
         boolean isSnapshot1Draw = isSnapshot1;
 
         for (Entity entity : entities){
