@@ -39,7 +39,6 @@ public class GamePanel extends Canvas {
 
     private Thread drawThread;
     private Thread logicThread;
-    private Thread soundThread;
 
 
     private Game game;
@@ -426,7 +425,7 @@ public class GamePanel extends Canvas {
     }
 
     class drawThread implements Runnable {
-        private final AtomicBoolean isRendering = new AtomicBoolean(false);
+        private volatile boolean isRendering = false;
         PerformanceStorage performanceStorage;
 
         public drawThread(PerformanceStorage performanceStorage) {
@@ -445,15 +444,15 @@ public class GamePanel extends Canvas {
                 } else {
                     targetFrameInterval = (long) (1000000000 / targetFPS);
                 }
-                if (!isRendering.get()) {
+                if (!isRendering) {
                     if (targetFPS <= 0 || currentTime >= targetTime) {
-                        targetTime = currentTime + targetFrameInterval;
-                        isRendering.set(true);
+                        targetTime += targetFrameInterval;
+                        isRendering = true;
                         Platform.runLater(() -> {
                             try {
                                 draw();
                             } finally {
-                                isRendering.set(false);
+                                isRendering = false;
                                 performanceStorage.addDFrame();
                                 performanceStorage.addDrawTimeUsed(currentTime);
                             }
@@ -510,6 +509,7 @@ class PerformanceStorage {
         loggerCooldown--;
         if (loggerCooldown <= 0){
             LoggerUtil.log(LogType.PERFORMANCE, "fps:", getFPS(), "dt1%:", getPeakDT(), "dt0.1%:", getPeakPeakDT(), "tps:",  getTPS(), "ttu:", getTickTimeUsed(), "ttu1%:", getTickTimeUsedLow(), "late frames:", getLateFrames());
+            loggerCooldown = 40;
         }
     }
 
@@ -624,7 +624,7 @@ class HardwarePerformance{
         long now = System.nanoTime();
         long delta = now - lastStatsUpdate;
 
-        if (delta >= 500000000L) {
+        if (delta >= 4000000000L) {
             ramTotal = hal.getMemory().getTotal()/1073741824d;
             ramUnused = hal.getMemory().getAvailable()/1073741824d;
             ramUsed = si.getOperatingSystem().getProcess(si.getOperatingSystem().getProcessId()).getResidentMemory()/1073741824d;

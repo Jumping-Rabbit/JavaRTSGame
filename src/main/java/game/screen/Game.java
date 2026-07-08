@@ -13,9 +13,11 @@ import game.entity.unit.Unit;
 import game.entity.unit.vanguard.VanguardMUV;
 import game.entity.unit.vanguard.VanguardMarine;
 import inputHandler.*;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import javafx.geometry.Rectangle2D;
 import tile.TileManager;
@@ -44,7 +46,7 @@ public class Game {
     GameViewport gameViewport;//get x and y from map
     TileManager tileManager;
     ObjectArrayList<Entity> entities;
-    ArrayList<Entity> selectedEntities;
+    ObjectArrayList<Entity> selectedEntities;
     Rectangle2D selectedRectangle = null;
     long tickNum;
     long mapWidth;
@@ -58,6 +60,7 @@ public class Game {
     boolean isLoadingFinished = false;
     LoadingScreen loadingScreen;
     PlayerColor[] playerColors;
+    Int2ObjectOpenHashMap<ObjectArrayList<Entity>> controlGroups = new Int2ObjectOpenHashMap<>();
 
     public Game(File map) {
         var objectMapper = new ObjectMapper();
@@ -68,6 +71,9 @@ public class Game {
     }
 
     public Game(File map, int playerNum) {
+        for (int i = 1; i <= 20; i++) {
+            controlGroups.put(i, new ObjectArrayList<>());
+        }
         exit = false;
         entities = new ObjectArrayList<>(12000);
         for (int i = 0; i < 2500; i++) {
@@ -82,7 +88,7 @@ public class Game {
         for (int i = 0; i < 100; i++) {
             entities.add(new VanguardCommandCenter((int) (StrictMath.random() * 7680), (int) (StrictMath.random() * 4320), PlayerColor.RED));
         }
-        selectedEntities = new ArrayList<>();
+        selectedEntities = new ObjectArrayList<>();
         selectedEntities.addAll(entities);
         for (Entity entity : entities){
             entity.setIsSelected(true);
@@ -112,6 +118,8 @@ public class Game {
         }
         System.out.println("physics threads: " + THREAD_COUNT);
         load();
+
+
     }
 
     private void load(){
@@ -126,13 +134,8 @@ public class Game {
             loadingScreen.addText("loading Icons");
             long startTime = System.nanoTime();
 
-            DrawUtil.loadModelPictures(loadingScreen, playerColors);
-            System.out.println("load model pictures time:" + (System.nanoTime()-startTime)/1000000000d);
-            loadingScreen.addText("loading Units");
-            startTime = System.nanoTime();
-            DrawUtil.colorUnits(loadingScreen, playerColors);
-            DrawUtil.loadColoredModelPictures(loadingScreen, playerColors);
-            System.out.println("load colored model and model pictures time:" + (System.nanoTime()-startTime)/1000000000d);
+            DrawUtil.loadColoredImages(loadingScreen, playerColors);
+            System.out.println("load model images time:" + (System.nanoTime()-startTime)/1000000000d);
             System.out.println("total time:" + (System.nanoTime()-totalTime)/1000000000d);
             try {
                 Thread.sleep(250);
@@ -241,6 +244,7 @@ public class Game {
         Replay.addTick(InputHandler.getInputs(), tickNum);
         long t2 = System.nanoTime();
         tickNum++;
+        boolean isControlHeld = false;
         for (Input input : InputHandler.getInputs()) {
             switch (input.getInputType()) {
                 case LEFT_CLICK: {
@@ -279,10 +283,10 @@ public class Game {
                 case DRAG: {
                     clearSelected();
                     selectedRectangle = new Rectangle2D(
-                            StrictMath.min(input.getX(), input.getStartX()),
-                            StrictMath.min(input.getY(), input.getStartY()),
-                            StrictMath.abs(input.getX() - input.getStartX()),
-                            StrictMath.abs(input.getY() - input.getStartY())
+                        StrictMath.min(input.getX(), input.getStartX()),
+                        StrictMath.min(input.getY(), input.getStartY()),
+                        StrictMath.abs(input.getX() - input.getStartX()),
+                        StrictMath.abs(input.getY() - input.getStartY())
                     );
 
                     double rectX = DTL(selectedRectangle.getMinX() + gameViewport.getX());
@@ -326,57 +330,199 @@ public class Game {
                 case RIGHT_CLICK:
                     long commandX = DTL(input.getX()) + DTL(gameViewport.getX());
                     long commandY = DTL(input.getY()) + DTL(gameViewport.getY());
-
-                    List<Unit> selectedUnits = new ArrayList<>();
-                    for (Entity entity : selectedEntities) {
-                        if (!input.getIsShiftHeld()) entity.clearCommands();
-                        if (entity instanceof Unit u) selectedUnits.add(u);
-                    }
-
-                    if (!selectedUnits.isEmpty()) {
-                        long centroidX = 0, centroidY = 0;
-                        for (Unit u : selectedUnits) { centroidX += u.getX(); centroidY += u.getY(); }
-                        centroidX /= selectedUnits.size();
-                        centroidY /= selectedUnits.size();
-                        long fcx = centroidX, fcy = centroidY;
-
-                        selectedUnits.sort(Comparator.comparingLong(a -> NumUtil.atan2(a.getY() - fcy, a.getX() - fcx)));
-
-                        int formationSize = selectedUnits.size();
-                        long spacing = selectedUnits.getFirst().getCollisionRadius() * 2;
-
-                        List<long[]> slots = new ArrayList<>();
-                        slots.add(new long[]{commandX, commandY});
-                        int ring = 1;
-                        while (slots.size() < formationSize) {
-                            int slotsInRing = (int) StrictMath.round(2 * StrictMath.PI * ring);
-                            for (int s = 0; s < slotsInRing && slots.size() < formationSize; s++) {
-                                long angle = (long)(((double) s / slotsInRing) * 360 * NumUtil.SCALER);
-                                long slotX = commandX + (long)(NumUtil.cos(angle) * spacing * ring);
-                                long slotY = commandY + (long)(NumUtil.sin(angle) * spacing * ring);
-                                slots.add(new long[]{slotX, slotY});
-                            }
-                            ring++;
-                        }
-
-                        List<long[]> centerSlot = slots.subList(0, 1);
-                        List<long[]> ringSlots = new ArrayList<>(slots.subList(1, slots.size()));
-                        ringSlots.sort(Comparator.comparingLong(a -> NumUtil.atan2(a[1] - commandY, a[0] - commandX)));
-
-                        List<long[]> sortedSlots = new ArrayList<>();
-                        sortedSlots.addAll(centerSlot);
-                        sortedSlots.addAll(ringSlots);
-
-                        for (int i = 0; i < selectedUnits.size(); i++) {
-                            long[] slot = sortedSlots.get(i);
-                            selectedUnits.get(i).addCommand(new Command(InputType.RIGHT_CLICK, slot[0], slot[1]));
-                        }
+                    for (int i = 0; i < selectedEntities.size(); i++) {
+                        selectedEntities.get(i).addCommand(new Command(InputType.RIGHT_CLICK, commandX, commandY));
                     }
                     break;
                 case KEYPRESS:
-                    if (input.getAction() == Actions.BACK) {
-                        exit = true;
+                    switch(input.getAction()){
+                        case BACK:
+                            exit = true;
+                            break;
+                        case SET_CONTROL_GROUP_1:
+                            controlGroups.put(1, selectedEntities);
+                            break;
+                        case SET_CONTROL_GROUP_2:
+                            controlGroups.put(2, selectedEntities);
+                            break;
+                        case SET_CONTROL_GROUP_3:
+                            controlGroups.put(3, selectedEntities);
+                            break;
+                        case SET_CONTROL_GROUP_4:
+                            controlGroups.put(4, selectedEntities);
+                            break;
+                        case SET_CONTROL_GROUP_5:
+                            controlGroups.put(5, selectedEntities);
+                            break;
+                        case SET_CONTROL_GROUP_6:
+                            controlGroups.put(6, selectedEntities);
+                            break;
+                        case SET_CONTROL_GROUP_7:
+                            controlGroups.put(7, selectedEntities);
+                            break;
+                        case SET_CONTROL_GROUP_8:
+                            controlGroups.put(8, selectedEntities);
+                            break;
+                        case SET_CONTROL_GROUP_9:
+                            controlGroups.put(9, selectedEntities);
+                            break;
+                        case SET_CONTROL_GROUP_10:
+                            controlGroups.put(10, selectedEntities);
+                            break;
+                        case SET_CONTROL_GROUP_11:
+                            controlGroups.put(11, selectedEntities);
+                            break;
+                        case SET_CONTROL_GROUP_12:
+                            controlGroups.put(12, selectedEntities);
+                            break;
+                        case SET_CONTROL_GROUP_13:
+                            controlGroups.put(13, selectedEntities);
+                            break;
+                        case SET_CONTROL_GROUP_14:
+                            controlGroups.put(14, selectedEntities);
+                            break;
+                        case SET_CONTROL_GROUP_15:
+                            controlGroups.put(15, selectedEntities);
+                            break;
+                        case SET_CONTROL_GROUP_16:
+                            controlGroups.put(16, selectedEntities);
+                            break;
+                        case SET_CONTROL_GROUP_17:
+                            controlGroups.put(17, selectedEntities);
+                            break;
+                        case SET_CONTROL_GROUP_18:
+                            controlGroups.put(18, selectedEntities);
+                            break;
+                        case SET_CONTROL_GROUP_19:
+                            controlGroups.put(19, selectedEntities);
+                            break;
+                        case SET_CONTROL_GROUP_20:
+                            controlGroups.put(20, selectedEntities);
+                            break;
+                        case GET_CONTROL_GROUP_1:
+                            selectedEntities = controlGroups.get(1);
+                            break;
+                        case GET_CONTROL_GROUP_2:
+                            selectedEntities = controlGroups.get(2);
+                            break;
+                        case GET_CONTROL_GROUP_3:
+                            selectedEntities = controlGroups.get(3);
+                            break;
+                        case GET_CONTROL_GROUP_4:
+                            selectedEntities = controlGroups.get(4);
+                            break;
+                        case GET_CONTROL_GROUP_5:
+                            selectedEntities = controlGroups.get(5);
+                            break;
+                        case GET_CONTROL_GROUP_6:
+                            selectedEntities = controlGroups.get(6);
+                            break;
+                        case GET_CONTROL_GROUP_7:
+                            selectedEntities = controlGroups.get(7);
+                            break;
+                        case GET_CONTROL_GROUP_8:
+                            selectedEntities = controlGroups.get(8);
+                            break;
+                        case GET_CONTROL_GROUP_9:
+                            selectedEntities = controlGroups.get(9);
+                            break;
+                        case GET_CONTROL_GROUP_10:
+                            selectedEntities = controlGroups.get(10);
+                            break;
+                        case GET_CONTROL_GROUP_11:
+                            selectedEntities = controlGroups.get(11);
+                            break;
+                        case GET_CONTROL_GROUP_12:
+                            selectedEntities = controlGroups.get(12);
+                            break;
+                        case GET_CONTROL_GROUP_13:
+                            selectedEntities = controlGroups.get(13);
+                            break;
+                        case GET_CONTROL_GROUP_14:
+                            selectedEntities = controlGroups.get(14);
+                            break;
+                        case GET_CONTROL_GROUP_15:
+                            selectedEntities = controlGroups.get(15);
+                            break;
+                        case GET_CONTROL_GROUP_16:
+                            selectedEntities = controlGroups.get(16);
+                            break;
+                        case GET_CONTROL_GROUP_17:
+                            selectedEntities = controlGroups.get(17);
+                            break;
+                        case GET_CONTROL_GROUP_18:
+                            selectedEntities = controlGroups.get(18);
+                            break;
+                        case GET_CONTROL_GROUP_19:
+                            selectedEntities = controlGroups.get(19);
+                            break;
+                        case GET_CONTROL_GROUP_20:
+                            selectedEntities = controlGroups.get(20);
+                            break;
+                        case ADD_CONTROL_GROUP_1:
+                            controlGroups.get(1).addAll(selectedEntities);
+                            break;
+                        case ADD_CONTROL_GROUP_2: 
+                            controlGroups.get(2).addAll(selectedEntities);
+                            break;
+                        case ADD_CONTROL_GROUP_3: 
+                            controlGroups.get(3).addAll(selectedEntities);
+                            break;
+                        case ADD_CONTROL_GROUP_4: 
+                            controlGroups.get(4).addAll(selectedEntities);
+                            break;
+                        case ADD_CONTROL_GROUP_5: 
+                            controlGroups.get(5).addAll(selectedEntities);
+                            break;
+                        case ADD_CONTROL_GROUP_6: 
+                            controlGroups.get(6).addAll(selectedEntities);
+                            break;
+                        case ADD_CONTROL_GROUP_7: 
+                            controlGroups.get(7).addAll(selectedEntities);
+                            break;
+                        case ADD_CONTROL_GROUP_8: 
+                            controlGroups.get(8).addAll(selectedEntities);
+                            break;
+                        case ADD_CONTROL_GROUP_9: 
+                            controlGroups.get(9).addAll(selectedEntities);
+                            break;
+                        case ADD_CONTROL_GROUP_10: 
+                            controlGroups.get(10).addAll(selectedEntities);
+                            break;
+                        case ADD_CONTROL_GROUP_11: 
+                            controlGroups.get(11).addAll(selectedEntities);
+                            break;
+                        case ADD_CONTROL_GROUP_12: 
+                            controlGroups.get(12).addAll(selectedEntities);
+                            break;
+                        case ADD_CONTROL_GROUP_13: 
+                            controlGroups.get(13).addAll(selectedEntities);
+                            break;
+                        case ADD_CONTROL_GROUP_14: 
+                            controlGroups.get(14).addAll(selectedEntities);
+                            break;
+                        case ADD_CONTROL_GROUP_15: 
+                            controlGroups.get(15).addAll(selectedEntities);
+                            break;
+                        case ADD_CONTROL_GROUP_16: 
+                            controlGroups.get(16).addAll(selectedEntities);
+                            break;
+                        case ADD_CONTROL_GROUP_17: 
+                            controlGroups.get(17).addAll(selectedEntities);
+                            break;
+                        case ADD_CONTROL_GROUP_18: 
+                            controlGroups.get(18).addAll(selectedEntities);
+                            break;
+                        case ADD_CONTROL_GROUP_19: 
+                            controlGroups.get(19).addAll(selectedEntities);
+                            break;
+                        case ADD_CONTROL_GROUP_20: 
+                            controlGroups.get(20).addAll(selectedEntities);
+                            break;
+                        default:
+                            break;
                     }
+
                     break;
             }
         }

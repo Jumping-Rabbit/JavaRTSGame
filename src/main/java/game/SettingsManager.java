@@ -8,7 +8,7 @@ import utils.LoggerUtil;
 import java.io.File;
 
 public class SettingsManager {
-    private final int minTargetFPS = 1;
+    private final int minTargetFPS = 0;
     private final Object targetFPSLock = new Object();
     private final int minMonitorNum = 0;
     private final Object monitorNumLock = new Object();

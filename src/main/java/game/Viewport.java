@@ -2,8 +2,8 @@ package game;
 
 
 public class Viewport {
-    private static final double viewportWidth = 1920;
-    private static final double viewportHeight = 1080;
+    private static double viewportWidth = 1920;
+    private static double viewportHeight = 1080;
     private static double viewportX = 0;
     private static double viewportY = 0;
     private static double scale;

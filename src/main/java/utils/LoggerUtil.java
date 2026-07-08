@@ -58,9 +58,7 @@ public class LoggerUtil {
     public static void log(Exception err){
         executor.execute(() -> {
             try {
-                logBuilder = new StringBuilder(100);
-                logBuilder.append(err.getMessage());
-                logger.write("[" + Instant.now().toString() +"] " + LogType.ERROR.getString() + logBuilder);
+                logger.write("[" + Instant.now().toString() +"] " + LogType.ERROR.getString() + err.getMessage());
                 logger.newLine();
             } catch (IOException e) {
                 throw new RuntimeException(e);

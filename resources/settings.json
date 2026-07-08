@@ -1,7 +1,7 @@
 {
   "graphics" : {
     "monitorNum" : 0,
-    "targetFPS" : 120,
+    "targetFPS" : 60,
     "graphicsQuality" : "high",
     "antialiasing" : true,
     "displayMode" : "windowed"

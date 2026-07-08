@@ -150,7 +150,6 @@ public abstract class Entity {
         } else {
             DrawUtil.Game.fillModelScaled(getModel(), playerColor, snapshot2.x, snapshot2.lastX, snapshot2.y, snapshot2.lastY, snapshot2.z, snapshot2.lastZ, snapshot2.direction, snapshot2.lastDirection);
         }
-
     }
 
     public abstract void updateOnFrame();
@@ -252,3 +251,5 @@ public abstract class Entity {
     }
 
 }
+
+

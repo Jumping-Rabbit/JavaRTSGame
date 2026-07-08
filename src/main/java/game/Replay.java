@@ -2,7 +2,6 @@ package game;
 
 import inputHandler.Input;
 import org.apache.commons.io.FileUtils;
-import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
@@ -67,7 +66,8 @@ public class Replay {
             node.put("startX", input.getStartX());
             node.put("startY", input.getStartY());
             node.put("scroll", input.getScroll());
-            node.put("shift", input.getIsShiftHeld());
+            node.put("shift", input.isShiftHeld());
+            node.put("control", input.isControlHeld());
             node.put("key", input.getKey().getKeyHandlerString());
             node.put("action", input.getAction().name());
             newTick.add(node);

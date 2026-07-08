@@ -1,4 +1,3 @@
-import game.entity.Entity;
 import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Rectangle2D;
@@ -8,9 +7,8 @@ import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
 import javafx.scene.transform.Rotate;
+import javafx.scene.transform.Scale;
 import org.fxyz3d.importers.obj.ObjImporter;
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
 
 import javax.imageio.ImageIO;
 import java.io.File;
@@ -22,13 +20,10 @@ import java.util.stream.Stream;
 
 public class ModelToImageConverter {
 
-    enum entityType{
+    enum EntityType {
         UNIT,
         BUILDING;
     }
-    private static final boolean DEBUG_PIVOT = false;
-    private static final double IMAGE_SIZE = 512;
-    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     public static void main(String[] args) {
         Platform.startup(() -> {
@@ -36,17 +31,18 @@ public class ModelToImageConverter {
         Path outputRoot = Paths.get("resources/models");
         System.out.println("Cleaning up old .png files...");
         clearExistingFiles(outputRoot, ".png");
-        clearExistingFiles(Paths.get("resources/pictures"), ".png");
-        process("test/resources/models/unit", entityType.UNIT);
-        process("test/resources/models/building", entityType.BUILDING);
+        processDir("test/resources/models/unit", EntityType.UNIT);
+        processDir("test/resources/models/building", EntityType.BUILDING);
         System.out.println("All conversions complete.");
         Platform.exit();
         System.exit(0);
     }
-    public static void process(String dir, entityType type){
+    public static void processDir(String dir, EntityType entityType){
+        process(dir, entityType, 64);
+        process(dir, entityType, 256);
+    }
+    public static void process(String dir, EntityType type, int resolution){
         Path root = Paths.get(dir);
-
-
         try (Stream<Path> paths = Files.walk(root)) {
             paths.filter(p -> p.toString().toLowerCase().endsWith(".obj"))
                     .toList()
@@ -55,12 +51,12 @@ public class ModelToImageConverter {
                         File objFile = sourcePath.toFile();
                         String modelName = objFile.getName().replace(".obj", "");
 
-                        System.out.println("Processing Model: " + modelName);
+                        System.out.println("Processing Model: " + modelName + " : " + resolution);
 
                         Node model = loadMesh(objFile);
                         if (model != null) {
-                            WritableImage[] images = getSnapshots(model, type);
-                            processModelParallel(images, modelName);
+                            WritableImage[] images = getSnapshots(model, type, resolution);
+                            processModelParallel(images, modelName, resolution);
                         }
                     });
         } catch (IOException e) {
@@ -68,24 +64,34 @@ public class ModelToImageConverter {
         }
     }
 
-    public static void processModelParallel(WritableImage[] images, String modelName) {
+    public static void processModelParallel(WritableImage[] images, String modelName, int resolution) {
         File dir = new File("resources/models/" + modelName);
         dir.mkdirs();
-
+        File resDir = new File("resources/models/" + modelName +"/"+resolution);
+        resDir.mkdirs();
+        images = trim(images);
+        WritableImage[] finalImages = images;
         java.util.stream.IntStream.range(0, images.length).parallel().forEach(i -> {
-            File outputPng = new File(dir, modelName + "_" + i + ".png");
+            File outputPng = new File(resDir, modelName + "_" + i + ".png");
             try {
-                ImageIO.write(SwingFXUtils.fromFXImage(images[i], null), "png", outputPng);
+                ImageIO.write(SwingFXUtils.fromFXImage(finalImages[i], null), "png", outputPng);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         });
-        File outputPng = new File("resources/pictures", modelName+ ".png");
+        File outputPng = new File(resDir, modelName + "Image.png");
         try {
-            ImageIO.write(SwingFXUtils.fromFXImage(trim(images[0]), null), "png", outputPng);
+            ImageIO.write(SwingFXUtils.fromFXImage(images[0], null), "png", outputPng);
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+//        File outputPng = new File(resDir, modelName + "Image" + ".png");
+//        try {
+//            ImageIO.write(SwingFXUtils.fromFXImage(trim(images[0]), null), "png", outputPng);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
     }
 
     private static Node loadMesh(File file) {
@@ -97,26 +103,32 @@ public class ModelToImageConverter {
         }
     }
 
-    private static WritableImage[] getSnapshots(Node model, entityType type) {
+    private static WritableImage[] getSnapshots(Node model, EntityType type, double resolution) {
         model.getTransforms().clear();
 
         Rotate ySpin = new Rotate(0, Rotate.Y_AXIS);
         Rotate xTilt = new Rotate(45, Rotate.X_AXIS);
-        model.getTransforms().addAll(xTilt, ySpin);
+        Scale scale;
+        if (resolution == 256){
+            scale = new Scale(2, 2, 2);
+        } else {
+            scale = new Scale(0.5, 0.5, 0.5);
+        }
+        model.getTransforms().addAll(xTilt, ySpin, scale);
 
-        AmbientLight ambient = new AmbientLight(Color.WHITE);
+        AmbientLight ambient = new AmbientLight(Color.TRANSPARENT);
         Group root3D = new Group(model, ambient);
 
         ParallelCamera camera = new ParallelCamera();
-        camera.setNearClip(0.1);
+        camera.setNearClip(0.001);
         camera.setFarClip(100000.0);
 
         SnapshotParameters params = new SnapshotParameters();
         params.setFill(Color.TRANSPARENT);
         params.setCamera(camera);
         params.setDepthBuffer(true);
-        params.setViewport(new Rectangle2D(-IMAGE_SIZE / 2, -IMAGE_SIZE / 2, IMAGE_SIZE, IMAGE_SIZE));
-        if (type == entityType.UNIT){
+        params.setViewport(new Rectangle2D(-resolution / 2, -resolution / 2, resolution, resolution));
+        if (type == EntityType.UNIT){
             WritableImage[] images = new WritableImage[16];
             for (int i = 0; i < 16; i++) {
                 final int index = i;
@@ -125,8 +137,8 @@ public class ModelToImageConverter {
                 java.util.concurrent.CountDownLatch latch = new java.util.concurrent.CountDownLatch(1);
                 Platform.runLater(() -> {
                     try {
-                        WritableImage raw = root3D.snapshot(params, new WritableImage((int) IMAGE_SIZE, (int) IMAGE_SIZE));
-                        images[index] = raw;//trim(raw, (int) (IMAGE_SIZE / 2), (int) (IMAGE_SIZE / 2));
+                        WritableImage raw = root3D.snapshot(params, new WritableImage((int) resolution, (int) resolution));
+                        images[index] = raw;//trim(raw, (int) (resolution / 2), (int) (resolution / 2));
                     } finally {
                         latch.countDown();
                     }
@@ -143,8 +155,8 @@ public class ModelToImageConverter {
             java.util.concurrent.CountDownLatch latch = new java.util.concurrent.CountDownLatch(1);
             Platform.runLater(() -> {
                 try {
-                    WritableImage raw = root3D.snapshot(params, new WritableImage((int) IMAGE_SIZE, (int) IMAGE_SIZE));
-                    images[0] = raw;//trim(raw, (int) (IMAGE_SIZE / 2), (int) (IMAGE_SIZE / 2));
+                    WritableImage raw = root3D.snapshot(params, new WritableImage((int) resolution, (int) resolution));
+                    images[0] = raw;//trim(raw, (int) (resolution / 2), (int) (resolution / 2));
                 } finally {
                     latch.countDown();
                 }
@@ -158,51 +170,50 @@ public class ModelToImageConverter {
         }
 
     }
+    private static boolean checkRect(WritableImage image, int layer){
+        PixelReader reader = image.getPixelReader();
+        for (int x = layer; x < (int)image.getWidth() - layer; x++){
+            if (((reader.getArgb(x, layer) >> 24) & 0xFF) > 0) return true;
+        }
+        for (int x = layer; x < (int)image.getWidth() - layer; x++){
+            if (((reader.getArgb(x, (int)image.getHeight()-layer-1) >> 24) & 0xFF) > 0) return true;
+        }
+        for (int y = layer; y < (int)image.getHeight() - layer; y++){
+            if (((reader.getArgb(layer, y) >> 24) & 0xFF) > 0) return true;
+        }
+        for (int y = layer; y < (int)image.getHeight() - layer; y++){
+            if (((reader.getArgb((int)image.getWidth()-layer-1, y) >> 24) & 0xFF) > 0) return true;
+        }
+        return false;
+    }
 
-    private static WritableImage trim(WritableImage source) {
-        int w = (int) source.getWidth();
-        int h = (int) source.getHeight();
-        PixelReader reader = source.getPixelReader();
+    private static WritableImage[] trim(WritableImage[] sources) {
+        int w = (int) sources[0].getWidth();
+        int h = (int) sources[0].getHeight();
+        int size = 0;
 
-        int maxR = 0;
-        boolean found = false;
-
-        for (int y = 0; y < h; y++) {
-            for (int x = 0; x < w; x++) {
-                if (((reader.getArgb(x, y) >> 24) & 0xFF) > 10) {
-                    int r = Math.max(Math.abs(x-256), Math.abs(y-256));
-                    if (r > maxR) maxR = r;
-                    found = true;
+        for (WritableImage image : sources){
+            for (int i = 1; i < image.getWidth()/2; i++){
+                if (checkRect(image, i)) {
+                    if ((int)(image.getWidth())-(i-1)*2 > size){
+                        size = (int)(image.getWidth())-(i-1)*2;
+                    }
+                    break;
                 }
             }
         }
-
-        if (!found) return source;
-
-        int halfSize = maxR + 2;
-        int squareSize = halfSize * 2;
-        WritableImage output = new WritableImage(squareSize, squareSize);
-        PixelWriter writer = output.getPixelWriter();
-
-        for (int y = 0; y < squareSize; y++) {
-            for (int x = 0; x < squareSize; x++) {
-                int srcX = 256 - halfSize + x;
-                int srcY =256 - halfSize + y;
-                if (srcX >= 0 && srcX < w && srcY >= 0 && srcY < h) {
-                    writer.setArgb(x, y, reader.getArgb(srcX, srcY));
+        int offset = (w-size)/2;
+        WritableImage[] output = new WritableImage[sources.length];
+        for (int i = 0; i < sources.length; i++){
+            output[i] = new WritableImage(size, size);
+            PixelReader reader = sources[i].getPixelReader();
+            PixelWriter writer = output[i].getPixelWriter();
+            for (int x = 0; x < size; x++){
+                for (int y = 0; y < size; y++){
+                    writer.setArgb(x, y, reader.getArgb(x+offset, y+offset));
                 }
             }
         }
-
-        if (DEBUG_PIVOT) {
-            int mid = squareSize / 2;
-            for (int i = -2; i <= 2; i++) {
-                for (int j = -2; j <= 2; j++) {
-                    output.getPixelWriter().setArgb(mid + i, mid + j, 0xFFFF0000);
-                }
-            }
-        }
-
         return output;
     }
 
