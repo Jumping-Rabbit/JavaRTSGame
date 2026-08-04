@@ -1,0 +1,111 @@
+[2026-07-31T18:35:35.245-0700][0.012s] Initializing The Z Garbage Collector
+[2026-07-31T18:35:35.245-0700][0.012s] Version: 25.0.1+8-27 (release)
+[2026-07-31T18:35:35.246-0700][0.012s] NUMA Support: Disabled
+[2026-07-31T18:35:35.246-0700][0.012s] CPUs: 16 total, 16 available
+[2026-07-31T18:35:35.246-0700][0.012s] Memory: 15556M
+[2026-07-31T18:35:35.246-0700][0.012s] Large Page Support: Disabled
+[2026-07-31T18:35:35.246-0700][0.012s] Address Space Size: limited (137434244524K)
+[2026-07-31T18:35:35.246-0700][0.012s] Reserved Space Type: Contiguous/Unrestricted/Complete
+[2026-07-31T18:35:35.246-0700][0.012s] Reserved Space Size: 64G
+[2026-07-31T18:35:35.246-0700][0.012s] Min Capacity: 4096M
+[2026-07-31T18:35:35.246-0700][0.012s] Initial Capacity: 4096M
+[2026-07-31T18:35:35.246-0700][0.013s] Max Capacity: 4096M
+[2026-07-31T18:35:35.246-0700][0.013s] Soft Max Capacity: 3072M
+[2026-07-31T18:35:35.246-0700][0.013s] Page Size Medium: Range [4M, 32M]
+[2026-07-31T18:35:35.246-0700][0.013s] Pre-touch: Disabled
+[2026-07-31T18:35:35.246-0700][0.013s] Uncommit: Disabled
+[2026-07-31T18:35:35.246-0700][0.013s] GC Workers for Old Generation: 4 (dynamic)
+[2026-07-31T18:35:35.246-0700][0.013s] GC Workers for Young Generation: 4 (dynamic)
+[2026-07-31T18:35:35.298-0700][0.065s] GC Workers Max: 4 (dynamic)
+[2026-07-31T18:35:35.298-0700][0.065s] Runtime Workers: 10
+[2026-07-31T18:35:35.298-0700][0.065s] Using The Z Garbage Collector
+[2026-07-31T18:35:35.304-0700][0.070s] CDS archive(s) mapped at: [0x000000001b000000-0x000000001bdd0000-0x000000001bdd0000), size 14483456, SharedBaseAddress: 0x000000001b000000, ArchiveRelocationMode: 1.
+[2026-07-31T18:35:35.304-0700][0.070s] Compressed class space mapped at: 0x000000001c000000-0x000000005c000000, reserved size: 1073741824
+[2026-07-31T18:35:35.304-0700][0.070s] UseCompressedClassPointers 1, UseCompactObjectHeaders 0
+[2026-07-31T18:35:35.304-0700][0.070s] Narrow klass pointer bits 32, Max shift 3
+[2026-07-31T18:35:35.304-0700][0.070s] Narrow klass base: 0x000000001b000000, Narrow klass shift: 0
+[2026-07-31T18:35:35.304-0700][0.070s] Encoding Range: [0x000000001b000000 - 0x000000011b000000), (4294967296 bytes)
+[2026-07-31T18:35:35.304-0700][0.070s] Klass Range:    [0x000000001b010000 - 0x000000005c000000), (1090453504 bytes)
+[2026-07-31T18:35:35.304-0700][0.070s] Klass ID Range:  [65536 - 1090519033) (1090453497)
+[2026-07-31T18:35:35.304-0700][0.070s] Protection zone: [0x000000001b000000 - 0x000000001b010000), (65536 bytes)
+[2026-07-31T18:35:43.488-0700][8.255s] Stopping ZGC
+[2026-07-31T18:35:43.488-0700][8.255s] === Garbage Collection Statistics =======================================================================================================================
+[2026-07-31T18:35:43.489-0700][8.255s]                                                              Last 10s              Last 10m              Last 10h                Total
+[2026-07-31T18:35:43.489-0700][8.255s]                                                              Avg / Max             Avg / Max             Avg / Max             Avg / Max
+[2026-07-31T18:35:43.489-0700][8.255s]        Contention: Mark Segment Reset Contention                     0 / 0                 0 / 0                 0 / 0                 0 / 0           ops/s
+[2026-07-31T18:35:43.489-0700][8.255s]        Contention: Mark SeqNum Reset Contention                      0 / 0                 0 / 0                 0 / 0                 0 / 0           ops/s
+[2026-07-31T18:35:43.489-0700][8.255s]          Critical: Allocation Stall                                  0 / 0                 0 / 0                 0 / 0                 0 / 0           ops/s
+[2026-07-31T18:35:43.489-0700][8.255s]          Critical: Allocation Stall                              0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]          Critical: JNI Critical Stall                                0 / 0                 0 / 0                 0 / 0                 0 / 0           ops/s
+[2026-07-31T18:35:43.489-0700][8.255s]          Critical: JNI Critical Stall                            0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]          Critical: Relocation Stall                                  0 / 0                 0 / 0                 0 / 0                 0 / 0           ops/s
+[2026-07-31T18:35:43.489-0700][8.255s]          Critical: Relocation Stall                              0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]  Major Collection: Major Collection                              0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]            Memory: Allocation Rate                                  19 / 74               19 / 74               19 / 74               19 / 74          MB/s
+[2026-07-31T18:35:43.489-0700][8.255s]            Memory: Defragment                                        0 / 0                 0 / 0                 0 / 0                 0 / 0           ops/s
+[2026-07-31T18:35:43.489-0700][8.255s]            Memory: Mapped Cache Harvest                              0 / 0                 0 / 0                 0 / 0                 0 / 0           MB/s
+[2026-07-31T18:35:43.489-0700][8.255s]            Memory: Out Of Memory                                     0 / 0                 0 / 0                 0 / 0                 0 / 0           ops/s
+[2026-07-31T18:35:43.489-0700][8.255s]            Memory: Uncommit                                          0 / 0                 0 / 0                 0 / 0                 0 / 0           MB/s
+[2026-07-31T18:35:43.489-0700][8.255s]            Memory: Undo Object Allocation Failed                     0 / 0                 0 / 0                 0 / 0                 0 / 0           ops/s
+[2026-07-31T18:35:43.489-0700][8.255s]            Memory: Undo Object Allocation Succeeded                  0 / 0                 0 / 0                 0 / 0                 0 / 0           ops/s
+[2026-07-31T18:35:43.489-0700][8.255s]            Memory: Undo Page Allocation                              0 / 0                 0 / 0                 0 / 0                 0 / 0           ops/s
+[2026-07-31T18:35:43.489-0700][8.255s]  Minor Collection: Minor Collection                              0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]    Old Generation: Old Generation                                0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]         Old Pause: Pause Mark End                                0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]         Old Pause: Pause Relocate Start                          0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]         Old Phase: Concurrent Mark                               0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]         Old Phase: Concurrent Mark Continue                      0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]         Old Phase: Concurrent Mark Free                          0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]         Old Phase: Concurrent Process Non-Strong                 0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]         Old Phase: Concurrent Relocate                           0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]         Old Phase: Concurrent Remap Roots                        0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]         Old Phase: Concurrent Reset Relocation Set               0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]         Old Phase: Concurrent Select Relocation Set              0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]      Old Subphase: Concurrent Classes Purge                      0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]      Old Subphase: Concurrent Classes Unlink                     0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]      Old Subphase: Concurrent Mark Follow                        0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]      Old Subphase: Concurrent Mark Root Colored                  0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]      Old Subphase: Concurrent Mark Root Uncolored                0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]      Old Subphase: Concurrent Mark Roots                         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]      Old Subphase: Concurrent References Enqueue                 0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]      Old Subphase: Concurrent References Process                 0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]      Old Subphase: Concurrent Remap Remembered                   0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]      Old Subphase: Concurrent Remap Roots Colored                0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]      Old Subphase: Concurrent Remap Roots Uncolored              0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]      Old Subphase: Concurrent Roots ClassLoaderDataGraph         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]      Old Subphase: Concurrent Roots CodeCache                    0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]      Old Subphase: Concurrent Roots JavaThreads                  0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]      Old Subphase: Concurrent Roots OopStorageSet                0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]      Old Subphase: Concurrent Weak Roots OopStorageSet           0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]            System: Java Threads                                      0 / 0                 0 / 0                 0 / 0                 0 / 0           threads
+[2026-07-31T18:35:43.489-0700][8.255s]  Young Generation: Young Generation                              0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]  Young Generation: Young Generation                              0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]  Young Generation: Young Generation (Collect Roots)              0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]  Young Generation: Young Generation (Promote All)                0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]       Young Pause: Pause Mark End                                0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]       Young Pause: Pause Mark Start                              0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]       Young Pause: Pause Mark Start (Major)                      0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]       Young Pause: Pause Relocate Start                          0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]       Young Phase: Concurrent Mark                               0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]       Young Phase: Concurrent Mark Continue                      0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]       Young Phase: Concurrent Mark Free                          0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]       Young Phase: Concurrent Relocate                           0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]       Young Phase: Concurrent Reset Relocation Set               0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]       Young Phase: Concurrent Select Relocation Set              0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]    Young Subphase: Concurrent Mark Follow                        0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]    Young Subphase: Concurrent Mark Root Colored                  0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]    Young Subphase: Concurrent Mark Root Uncolored                0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]    Young Subphase: Concurrent Mark Roots                         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]    Young Subphase: Concurrent Relocate Remset FP                 0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]    Young Subphase: Concurrent Roots ClassLoaderDataGraph         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]    Young Subphase: Concurrent Roots CodeCache                    0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]    Young Subphase: Concurrent Roots JavaThreads                  0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]    Young Subphase: Concurrent Roots OopStorageSet                0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s]    Young Subphase: Concurrent Weak Roots OopStorageSet           0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
+[2026-07-31T18:35:43.489-0700][8.255s] =========================================================================================================================================================
+[2026-07-31T18:35:43.489-0700][8.255s] Heap
+[2026-07-31T18:35:43.489-0700][8.256s]  ZHeap           used 160M, capacity 4096M, max capacity 4096M
+[2026-07-31T18:35:43.489-0700][8.256s]   Cache          3936M (1)
+[2026-07-31T18:35:43.489-0700][8.256s]    size classes  2G (1)
+[2026-07-31T18:35:43.489-0700][8.256s]  Metaspace       used 19720K, committed 20416K, reserved 1114112K
+[2026-07-31T18:35:43.489-0700][8.256s]   class space    used 1749K, committed 2048K, reserved 1048576K

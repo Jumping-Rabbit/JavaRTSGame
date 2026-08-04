@@ -605,7 +605,7 @@ adynamicequalizer       detelecine              realtime
 adynamicsmooth          dialoguenhance          remap
 aecho                   dilation                removegrain
 aemphasis               displace                removelogo
-aeval                   doubleweave             repeatfields
+aeval                   floatweave             repeatfields
 aevalsrc                drawbox                 replaygain
 aexciter                drawbox_vaapi           reverse
 afade                   drawgraph               rgbashift

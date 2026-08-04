@@ -1,13 +1,3 @@
-import javafx.application.Platform;
-import javafx.embed.swing.SwingFXUtils;
-import javafx.geometry.Rectangle2D;
-import javafx.scene.*;
-import javafx.scene.image.PixelReader;
-import javafx.scene.image.PixelWriter;
-import javafx.scene.image.WritableImage;
-import javafx.scene.paint.Color;
-import javafx.scene.transform.Rotate;
-import javafx.scene.transform.Scale;
 import org.fxyz3d.importers.obj.ObjImporter;
 
 import javax.imageio.ImageIO;
@@ -28,7 +18,7 @@ public class ModelToImageConverter {
     public static void main(String[] args) {
         Platform.startup(() -> {
         });
-        Path outputRoot = Paths.get("resources/models");
+        Path outputRoot = Paths.get("core/resources/models");
         System.out.println("Cleaning up old .png files...");
         clearExistingFiles(outputRoot, ".png");
         processDir("test/resources/models/unit", EntityType.UNIT);
@@ -65,9 +55,9 @@ public class ModelToImageConverter {
     }
 
     public static void processModelParallel(WritableImage[] images, String modelName, int resolution) {
-        File dir = new File("resources/models/" + modelName);
+        File dir = new File("core/resources/models/" + modelName);
         dir.mkdirs();
-        File resDir = new File("resources/models/" + modelName +"/"+resolution);
+        File resDir = new File("core/resources/models/" + modelName +"/"+resolution);
         resDir.mkdirs();
         images = trim(images);
         WritableImage[] finalImages = images;
@@ -103,7 +93,7 @@ public class ModelToImageConverter {
         }
     }
 
-    private static WritableImage[] getSnapshots(Node model, EntityType type, double resolution) {
+    private static WritableImage[] getSnapshots(Node model, EntityType type, float resolution) {
         model.getTransforms().clear();
 
         Rotate ySpin = new Rotate(0, Rotate.Y_AXIS);
@@ -127,7 +117,7 @@ public class ModelToImageConverter {
         params.setFill(Color.TRANSPARENT);
         params.setCamera(camera);
         params.setDepthBuffer(true);
-        params.setViewport(new Rectangle2D(-resolution / 2, -resolution / 2, resolution, resolution));
+        params.setViewport(new Rectangle(-resolution / 2, -resolution / 2, resolution, resolution));
         if (type == EntityType.UNIT){
             WritableImage[] images = new WritableImage[16];
             for (int i = 0; i < 16; i++) {
