@@ -23,54 +23,26 @@ public abstract class Entity {
     public int nextInCell1 = -1;
     public int nextInCell2 = -1;
 
-    public abstract EnumSet<Tags> getTags();
-
     public abstract Models getModel();
-
-    protected long x;//first 4 digit is decimal
-    protected long y;
-    protected long z;
+    
+    protected EntityPosition entityPosition;
     protected PlayerColor playerColor;
 
-    public void setLastX(long lastX) {
-        this.lastX = lastX;
-    }
 
-    public void setLastY(long lastY) {
-        this.lastY = lastY;
-    }
-
-    public void setLastZ(long lastZ) {
-        this.lastZ = lastZ;
-    }
-
-    protected long lastX;
-    protected long lastY;
-    protected long lastZ;
-
-    public long getDirection() {
-        return direction;
-    }
-
-    protected long direction;
-
-    public void setLastDirection(long lastDirection) {
-        this.lastDirection = lastDirection;
-    }
-
-    protected long lastDirection;
     protected boolean isSelected = false;
     protected long hp;
-    protected long armor;
 
     protected Snapshot snapshot1;
     protected Snapshot snapshot2;
     protected ArrayList<Command> commands = new ArrayList<>();
 
 
-    protected abstract long getMaxHp();
+    protected abstract EntityStats getEntityStats();
 
-    protected EnumSet<Tags> tags;
+    protected abstract EntityDimension getEntityDimension();
+
+    public abstract EnumSet<Tags> getTags();
+
     protected ArrayList<Effects> effects;
 
     public Snapshot getSnapshot(boolean isSnapshot1) {
@@ -97,17 +69,14 @@ public abstract class Entity {
         return isSelected;
     }
 
-    public Entity(PlayerColor playerColor, ModelInstance modelInstance) {
+    public Entity(PlayerColor playerColor, ModelInstance modelInstance, EntityPosition entityPosition) {
         id = idNum;
         idNum++;
         snapshot1 = new Snapshot();
         snapshot2 = new Snapshot();
         this.playerColor = playerColor;
         this.modelInstance = modelInstance;
-    }
-
-    protected Entity(int id) {
-        this.id = id;
+        this.entityPosition = entityPosition;
     }
 
 
@@ -140,9 +109,9 @@ public abstract class Entity {
 
     public void drawSelectedRing(boolean isSnapshot1) {
         if (isSnapshot1) {
-            DrawUtil.Game.fillCircle(NumUtil.LTF(snapshot1.x), NumUtil.LTF(snapshot1.lastX), NumUtil.LTF(snapshot1.y), NumUtil.LTF(snapshot1.lastY), getModel().getBoundingRadius(), 0x00FF0067);
+            DrawUtil.Game.fillCircle(NumUtil.LTF(snapshot1.x), NumUtil.LTF(snapshot1.lastX), NumUtil.LTF(snapshot1.y), NumUtil.LTF(snapshot1.lastY), getEntityDimension().radius, 0x00FF0067);
         } else {
-            DrawUtil.Game.fillCircle(NumUtil.LTF(snapshot2.x), NumUtil.LTF(snapshot2.lastX), NumUtil.LTF(snapshot2.y), NumUtil.LTF(snapshot2.lastY), getModel().getBoundingRadius(), 0x00FF0067);
+            DrawUtil.Game.fillCircle(NumUtil.LTF(snapshot2.x), NumUtil.LTF(snapshot2.lastX), NumUtil.LTF(snapshot2.y), NumUtil.LTF(snapshot2.lastY), getEntityDimension().radius, 0x00FF0067);
         }
     }
 
@@ -151,8 +120,8 @@ public abstract class Entity {
             return;
         }
 
-        long maxHp = getMaxHp();
-        float scale = getCollisionDiameter() / (maxHp / 100f);
+        long maxHp = getEntityStats().maxHp;
+        float scale = getEntityDimension().diameter / (maxHp / 100f);
 //        System.out.println(getCollisionDiameter() + ":" + getMaxHp() + ":" + scale + ":" + ((float)getCollisionDiameter())/((float)getMaxHp()));
 
         int color;
@@ -185,85 +154,88 @@ public abstract class Entity {
             tempLastY = NumUtil.LTF(snapshot2.lastY);
             tempHp = NumUtil.LTF(snapshot2.hp);
         }
-
-        DrawUtil.Game.fillRect(tempX, tempLastX, tempY - NumUtil.LTF(getRadius()) - 7, tempLastY - NumUtil.LTF(getRadius()) - 7, (tempHp / 100f) * scale, 6, color);
-        DrawUtil.Game.strokeRect(tempX, tempLastX, tempY - NumUtil.LTF(getRadius()) - 7, tempLastY - NumUtil.LTF(getRadius()) - 7, NumUtil.LTF(getCollisionDiameter()), 6, 0x000000FF, 1);
-        if (scale > NumUtil.LTF(getCollisionDiameter())) {
-            for (float i = scale / 4; i < NumUtil.LTF(getCollisionDiameter()); i += scale / 4) {
-                DrawUtil.Game.fillLineDotted(tempX + i, tempLastX + i, tempY - NumUtil.LTF(getRadius()) - 7, tempLastY - NumUtil.LTF(getRadius()) - 7, tempX + i, tempLastX + i, tempY - NumUtil.LTF(getRadius()) - 1, tempLastY - NumUtil.LTF(getRadius()) - 1, 0x000000FF, 1, 1, 3);
+        float radius = getEntityDimension().radius;
+        DrawUtil.Game.fillRect(tempX, tempLastX, tempY - radius - 7, tempLastY - radius - 7, (tempHp / 100f) * scale, 6, color);
+        DrawUtil.Game.strokeRect(tempX, tempLastX, tempY - radius - 7, tempLastY - radius - 7, getEntityDimension().diameter, 6, 0x000000FF, 1);
+        if (scale > getEntityDimension().diameter) {
+            for (float i = scale / 4; i < getEntityDimension().diameter; i += scale / 4) {
+                DrawUtil.Game.fillLineDotted(tempX + i, tempLastX + i, tempY - radius - 7, tempLastY - radius - 7, tempX + i, tempLastX + i, tempY - radius - 1, tempLastY - radius - 1, 0x000000FF, 1, 1, 3);
             }
         } else {
 
-            for (float i = scale; i < NumUtil.LTF(getCollisionDiameter()); i += scale) {
-                DrawUtil.Game.fillLine(tempX + i, tempLastX + i, tempY - NumUtil.LTF(getRadius()) - 7, tempLastY - NumUtil.LTF(getRadius()) - 7, tempX + i, tempLastX + i, tempY - NumUtil.LTF(getRadius()) - 1, tempLastY - NumUtil.LTF(getRadius()) - 1, 0x000000FF, 1);
+            for (float i = scale; i < radius*2; i += scale) {
+                DrawUtil.Game.fillLine(tempX + i, tempLastX + i, tempY - radius - 7, tempLastY - radius - 7, tempX + i, tempLastX + i, tempY - radius - 1, tempLastY - radius - 1, 0x000000FF, 1);
             }
         }
 
 
     }
 
-    public long getRadius() {
-        return getModel().getScaledHalfWidth();
+    public float getRadius() {
+        return getEntityDimension().radius;
     }
-
-    public long getCollisionRadius() {
-        return getModel().getBoundingRadiusScaled();
-    }
-
-    public long getDiameter() {
-        return getModel().getScaledWidth();
-    }
-
-    public long getCollisionDiameter() {
-        return getModel().getBoundingDiameterScaled();
+    public long getRadiusScaled() {
+        return getEntityDimension().radiusScaled;
     }
 
     public long getX() {
-        return x;
+        return entityPosition.x;
     }
 
     public long getY() {
-        return y;
+        return entityPosition.y;
     }
 
     public long getZ() {
-        return z;
+        return entityPosition.z;
     }
 
     public long getLastX() {
-        return lastX;
+        return entityPosition.lastX;
     }
 
     public long getLastY() {
-        return lastY;
+        return entityPosition.lastY;
     }
 
     public long getLastZ() {
-        return lastY;
+        return entityPosition.lastY;
     }
 
     public void setX(long x) {
-        this.x = x;
+        entityPosition.x = x;
     }
 
     public void setY(long y) {
-        this.y = y;
+        entityPosition.y = y;
     }
 
     public void setZ(long z) {
-        this.z = z;
+        entityPosition.z = z;
     }
 
     public void changeX(long x) {
-        this.x += x;
+        entityPosition.x += x;
     }
 
     public void changeY(long y) {
-        this.y += y;
+        entityPosition.y += y;
     }
 
     public void changeZ(long z) {
-        this.z += z;
+        entityPosition.z += z;
+    }
+
+    public void setLastX(long lastX) {
+        entityPosition.lastX = lastX;
+    }
+
+    public void setLastY(long lastY) {
+        entityPosition.lastY = lastY;
+    }
+
+    public void setLastZ(long lastZ) {
+        entityPosition.lastZ = lastZ;
     }
 }
 

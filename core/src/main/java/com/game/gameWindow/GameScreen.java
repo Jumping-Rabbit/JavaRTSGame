@@ -204,7 +204,7 @@ public class GameScreen implements Screen{
                 Entity entity = entities.get(i);
                 hotX[i] = entity.getX();
                 hotY[i] = entity.getY();
-                hotRad[i] = entity.getCollisionRadius();
+                hotRad[i] = entity.getRadiusScaled();
                 if (isSnapshot1) {
                     hotNIC[i] = entity.nextInCell2;
                 } else {
@@ -236,8 +236,10 @@ public class GameScreen implements Screen{
     public void updateOnFrame() {
         long t1 = System.nanoTime();
         Replay.addTick(InputHandler.getInputs(), tickNum);
-        long t2 = System.nanoTime();
         tickNum++;
+
+        long t2 = System.nanoTime();
+
         boolean isControlHeld = false;
         for (Input input : InputHandler.getInputs()) {
             switch (input.getInputType()) {
@@ -261,7 +263,7 @@ public class GameScreen implements Screen{
                         float x = NumUtil.interpolate(entity.getLastX(), entity.getX(), DrawUtil.getFactor());
                         float y = NumUtil.interpolate(entity.getLastY(), entity.getY(), DrawUtil.getFactor());
 
-                        if (CollisionUtil.PointCircleCollision(clickX, clickY, x, y, entity.getCollisionRadius())) {
+                        if (CollisionUtil.PointCircleCollision(clickX, clickY, x, y, entity.getRadius())) {
                             addSelected(entity);
                         }
                         if (isSnapshot1) {
@@ -307,7 +309,7 @@ public class GameScreen implements Screen{
                                 float x = NumUtil.interpolate(entity.getX(), entity.getLastX(), DrawUtil.getFactor());
                                 float y = NumUtil.interpolate(entity.getY(), entity.getLastY(), DrawUtil.getFactor());
 
-                                if (CollisionUtil.RectCircleCollision(x, y, entity.getCollisionRadius(), rectX, rectY, rectWidth, rectHeight)) {
+                                if (CollisionUtil.RectCircleCollision(x, y, entity.getRadius(), rectX, rectY, rectWidth, rectHeight)) {
                                     addSelected(entity);
                                 }
                                 if (isSnapshot1) {
@@ -532,11 +534,6 @@ public class GameScreen implements Screen{
             entities.parallelStream().forEach(Entity::setSnapshot1);
             isSnapshot1 = true;
         }
-        entities.parallelStream().forEach(e -> {
-            e.setLastX(e.getX());
-            e.setLastY(e.getY());
-            e.setLastDirection(e.getDirection());
-        });
 
 
         if (!InputHandler.MouseDown()) {

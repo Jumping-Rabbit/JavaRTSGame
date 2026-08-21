@@ -1,45 +1,49 @@
 package com.game.entity.building.vanguard;
 
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
-import com.game.entity.Entity;
-import com.game.entity.Init;
-import com.game.entity.PlayerColor;
-import com.game.entity.Tags;
+import com.game.entity.*;
 import com.game.entity.building.Building;
+import com.game.entity.unit.UnitStats;
 import com.game.inputHandler.InputType;
 import com.game.utils.Models;
-import com.game.utils.NumUtil;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
 
+import static com.game.utils.NumUtil.FTL;
+
 @Init
 public class VanguardCommandCenter extends Building {
     private static Models model;
-    private static long maxHp;
+    private static EntityDimension entityDimension;
+    private static EnumSet<Tags> tags;
+    private static UnitStats unitStats;
+    private static EntityStats entityStats;
 
-    @Override
-    protected long getMaxHp() {
-        return maxHp;
-    }
 
     @Override
     public Models getModel() {
         return model;
     }
 
+    @Override
+    protected EntityStats getEntityStats() {
+        return null;
+    }
+
+    @Override
+    protected EntityDimension getEntityDimension() {
+        return null;
+    }
+
+    @Override
+    public EnumSet<Tags> getTags() {
+        return null;
+    }
+
     public VanguardCommandCenter(long x, long y, PlayerColor player, ModelInstance modelInstance) {
-        super(player, modelInstance);
-        this.x = NumUtil.FTL(x);
-        this.y = NumUtil.FTL(y);
-        this.z = 0;
-        tags = EnumSet.of(Tags.SUPER_HEAVY_ARMORED, Tags.MECHANICAL, Tags.UNMOVABLE);
-        lastZ = 0;
-        lastX = NumUtil.FTL(x);
-        lastY = NumUtil.FTL(y);
-        hp = NumUtil.FTL((float) (Math.random() * 2000));
-        armor = NumUtil.FTL(3);
-        direction = NumUtil.FTL(0);
+        super(player, modelInstance, new EntityPosition(x, y, 0, 0));
+        hp = FTL((float) (Math.random() * 2000));
         effects = new ArrayList<>();
     }
 
@@ -48,8 +52,10 @@ public class VanguardCommandCenter extends Building {
         Entity.validCommandTypes = new ArrayList<>();
         Entity.validCommandTypes.add(InputType.RIGHT_CLICK);
 
+        tags = EnumSet.of(Tags.SUPER_HEAVY_ARMORED, Tags.MECHANICAL, Tags.UNMOVABLE);
+
         model = Models.vanguardCommandCenter;
-        maxHp = NumUtil.FTL(2000);
-        Models.vanguardCommandCenter.set(100, 100, 50, Models.ModelType.BUILDING);
+        entityDimension = new EntityDimension(100, 100, 50);
+        entityStats = new EntityStats(FTL(2000), FTL(3));
     }
 }

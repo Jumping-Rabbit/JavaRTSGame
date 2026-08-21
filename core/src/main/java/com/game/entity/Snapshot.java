@@ -13,14 +13,14 @@ public class Snapshot {
     public long hp;
 
     public void set(Entity entity) {
-        x = entity.x;
-        y = entity.y;
-        z = entity.z;
-        lastX = entity.lastX;
-        lastY = entity.lastY;
-        lastZ = entity.lastZ;
-        direction = entity.direction;
-        lastDirection = entity.lastDirection;
+        x = entity.entityPosition.x;
+        y = entity.entityPosition.y;
+        z = entity.entityPosition.z;
+        lastX = entity.entityPosition.lastX;
+        lastY = entity.entityPosition.lastY;
+        lastZ = entity.entityPosition.lastZ;
+        direction = entity.entityPosition.direction;
+        lastDirection = entity.entityPosition.lastDirection;
         isSelected = entity.isSelected;
         hp = entity.hp;
     }

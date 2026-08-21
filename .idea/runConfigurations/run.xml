@@ -5,7 +5,7 @@
     </envs>
     <option name="MAIN_CLASS_NAME" value="com.game.lwjgl3.Lwjgl3Launcher" />
     <module name="lwjgl3" />
-    <option name="VM_PARAMETERS" value="-XX:+PrintCommandLineFlags -XX:+UseZGC -Xms4G -Xmx4G -XX:-OmitStackTraceInFastThrow -XX:SoftMaxHeapSize=3G -XX:-ZProactive -XX:+UseCountedLoopSafepoints -XX:LoopStripMiningIter=1000 -XX:-ZUncommit -Xlog:gc*:file=gc.log:time,uptime:filecount=5,filesize=10M --sun-misc-unsafe-memory-access=allow --enable-native-access=ALL-UNNAMED" />
+    <option name="VM_PARAMETERS" value="-XX:+PrintCommandLineFlags -XX:+UseZGC -Xms4G -Xmx4G -XX:-OmitStackTraceInFastThrow -XX:SoftMaxHeapSize=3G -XX:-ZProactive -XX:+UseCountedLoopSafepoints -XX:LoopStripMiningIter=1000 -XX:-ZUncommit -XX:+UseCompactObjectHeaders -Xlog:gc*:file=gc.log:time,uptime:filecount=5,filesize=10M --sun-misc-unsafe-memory-access=allow --enable-native-access=ALL-UNNAMED" />
     <method v="2">
       <option name="Make" enabled="true" />
     </method>

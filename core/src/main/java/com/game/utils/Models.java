@@ -1,5 +1,6 @@
 package com.game.utils;
 
+import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 
 public enum Models {
@@ -8,7 +9,8 @@ public enum Models {
     vanguardBarracks(ModelType.BUILDING),
     vanguardCommandCenter(ModelType.BUILDING);
 
-    private ModelType modelType;
+    private final ModelType modelType;
+    private Model model;
 
     Models(ModelType modelType) {
         this.modelType = modelType;
@@ -48,61 +50,13 @@ public enum Models {
         return null;
     }
 
-    public void set(float width, float height, float radius, ModelType modelType, ModelInstance modelInstance) {
-
-        this.modelType = modelType;
-    }
-
     public ModelType getModelType() {
         return modelType;
     }
-
-
-    public float getBoundingRadius() {
-        return boundingRadius;
+    public static void setModel(Models models, Model model){
+        models.model = model;
     }
-
-    public float getBoundingDiameter() {
-        return boundingDiameter;
-    }
-
-    public long getBoundingRadiusScaled() {
-        return boundingRadiusScaled;
-    }
-
-    public long getBoundingDiameterScaled() {
-        return boundingDiameterScaled;
-    }
-
-    public float getWidth() {
-        return width;
-    }
-
-    public float getHeight() {
-        return height;
-    }
-
-    public float getHalfWidth() {
-        return halfWidth;
-    }
-
-    public float getHalfHeight() {
-        return halfHeight;
-    }
-
-    public long getScaledWidth() {
-        return scaledWidth;
-    }
-
-    public long getScaledHeight() {
-        return scaledHeight;
-    }
-
-    public long getScaledHalfWidth() {
-        return scaledHalfWidth;
-    }
-
-    public long getScaledHalfHeight() {
-        return scaledHalfHeight;
+    public static ModelInstance getModelInstance(Models model) {
+        return new ModelInstance(model.model);//TODO:need better names
     }
 }
