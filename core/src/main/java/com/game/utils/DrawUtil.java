@@ -1,5 +1,6 @@
 package com.game.utils;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.graphics.g3d.Model;
@@ -13,6 +14,8 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.game.Fonts;
+import com.game.Models;
+import com.game.entity.InitInternalIncrements;
 import com.game.gameWindow.LoadingScreen;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 
@@ -20,6 +23,7 @@ import java.util.EnumMap;
 
 import static com.game.utils.NumUtil.LTF;
 
+@InitInternalIncrements()
 public class DrawUtil {
     //TODO: use pixmap
     private static EnumMap<Models, Model> baseModelMap;
@@ -103,6 +107,15 @@ public class DrawUtil {
 
         camera = new OrthographicCamera();
         viewport = new FitViewport(1920, 1080, camera);
+        gameCamera = new PerspectiveCamera(60, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+
+        float targetX = 100f;
+        float targetZ = 100f;
+        float height = 50f;
+        float distanceBack = height / (float) Math.tan(Math.toRadians(56));
+        gameCamera.position.set(targetX, height, targetZ + distanceBack);
+        gameCamera.lookAt(targetX, 0f, targetZ);
+        gameCamera.up.set(0, 1, 0);
 
         //setup shapeDrawer
         Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
@@ -120,7 +133,7 @@ public class DrawUtil {
 
     public static void init(LoadingScreen loadingScreen) {
 //        loadBaseImages(loadingScreen);
-
+        ModelLoaderUtil.loadModels(loadingScreen);
 
     }
 
@@ -407,7 +420,7 @@ public class DrawUtil {
     public static void fillModelScaled(ModelInstance model, long xScaled, long yScaled, long zScaled, long directionScaled) {
         model.transform.setToTranslation(LTF(xScaled), LTF(yScaled), LTF(zScaled));
         model.transform.setToRotation(Vector3.Y, LTF(directionScaled));
-        batch3D.render(model);
+//        batch3D.render(model);
         // drawImage(model, LTF(xScaled + model.getHalfWidth()) - model.getWidth() / 2, LTF(yScaled + model.getHalfHeight()) - model.getHeight() / 2);
     }
 
@@ -465,7 +478,7 @@ public class DrawUtil {
      */
     public static void fillCircle(float x, float y, float radius, int color) {
         setColor(color);
-        shapeDrawer.filledEllipse(x, y, radius * 2 * scale, radius * 2 * scale);
+        shapeDrawer.filledEllipse(x, y, radius * scale, radius * scale);
     }
 
     /**

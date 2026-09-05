@@ -1,5 +1,6 @@
 package com.game.inputHandler;
 
+import com.game.entity.Init;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ObjectNode;
@@ -8,6 +9,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+@Init
 public enum Actions {
     RIGHT("right"),
     LEFT("left"),

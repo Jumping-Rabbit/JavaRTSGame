@@ -3,12 +3,14 @@ package com.game.gameWindow;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.math.Rectangle;
 import com.game.Fonts;
+import com.game.Models;
 import com.game.Replay;
 import com.game.entity.Command;
 import com.game.entity.Entity;
 import com.game.entity.PlayerColor;
 import com.game.entity.Tags;
 import com.game.entity.unit.Unit;
+import com.game.entity.unit.vanguard.VanguardMarine;
 import com.game.inputHandler.Input;
 import com.game.inputHandler.InputHandler;
 import com.game.inputHandler.InputType;
@@ -69,9 +71,12 @@ public class GameScreen implements Screen{
             controlGroups.put(i, new ObjectArrayList<>());
         }
         exit = false;
-        entities = new ObjectArrayList<>(12000);
-//        for (int i = 0; i < 2500; i++) {
-//            entities.add(new VanguardMarine((int) (StrictMath.random() * 7680), (int) (StrictMath.random() * 4320), PlayerColor.BLUE));
+        entities = new ObjectArrayList<>(16000);
+        for (int i = 0; i < 10000; i++) {
+            entities.add(new VanguardMarine(NumUtil.FTL((float) (StrictMath.random() * 3860)), NumUtil.FTL((float) StrictMath.random() * 2160), PlayerColor.BLUE));
+        }
+//        for (int i = 0; i < 15000; i++) {
+//            entities.add(new VanguardMarine(NumUtil.FTL((float) (StrictMath.random() * 7680)), NumUtil.FTL((float) StrictMath.random() * 4320), PlayerColor.BLUE));
 //        }
 //        for (int i = 0; i < 2500; i++) {
 //            entities.add(new VanguardMUV((int) (StrictMath.random() * 7680), (int) (StrictMath.random() * 4320), PlayerColor.RED));
@@ -217,8 +222,8 @@ public class GameScreen implements Screen{
             long t3 = System.nanoTime();
 
             for (CollisionResult res : collisions) {
-                applyPush(res.entity1, -res.moveX, -res.moveY);
-                applyPush(res.entity2, res.moveX, res.moveY);
+                applyPush(res.entity1, res.moveX, res.moveY);
+                applyPush(res.entity2, -res.moveX, -res.moveY);
             }
             long t4 = System.nanoTime();
             if (tickNum % 2 == 0)
@@ -642,8 +647,17 @@ public class GameScreen implements Screen{
 
             }
         }
+//        TODO: make a special y that is set here and then sorted to get rid of concurreny issues, and interpolate this y value too;
+        for (Entity entity : visibleEntities){
+            entity.getSnapshot(isSnapshot1Draw).setYLerp(DrawUtil.getFactor());
+        }
+        if (isSnapshot1Draw){
+            visibleEntities.sort(Entity.Y_SNAP_1_COMPARATOR);
+        } else {
+            visibleEntities.sort(Entity.Y_SNAP_2_COMPARATOR);
+        }
 
-        visibleEntities.sort(Entity.Y_COMPARATOR);
+//        System.out.println(visibleEntities.size());
         for (Entity visibleEntity : visibleEntities) {
             if (visibleEntity.isSelected()) {
                 visibleEntity.drawSelectedRing(isSnapshot1Draw);
@@ -652,7 +666,7 @@ public class GameScreen implements Screen{
         DrawUtil.startRender3D();
         for (Entity visibleEntity : visibleEntities) {
 
-//            visibleEntity.draw(isSnapshot1Draw);
+            visibleEntity.draw(isSnapshot1Draw);
         }
         DrawUtil.startRender2D();
         for (Entity visibleEntity : visibleEntities) {
@@ -685,7 +699,7 @@ public class GameScreen implements Screen{
     }
 
     private class CollisionDetectionTask extends RecursiveTask<List<CollisionResult>> {
-        private static final int THRESHOLD = 2048;
+        private static final int THRESHOLD = 512;
         private final int start, end;
         private final long[] xArr, yArr, rArr, nArr;
 
@@ -714,7 +728,7 @@ public class GameScreen implements Screen{
             return results;
         }
 
-        private List<CollisionResult> detectSequentially() {
+        private List<CollisionResult> detectSequentially() {//TODO:make units not compress into each other
             List<CollisionResult> results = new ArrayList<>();
             for (int i = start; i < end; i++) {
                 long cx1 = xArr[i] + rArr[i];
@@ -747,15 +761,15 @@ public class GameScreen implements Screen{
                                     long rSumSq = rSum * rSum;
 
                                     if (distSq < rSumSq && distSq > 0) {
-                                        long distance = NumUtil.sqrtFast(distSq);
-                                        if (distance == 0) distance = 1;
+                                        long distance = NumUtil.sqrtFastScaled(distSq);
+                                        if (distance == 0) distance = 10000;
 
                                         long overlap = rSum - distance;
-                                        long pushAmount = (long) (overlap * 0.5);
+                                        long pushAmount = (long) (overlap * 0.05);
 
                                         long moveX = (dx * pushAmount) / distance;
                                         long moveY = (dy * pushAmount) / distance;
-
+//                                        System.out.println(moveX + ":" + moveY);
                                         results.add(new CollisionResult(entities.get(i), entities.get(currentIndex), moveX, moveY));
                                     }
                                 }

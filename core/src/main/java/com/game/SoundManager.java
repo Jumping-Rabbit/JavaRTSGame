@@ -1,8 +1,9 @@
 package com.game;
 
+import com.game.entity.EarlyInit;
 import com.game.utils.LoggerUtil;
-import games.rednblack.miniaudio.MiniAudio;
 import games.rednblack.miniaudio.MASound;
+import games.rednblack.miniaudio.MiniAudio;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -13,6 +14,7 @@ import java.util.stream.Stream;
 
 import static java.lang.Math.random;
 
+@EarlyInit
 public class SoundManager {
     private static MiniAudio miniAudio;
     private static MASound bgmPlayer = null;

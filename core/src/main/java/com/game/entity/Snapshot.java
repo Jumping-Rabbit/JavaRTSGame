@@ -1,5 +1,7 @@
 package com.game.entity;
 
+import com.game.utils.NumUtil;
+
 public class Snapshot {
     public long x;
     public long y;
@@ -11,6 +13,7 @@ public class Snapshot {
     public long lastDirection;
     public boolean isSelected = false;
     public long hp;
+    public long lerpY;
 
     public void set(Entity entity) {
         x = entity.entityPosition.x;
@@ -23,5 +26,11 @@ public class Snapshot {
         lastDirection = entity.entityPosition.lastDirection;
         isSelected = entity.isSelected;
         hp = entity.hp;
+    }
+    public long getYLerp(){
+        return lerpY;
+    }
+    public void setYLerp(float factor) {
+        lerpY = NumUtil.interpolate(y, lastY, factor);
     }
 }

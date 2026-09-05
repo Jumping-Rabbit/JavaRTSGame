@@ -1,6 +1,7 @@
 package com.game.gameWindow;
 
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.math.Rectangle;
 import com.game.Fonts;
@@ -18,7 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class TitleScreen extends GameWindow implements Screen {
-    private Rectangle exitButton = new Rectangle(710, 560, 500, 100);
+    private Rectangle exitButton = new Rectangle(710, 460, 500, 100);
     private Buttons selectedButton = Buttons.HOME;
     private ArrayList<File> customMaps = new ArrayList<>();
     private ArrayList<File> replays = new ArrayList<>();
@@ -108,7 +109,7 @@ public class TitleScreen extends GameWindow implements Screen {
                 case LEFT_CLICK:
                     if (closing) {
                         if (CollisionUtil.RectPointCollision(exitButton, input.getX(), input.getY())) {
-//                            Lwjgl3Launcher.close();
+                            Gdx.app.exit();
                         } else {
                             closing = false;
                         }
@@ -223,7 +224,7 @@ public class TitleScreen extends GameWindow implements Screen {
         }
         if (closing) {
             DrawUtil.fillRect(0, 0, 1920, 1080, 0x00000054);
-            DrawUtil.fillRect(620, 600, 680, 300, 0x646464FF);
+            DrawUtil.fillRect(620, 420, 680, 300, 0x646464FF);
             DrawUtil.fillRect(exitButton, 0x969696FF);
             DrawUtil.fillText("close program?", 960, 630, Fonts.DEFAULT, 50, StringAlignment.CENTER_MIDDLE, 0xFFFFFFFF);
             DrawUtil.fillText("close", 960, 510, Fonts.DEFAULT, 50, StringAlignment.CENTER_MIDDLE, 0xFFFFFFFF);

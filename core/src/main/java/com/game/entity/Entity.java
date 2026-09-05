@@ -4,7 +4,7 @@ package com.game.entity;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.game.inputHandler.InputType;
 import com.game.utils.DrawUtil;
-import com.game.utils.Models;
+import com.game.Models;
 import com.game.utils.NumUtil;
 
 import java.util.ArrayList;
@@ -12,7 +12,8 @@ import java.util.Comparator;
 import java.util.EnumSet;
 
 public abstract class Entity {
-    public static final Comparator<Entity> Y_COMPARATOR = Comparator.comparingLong(Entity::getY);
+    public static final Comparator<Entity> Y_SNAP_1_COMPARATOR = Comparator.comparingLong(entity -> entity.snapshot1.getYLerp());
+    public static final Comparator<Entity> Y_SNAP_2_COMPARATOR = Comparator.comparingLong(entity -> entity.snapshot2.getYLerp());
     protected static boolean hasCollision;
     protected static ArrayList<InputType> validCommandTypes = new ArrayList<>();
     private static int idNum = 0;
@@ -110,8 +111,10 @@ public abstract class Entity {
     public void drawSelectedRing(boolean isSnapshot1) {
         if (isSnapshot1) {
             DrawUtil.Game.fillCircle(NumUtil.LTF(snapshot1.x), NumUtil.LTF(snapshot1.lastX), NumUtil.LTF(snapshot1.y), NumUtil.LTF(snapshot1.lastY), getEntityDimension().radius, 0x00FF0067);
+//            DrawUtil.Game.fillCircle(NumUtil.LTF(snapshot1.x), NumUtil.LTF(snapshot1.lastX), NumUtil.LTF(snapshot1.y), NumUtil.LTF(snapshot1.lastY), 1, 0xFF0000FF);
         } else {
             DrawUtil.Game.fillCircle(NumUtil.LTF(snapshot2.x), NumUtil.LTF(snapshot2.lastX), NumUtil.LTF(snapshot2.y), NumUtil.LTF(snapshot2.lastY), getEntityDimension().radius, 0x00FF0067);
+//            DrawUtil.Game.fillCircle(NumUtil.LTF(snapshot2.x), NumUtil.LTF(snapshot2.lastX), NumUtil.LTF(snapshot2.y), NumUtil.LTF(snapshot2.lastY), 1, 0xFF0000FF);
         }
     }
 
@@ -121,7 +124,7 @@ public abstract class Entity {
         }
 
         long maxHp = getEntityStats().maxHp;
-        float scale = getEntityDimension().diameter / (maxHp / 100f);
+        float scale = getEntityDimension().diameter / (NumUtil.LTF(maxHp) / 100f); //the width of each tick
 //        System.out.println(getCollisionDiameter() + ":" + getMaxHp() + ":" + scale + ":" + ((float)getCollisionDiameter())/((float)getMaxHp()));
 
         int color;
@@ -155,16 +158,15 @@ public abstract class Entity {
             tempHp = NumUtil.LTF(snapshot2.hp);
         }
         float radius = getEntityDimension().radius;
-        DrawUtil.Game.fillRect(tempX, tempLastX, tempY - radius - 7, tempLastY - radius - 7, (tempHp / 100f) * scale, 6, color);
-        DrawUtil.Game.strokeRect(tempX, tempLastX, tempY - radius - 7, tempLastY - radius - 7, getEntityDimension().diameter, 6, 0x000000FF, 1);
+        DrawUtil.Game.fillRect(tempX-radius, tempLastX-radius, tempY - radius - 7, tempLastY - radius - 7, (tempHp / 100f) * scale, 6, color);
+        DrawUtil.Game.strokeRect(tempX-radius, tempLastX-radius, tempY - radius - 7, tempLastY - radius - 7, getEntityDimension().diameter, 6, 0x000000FF, 1);
         if (scale > getEntityDimension().diameter) {
             for (float i = scale / 4; i < getEntityDimension().diameter; i += scale / 4) {
-                DrawUtil.Game.fillLineDotted(tempX + i, tempLastX + i, tempY - radius - 7, tempLastY - radius - 7, tempX + i, tempLastX + i, tempY - radius - 1, tempLastY - radius - 1, 0x000000FF, 1, 1, 3);
+                DrawUtil.Game.fillLineDotted(tempX + i-radius, tempLastX + i-radius, tempY - radius - 7, tempLastY - radius - 7, tempX + i-radius, tempLastX + i-radius, tempY - radius - 1, tempLastY - radius - 1, 0x000000FF, 1, 2, 2);
             }
         } else {
-
-            for (float i = scale; i < radius*2; i += scale) {
-                DrawUtil.Game.fillLine(tempX + i, tempLastX + i, tempY - radius - 7, tempLastY - radius - 7, tempX + i, tempLastX + i, tempY - radius - 1, tempLastY - radius - 1, 0x000000FF, 1);
+            for (float i = scale; i < getEntityDimension().diameter; i += scale) {
+                DrawUtil.Game.fillLine(tempX + i-radius, tempLastX + i-radius, tempY - radius - 7, tempLastY - radius - 7, tempX + i-radius, tempLastX + i-radius, tempY - radius - 1, tempLastY - radius - 1, 0x000000FF, 1);
             }
         }
 

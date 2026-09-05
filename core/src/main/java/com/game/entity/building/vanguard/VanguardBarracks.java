@@ -5,7 +5,7 @@ import com.game.entity.*;
 import com.game.entity.building.Building;
 import com.game.entity.unit.UnitStats;
 import com.game.inputHandler.InputType;
-import com.game.utils.Models;
+import com.game.Models;
 
 import java.util.ArrayList;
 import java.util.EnumSet;

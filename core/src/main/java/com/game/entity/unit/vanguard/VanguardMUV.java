@@ -5,7 +5,7 @@ import com.game.entity.unit.Unit;
 import com.game.entity.unit.UnitState;
 import com.game.entity.unit.UnitStats;
 import com.game.inputHandler.InputType;
-import com.game.utils.Models;
+import com.game.Models;
 import com.game.utils.NumUtil;
 
 import java.util.ArrayList;
@@ -65,7 +65,7 @@ public class VanguardMUV extends Unit {
 
         model = Models.vanguardMUV;
         entityDimension = new EntityDimension(10, 10, 6);
-        unitStats = new UnitStats(FTL(1), FTL(100), FTL(0.5f), FTL(4));
+        unitStats = new UnitStats(FTL(10), FTL(100), FTL(0.5f), FTL(4));
         entityStats = new EntityStats(FTL(50), FTL(0));
     }
 

@@ -1,4 +1,4 @@
-package com.game.lwjgl3; // 1. Put it in the sub-package so it's clean!
+package com.game.lwjgl3;
 
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
@@ -13,11 +13,11 @@ public class Lwjgl3Launcher {
     private static Lwjgl3ApplicationConfiguration getDefaultConfiguration() {
         Lwjgl3ApplicationConfiguration configuration = new Lwjgl3ApplicationConfiguration();
         configuration.setTitle("javaGame");
-//        configuration.setForegroundFPS(Lwjgl3ApplicationConfiguration.getDisplayMode().refreshRate + 1);
         configuration.setWindowedMode(800, 500);
-        configuration.setForegroundFPS(240);
-        configuration.setIdleFPS(240);
+        configuration.setForegroundFPS(540);
+        configuration.setIdleFPS(540);
         configuration.useVsync(false);
+        configuration.setInitialVisible(true);
         return configuration;
     }
 }

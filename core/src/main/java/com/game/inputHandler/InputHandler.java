@@ -5,6 +5,7 @@ import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.math.Vector3;
 import com.game.Sounds;
+import com.game.entity.Init;
 import com.game.utils.DrawUtil;
 
 import java.util.ArrayDeque;
@@ -194,7 +195,7 @@ public class InputHandler implements InputProcessor {
             hasMove = true;
         }
     }
-
+    @Init
     public static class KeyHandler {
         private final static Map<String, Keys> stringToKeyMap = new HashMap<>();
         String[] keys = {"q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "a", "s", "d",

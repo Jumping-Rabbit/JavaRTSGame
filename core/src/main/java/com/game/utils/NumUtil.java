@@ -1,5 +1,8 @@
 package com.game.utils;
 
+import com.game.entity.Init;
+
+@Init
 public class NumUtil {
     public static final long SCALER = 10000L;
     private static final int CACHE_SIZE = 8192;
@@ -69,6 +72,8 @@ public class NumUtil {
         long processingValue = num;
         long x = 1L << (64 - Long.numberOfLeadingZeros(processingValue) + 1) / 2;
         x = (x + processingValue / x) >> 1;
+        x = (x + processingValue / x) >> 1;
+        x = (x + processingValue / x) >> 1;
         return x;
     }
 
@@ -76,6 +81,8 @@ public class NumUtil {
         if (num <= 0) return 0;
         long processingValue = num * 10000L;
         long x = 1L << (64 - Long.numberOfLeadingZeros(processingValue) + 1) / 2;
+        x = (x + processingValue / x) >> 1;
+        x = (x + processingValue / x) >> 1;
         x = (x + processingValue / x) >> 1;
         return x;
     }

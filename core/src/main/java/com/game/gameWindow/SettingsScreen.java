@@ -3,8 +3,9 @@ package com.game.gameWindow;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.math.Rectangle;
 import com.game.Fonts;
-import com.game.SettingsManager;
 import com.game.inputHandler.*;
+import com.game.settings.Settings;
+import com.game.settings.SettingsManager;
 import com.game.utils.CollisionUtil;
 import com.game.utils.DrawUtil;
 import com.game.utils.StringAlignment;
@@ -70,7 +71,7 @@ public class SettingsScreen extends GameWindow implements Screen {
                             case AUDIO -> currentAudioSetting.getId();
                             default -> "";
                         };
-                        switch (SettingsManager.Settings.fromValue(currentSetting).getSettingType()) {
+                        switch (Settings.fromValue(currentSetting).getSettingType()) {
                             case INTEGER:
                                 if (input.getKey() == Keys.BACKSPACE && !settingsManager.getSettingStringValue(currentSetting).isEmpty()) {
                                     settingsManager.setSetting(currentSetting, !settingsManager.getSettingStringValue(currentSetting).substring(0, String.valueOf(settingsManager.getSettingStringValue(currentSetting)).length() - 1).isEmpty() ? settingsManager.getSettingStringValue(currentSetting).substring(0, String.valueOf(settingsManager.getSettingStringValue(currentSetting)).length() - 1) : "0");
@@ -83,19 +84,19 @@ public class SettingsScreen extends GameWindow implements Screen {
                                     settingsManager.setSetting(currentSetting, settingsManager.getSettingStringValue(currentSetting).equals("true") ? "false" : "true");
                                 }
                                 break;
-                            case STRING:
-                                if (input.getAction() == Actions.UP || input.getAction() == Actions.DOWN || input.getAction() == Actions.LEFT || input.getAction() == Actions.RIGHT) {
-                                    switch (currentSetting) {
-                                        case "graphicsQuality":
-                                            settingsManager.setSetting(currentSetting, SettingsManager.GraphicsQuality.values()[(SettingsManager.GraphicsQuality.fromValue(settingsManager.getSettingStringValue(currentSetting)).ordinal() + 1) % SettingsManager.GraphicsQuality.values().length].getString());
-                                            break;
-                                        case "displayMode":
-                                            settingsManager.setSetting(currentSetting, SettingsManager.DisplayModes.values()[(SettingsManager.DisplayModes.fromValue(settingsManager.getSettingStringValue(currentSetting)).ordinal() + 1) % SettingsManager.DisplayModes.values().length].getString());
-                                            break;
-                                    }
-
-                                }
-                                break;
+//                            case STRING:
+//                                if (input.getAction() == Actions.UP || input.getAction() == Actions.DOWN || input.getAction() == Actions.LEFT || input.getAction() == Actions.RIGHT) {
+//                                    switch (currentSetting) {
+//                                        case "graphicsQuality":
+//                                            settingsManager.setSetting(currentSetting, SettingsManager.GraphicsQuality.values()[(SettingsManager.GraphicsQuality.fromValue(settingsManager.getSettingStringValue(currentSetting)).ordinal() + 1) % SettingsManager.GraphicsQuality.values().length].getString());
+//                                            break;
+//                                        case "displayMode":
+//                                            settingsManager.setSetting(currentSetting, SettingsManager.DisplayModes.values()[(SettingsManager.DisplayModes.fromValue(settingsManager.getSettingStringValue(currentSetting)).ordinal() + 1) % SettingsManager.DisplayModes.values().length].getString());
+//                                            break;
+//                                    }
+//
+//                                }
+//                                break;
                         }
                         break;
                     }
@@ -203,17 +204,18 @@ public class SettingsScreen extends GameWindow implements Screen {
 
     public void draw() {
         DrawUtil.setColor(0x4B4B4BFF);
-        DrawUtil.fillRect(0, 0, 1920, 100, 0x4B4B4BFF);
+        DrawUtil.fillRect(0, 980, 1920, 100, 0x4B4B4BFF);
         for (Buttons button : Buttons.values()) {
             if (button == currentSection) {
                 DrawUtil.strokeRect(button.getRectangle(), 0x00FFFFFF, 5);
-                DrawUtil.fillText(button.getName(), button.getRectangle().getX() + button.getRectangle().getWidth() / 2, 50, Fonts.DEFAULT, 40, StringAlignment.CENTER_MIDDLE, 0x00FFFFFF);
+                DrawUtil.fillText(button.getName(), button.getRectangle().getX() + button.getRectangle().getWidth() / 2, 1030, Fonts.DEFAULT, 40, StringAlignment.CENTER_MIDDLE, 0x00FFFFFF);
             } else {
                 DrawUtil.strokeRect(button.getRectangle(), 0x0096FFFF, 5);
-                DrawUtil.fillText(button.getName(), button.getRectangle().getX() + button.getRectangle().getWidth() / 2, 50, Fonts.DEFAULT, 40, StringAlignment.CENTER_MIDDLE, 0x0096FFFF);
+                DrawUtil.fillText(button.getName(), button.getRectangle().getX() + button.getRectangle().getWidth() / 2, 1030, Fonts.DEFAULT, 40, StringAlignment.CENTER_MIDDLE, 0x0096FFFF);
             }
 
         }
+//        TODO:make the settings buttons y values correct
         switch (currentSection) {
             case GRAPHICS:
                 for (GraphicsButtons button : GraphicsButtons.values()) {
@@ -264,9 +266,9 @@ public class SettingsScreen extends GameWindow implements Screen {
     }
 
     public enum Buttons {
-        GRAPHICS(new Rectangle(0, 0, 860, 100), "graphics"),
-        AUDIO(new Rectangle(860, 0, 860, 100), "audio"),
-        EXIT(new Rectangle(1720, 0, 200, 100), "exit");
+        GRAPHICS(new Rectangle(0, 980, 860, 100), "graphics"),
+        AUDIO(new Rectangle(860, 980, 860, 100), "audio"),
+        EXIT(new Rectangle(1720, 980, 200, 100), "exit");
 
         private final Rectangle rectangle;
         private final String name;
@@ -286,16 +288,16 @@ public class SettingsScreen extends GameWindow implements Screen {
     }
 
     public enum AudioButtons {
-        MASTER_VOLUME(new Rectangle(50, 150, 1000, 100), "master volume", SettingsManager.Settings.MASTER_VOLUME, "masterVolume"),
-        BGM_VOLUME(new Rectangle(50, 300, 1000, 100), "bgm volume", SettingsManager.Settings.BGM_VOLUME, "BGMVolume"),
-        SFX_VOLUME(new Rectangle(50, 450, 1000, 100), "sfx volume", SettingsManager.Settings.SFX_VOLUME, "SFXVolume");
+        MASTER_VOLUME(new Rectangle(50, 150, 1000, 100), "master volume", Settings.MASTER_VOLUME, "masterVolume"),
+        BGM_VOLUME(new Rectangle(50, 300, 1000, 100), "bgm volume", Settings.BGM_VOLUME, "BGMVolume"),
+        SFX_VOLUME(new Rectangle(50, 450, 1000, 100), "sfx volume", Settings.SFX_VOLUME, "SFXVolume");
 
         private final Rectangle rectangle;
         private final String name;
-        private final SettingsManager.Settings setting;
+        private final Settings setting;
         private final String id;
 
-        AudioButtons(Rectangle rectangle, String name, SettingsManager.Settings setting, String id) {
+        AudioButtons(Rectangle rectangle, String name, Settings setting, String id) {
             this.rectangle = rectangle;
             this.name = name;
             this.setting = setting;
@@ -310,7 +312,7 @@ public class SettingsScreen extends GameWindow implements Screen {
             return rectangle;
         }
 
-        private SettingsManager.Settings getSetting() {
+        private Settings getSetting() {
             return setting;
         }
 
@@ -320,25 +322,25 @@ public class SettingsScreen extends GameWindow implements Screen {
     }
 
     public enum GraphicsButtons {
-        GRAPHICS_QUALITY(new Rectangle(50, 150, 1000, 100), "graphics quality", SettingsManager.Settings.GRAPHICS_QUALITY, "graphicsQuality"),
-        MONITOR_NUM(new Rectangle(50, 300, 1000, 100), "monitor num", SettingsManager.Settings.MONITOR_NUM, "monitorNum"),
-        TARGET_FPS(new Rectangle(50, 450, 1000, 100), "target fps", SettingsManager.Settings.TARGET_FPS, "targetFPS"),
-        ANTIALIASING(new Rectangle(50, 600, 1000, 100), "antialiasing", SettingsManager.Settings.ANTIALIASING, "antialiasing"),
-        DISPLAY_MODE(new Rectangle(50, 750, 1000, 100), "display mode", SettingsManager.Settings.DISPLAY_MODES, "displayMode");
+        GRAPHICS_QUALITY(new Rectangle(50, 150, 1000, 100), "graphics quality", Settings.GRAPHICS_QUALITY, "graphicsQuality"),
+        MONITOR_NUM(new Rectangle(50, 300, 1000, 100), "monitor num", Settings.MONITOR_NUM, "monitorNum"),
+        TARGET_FPS(new Rectangle(50, 450, 1000, 100), "target fps", Settings.TARGET_FPS, "targetFPS"),
+        ANTIALIASING(new Rectangle(50, 600, 1000, 100), "antialiasing", Settings.ANTIALIASING, "antialiasing"),
+        DISPLAY_MODE(new Rectangle(50, 750, 1000, 100), "display mode", Settings.DISPLAY_MODES, "displayMode");
 
         private final Rectangle rectangle;
         private final String name;
-        private final SettingsManager.Settings setting;
+        private final Settings setting;
         private final String id;
 
-        GraphicsButtons(Rectangle rectangle, String name, SettingsManager.Settings setting, String id) {
+        GraphicsButtons(Rectangle rectangle, String name, Settings setting, String id) {
             this.rectangle = rectangle;
             this.name = name;
             this.setting = setting;
             this.id = id;
         }
 
-        private SettingsManager.Settings getSetting() {
+        private Settings getSetting() {
             return setting;
         }
 

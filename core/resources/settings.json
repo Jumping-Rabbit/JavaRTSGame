@@ -1,10 +1,10 @@
 {
   "graphics" : {
     "monitorNum" : 0,
-    "targetFPS" : 6000,
+    "targetFPS" : 540,
     "graphicsQuality" : "high",
     "antialiasing" : true,
-    "displayMode" : "windowed"
+    "displayMode" : "fullscreen"
   },
   "audio" : {
     "masterVolume" : 50,

@@ -5,7 +5,7 @@ import com.game.entity.unit.Unit;
 import com.game.entity.unit.UnitState;
 import com.game.entity.unit.UnitStats;
 import com.game.inputHandler.InputType;
-import com.game.utils.Models;
+import com.game.Models;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -48,13 +48,11 @@ public class VanguardMarine extends Unit {
 
     public VanguardMarine(long x, long y, PlayerColor player) {
         super(player, Models.getModelInstance(Models.vanguardMarine), new EntityPosition(x, y, 0, 0));
-
         tags = EnumSet.of(Tags.LIGHT_ARMORED, Tags.BIOLOGICAL, Tags.RANGED);
-        hp = FTL((float) (Math.random() * 40));
+        hp = FTL(50);
         ticksUntilAttack = 4;
         effects = new ArrayList<>();
         unitState = UnitState.IDLE;
-
     }
 
 
@@ -64,8 +62,8 @@ public class VanguardMarine extends Unit {
         validCommandTypes.add(InputType.RIGHT_CLICK);
 
         model = Models.vanguardMarine;
-        entityDimension = new EntityDimension(10, 10, 6);
-        unitStats = new UnitStats(FTL(1), FTL(100), FTL(0.5f), FTL(4));
+        entityDimension = new EntityDimension(16, 10, 8);
+        unitStats = new UnitStats(FTL(10), FTL(100), FTL(0.5f), FTL(4));
         entityStats = new EntityStats(FTL(50), FTL(1));
     }
 

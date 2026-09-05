@@ -2,11 +2,14 @@ package com.game;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.game.entity.EarlyInit;
 import com.game.entity.Init;
+import com.game.entity.InitInternalIncrements;
+import com.game.gameWindow.*;
 import com.game.inputHandler.Actions;
 import com.game.inputHandler.Input;
 import com.game.inputHandler.InputHandler;
-import com.game.gameWindow.*;
+import com.game.settings.SettingsManager;
 import com.game.utils.*;
 import org.reflections.Reflections;
 import oshi.ffm.SystemInfo;
@@ -15,21 +18,22 @@ import oshi.hardware.HardwareAbstractionLayer;
 import oshi.hardware.Sensors;
 
 import java.lang.reflect.Method;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 
 public class GameCore extends Game {
 
-    //    float targetFPS = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDisplayMode().getRefreshRate(); // 0 or negative number means unlimited
-    float targetFPS = 0;
     volatile AtomicLong lastTickTime = new AtomicLong(System.nanoTime());
     private GameStatus gameStatus = GameStatus.START_LOADING;
-
-//    private FPSLogger fpsLogger;
 
     private InputHandler inputHandler;
 
@@ -50,85 +54,15 @@ public class GameCore extends Game {
     private HardwarePerformance hardwarePerformance;
 
 
-    public GameCore() {
-//        System.out.println(NumUtil.sqrtFastScaled(90000));
-//        for (long i = -NumUtil.FTL(100); i < NumUtil.FTL(100); i+= 10000){
-//            for (long j = -NumUtil.FTL(100); j < NumUtil.FTL(100); j+= 10000){
-//                System.out.println(StrictMath.toDegrees(StrictMath.atan2(NumUtil.FTL(i), NumUtil.FTL(j))) + ":" + NumUtil.LTF(NumUtil.atan2(NumUtil.FTL(i), NumUtil.FTL(j))));
-//            }
-//        }
-//        long startTime = System.currentTimeMillis();
-//        long total = 0;
-//        for (int x = 0; x < 10000;x++){
-//            for (int y = 0; y < 10000;y++) {
-//                total += NumUtil.atan2(NumUtil.FTL(x), NumUtil.FTL(y));
-//            }
-//        }
-//        System.out.println(System.currentTimeMillis()-startTime + ":" + total);
-//        total = 0;
-//        startTime = System.currentTimeMillis();
-//        for (int x = 0; x < 10000;x++){
-//            for (int y = 0; y < 10000;y++) {
-//                total += StrictMath.toDegrees(StrictMath.atan2(NumUtil.FTL(x), NumUtil.FTL(y)));
-//            }
-//        }
-//        System.out.println(System.currentTimeMillis()-startTime + ":" + total);
-//        System.out.println("atan: " + NumUtil.atan2(10000000, 10000000));
 
-//
-//
-//        startTime = System.currentTimeMillis();
-//        total = 0;
-//        for (int i = 0; i < 100000000;i++){
-//            total += NumUtil.sin(i);
-//        }
-//        System.out.println("sin" + (System.currentTimeMillis()-startTime) + ":" + total);
-//        total = 0;
-//        startTime = System.currentTimeMillis();
-//        for (int i = 0; i < 100000000;i++){
-//            total += NumUtil.FTL(StrictMath.sin(StrictMath.toRadians(i)));
-//        }
-//        System.out.println(System.currentTimeMillis()-startTime + ":" + total);
-////        System.out.println(NumUtil.sin(90));
-////        System.out.println(NumUtil.FTL(StrictMath.sin(StrictMath.toRadians(90))));
-//
-//
-//        long startTime = System.currentTimeMillis();
-//        long total = 0;
-//        for (int i = 0; i < NumUtil.FTL(1000);i++){
-//            total += NumUtil.sqrt(i);
-//        }
-//        System.out.println((System.currentTimeMillis()-startTime) + ":" + total);
-//        startTime = System.currentTimeMillis();
-//        total = 0;
-//        for (int i = 0; i < NumUtil.FTL(1000);i++){
-//            total += NumUtil.sqrtCached(i);
-//        }
-//        System.out.println(System.currentTimeMillis()-startTime + ":" + total);
-//        startTime = System.currentTimeMillis();
-//        total = 0;
-//        for (int i = 0; i < NumUtil.FTL(1000);i++){
-//            total += NumUtil.sqrtCached2(i);
-//        }
-//        System.out.println(System.currentTimeMillis()-startTime + ":" + total);
-//        System.out.println(NumUtil.sqrtFast(NumUtil.FTL(200)));
-//
-//        total = 0;
-//        startTime = System.currentTimeMillis();
-//        for (int i = 0; i < 100000000;i++){
-//            total += NumUtil.FTL(i);
-//        }
-//        System.out.println(System.currentTimeMillis()-startTime + ":" + total);
-//        for (long i  = -NumUtil.FTL(100); i < NumUtil.FTL(100); i+= 10000){
-//            for (long j  = -NumUtil.FTL(100); j < NumUtil.FTL(100); j+= 10000){
-//                System.out.println(NumUtil.LTF(NumUtil.FTL((StrictMath.toDegrees(StrictMath.atan2(NumUtil.FTL(i), NumUtil.FTL(j)))))) + ":" + NumUtil.LTF(NumUtil.atan2(i, j)));
-//            }
-//        }
+
+    public GameCore() {
         settingsManager = new SettingsManager();
         titleScreen = new TitleScreen();
         performanceStorage = new PerformanceStorage();
         hardwarePerformance = new HardwarePerformance();
         inputHandler = new InputHandler();
+//        System.out.println(NumUtil.LTF(NumUtil.sqrtFastScaled(NumUtil.FTL(48291753))));//should be 6949 ish
 //        fpsLogger = new FPSLogger(2000);
     }
 
@@ -182,7 +116,7 @@ public class GameCore extends Game {
     public void startGameThread() {
 
     }
-
+//    TODO:make a cache so it dosent keep making them
     private String formatString(float num, String format) {
         DecimalFormat df = new DecimalFormat(format);
         return Objects.toString(df.format(num));
@@ -273,80 +207,98 @@ public class GameCore extends Game {
         GAME_LOADING
     }
 
+    private void init(Consumer<LoadingScreen> function, String name, LoadingScreen loadingScreen){
+        long startTime = System.nanoTime();
+        loadingScreen.addText("init " +name);
+        function.accept(loadingScreen);
+        System.out.println(name + " time: " + (System.nanoTime() - startTime) / 1000000d);
+    }
+
+    private void init(Method method, String name, LoadingScreen loadingScreen){
+        long startTime = System.nanoTime();
+        loadingScreen.addText("init " +name);
+        try {
+            method.invoke(null);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        loadingScreen.increment();
+        System.out.println(name + " time: " + (System.nanoTime() - startTime) / 1000000d);
+    }
+    private void initInternalIncrement(Method method, String name, LoadingScreen loadingScreen){
+        long startTime = System.nanoTime();
+        loadingScreen.addText("init " +name);
+        try {
+            method.invoke(null, loadingScreen);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        System.out.println(name + " time: " + (System.nanoTime() - startTime) / 1000000d);
+    }
 
     @Override
     public void create() {
         DrawUtil.create();
-        Reflections reflections = new Reflections("game.entity");
-        Set<Class<?>> childClasses = reflections.getTypesAnnotatedWith(Init.class);
+        Reflections reflections = new Reflections("com.game");
+        Set<Class<?>> earlyInitClasses = reflections.getTypesAnnotatedWith(EarlyInit.class);
+        Set<Class<?>> initClasses = reflections.getTypesAnnotatedWith(Init.class);
+        Set<Class<?>> initInternalIncrementClasses = reflections.getTypesAnnotatedWith(InitInternalIncrements.class);
         logicThread = new Thread(new logicThread(performanceStorage));
-        loadingScreen = new LoadingScreen(6 + (Models.getUnitAmount() * 17) + Models.getBuildingAmount() * 2 + childClasses.size());
+        int modelNum;
+        try (Stream<Path> stream = Files.list(Paths.get("core/resources/models"))) {
+            long fileCount = stream
+                    .filter(Files::isRegularFile)
+                    .count();
+
+            modelNum = (int)fileCount;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        System.out.println("model Count: " + modelNum);
+
+        loadingScreen = new LoadingScreen(initClasses.size() + earlyInitClasses.size() + modelNum);
 
         try {
-            Thread.sleep(250);
+            Thread.sleep(500);
         } catch (InterruptedException e) {
             LoggerUtil.log(e);
         }
+
         Thread loader = new Thread(() -> {
             long initTime = System.nanoTime();
             loadingScreen.addText("init Logger");
-            long startTime = System.nanoTime();
-            LoggerUtil.init();
-            System.out.println("logger time: " + (System.nanoTime() - startTime) / 1000000000d);
-            loadingScreen.increment();
-
-            for (Class<?> clazz : childClasses) {
+            init(LoggerUtil::init, "loggerUtil", loadingScreen);
+            for (Class<?> clazz : earlyInitClasses) {
                 try {
-                    loadingScreen.addText("init " + clazz.getSimpleName());
-                    startTime = System.nanoTime();
-                    Method staticMethod = clazz.getDeclaredMethod("init");
-                    staticMethod.invoke(null);
-                    System.out.println(clazz.getSimpleName() + " time: " + (System.nanoTime() - startTime) / 1000000000d);
-                    loadingScreen.increment();
+                    init(clazz.getDeclaredMethod("init"), clazz.getSimpleName(), loadingScreen);
                 } catch (Exception e) {
                     LoggerUtil.log(e);
                 }
             }
-
-            loadingScreen.addText("init Sounds");
-            startTime = System.nanoTime();
-            SoundManager.init();
-            System.out.println("sound time: " + (System.nanoTime() - startTime) / 1000000000d);
-            loadingScreen.increment();
-            loadingScreen.addText("init NumUtil");
-            startTime = System.nanoTime();
-            NumUtil.init();
-            System.out.println("numUtil time: " + (System.nanoTime() - startTime) / 1000000000d);
-            loadingScreen.increment();
-            loadingScreen.addText("init keyHandler");
-            startTime = System.nanoTime();
-            InputHandler.KeyHandler.init();
+            for (Class<?> clazz : initClasses) {
+                try {
+                    init(clazz.getDeclaredMethod("init"), clazz.getSimpleName(), loadingScreen);
+                } catch (Exception e) {
+                    LoggerUtil.log(e);
+                }
+            }
+            for (Class<?> clazz : initInternalIncrementClasses) {
+                try {
+                    initInternalIncrement(clazz.getDeclaredMethod("init", LoadingScreen.class), clazz.getSimpleName(), loadingScreen);
+                } catch (Exception e) {
+                    LoggerUtil.log(e);
+                }
+            }
             Gdx.input.setInputProcessor(inputHandler);
-            System.out.println("keyHandler time: " + (System.nanoTime() - startTime) / 1000000000d);
-            loadingScreen.increment();
-            loadingScreen.addText("init actions");
-            startTime = System.nanoTime();
-            Actions.init();
-            System.out.println("actions time: " + (System.nanoTime() - startTime) / 1000000000d);
-            loadingScreen.increment();
-            loadingScreen.addText("init draw util");
-            startTime = System.nanoTime();
-            DrawUtil.init(loadingScreen);
-            System.out.println("DrawUtil time: " + (System.nanoTime() - startTime) / 1000000000d);
-            loadingScreen.increment();
-            loadingScreen.addText("init settings");
-            startTime = System.nanoTime();
-            SettingsManager.getSettings();
-            System.out.println("Settings time: " + (System.nanoTime() - startTime) / 1000000000d);
-            loadingScreen.increment();
-            float initTotalTime = (System.nanoTime() - initTime) / 1000000000f;
+
+            float initTotalTime = (System.nanoTime() - initTime) / 1000000f;
             loadingScreen.addText("done   time: " + initTotalTime);
             LoggerUtil.log("startup time: " + initTotalTime);
             SystemInfo si = new SystemInfo();
             LoggerUtil.log(LogType.EVENT, "os:", si.getOperatingSystem(), "cpu:", si.getHardware().getProcessor().getProcessorIdentifier().getName(), "gpu:", si.getHardware().getGraphicsCards().getFirst().getName(), "ram:", si.getHardware().getMemory().getTotal());
             System.out.println("start   time: " + initTotalTime);
             try {
-                Thread.sleep(250);
+                Thread.sleep(500);
             } catch (InterruptedException e) {
                 LoggerUtil.log(e);
             }

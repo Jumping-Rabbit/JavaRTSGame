@@ -106,18 +106,18 @@ public abstract class Unit extends Entity {
                 if (StrictMath.abs(delta) <= getUnitStats().turnSpeed) {
                     direction = targetDirection;
                 } else {
-                    if (delta > 0) direction += getUnitStats().turnSpeed;
-                    else direction -= getUnitStats().turnSpeed;
-                    if (direction <= -scaled180) direction += scaled360;
-                    if (direction > scaled180) direction -= scaled360;
+                    if (delta > 0) entityPosition.direction += getUnitStats().turnSpeed;
+                    else entityPosition.direction -= getUnitStats().turnSpeed;
+                    if (direction <= -scaled180) entityPosition.direction += scaled360;
+                    if (direction > scaled180) entityPosition.direction -= scaled360;
                 }
                 if (direction == targetDirection) {
                     long xChange = (long) (getUnitStats().speed * NumUtil.cos(direction));
                     long yChange = (long) (getUnitStats().speed * NumUtil.sin(direction));
-                    if (targetX > x ? x + xChange >= targetX : x + xChange <= targetX) x = targetX;
-                    else x += xChange;
-                    if (targetY > y ? y + yChange >= targetY : y + yChange <= targetY) y = targetY;
-                    else y += yChange;
+                    if (targetX > x ? x + xChange >= targetX : x + xChange <= targetX) entityPosition.x = targetX;
+                    else entityPosition.x += xChange;
+                    if (targetY > y ? y + yChange >= targetY : y + yChange <= targetY) entityPosition.y = targetY;
+                    else entityPosition.y += yChange;
                     long dx = x - targetX;
                     long dy = y - targetY;
                     long scaledHalfWidth = getEntityDimension().halfWidthScaled;
