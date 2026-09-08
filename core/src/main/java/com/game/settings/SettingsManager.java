@@ -166,32 +166,56 @@ public class SettingsManager {
         }
     }
 
-    public String getSettingStringValue(String id) {
-//        return switch (id) {
-//            case "targetFPS" -> String.valueOf(getTargetFPS());
-//            case "monitorNum" -> String.valueOf(getMonitorNum());
-//            case "displayMode" -> getDisplayMode().getString();
-//            case "masterVolume" -> String.valueOf(getMasterVolume());
-//            case "BGMVolume" -> String.valueOf(getBGMVolume());
-//            case "SFXVolume" -> String.valueOf(getSFXVolume());
-//            case "antialiasing" -> String.valueOf(getAntialiasing());
-//            case "graphicsQuality" -> getGraphicsQuality().getString();
-//            default -> "";
-//        };
-        return "";
+    public String getSettingStringValue(Settings setting) {
+        return switch (setting) {
+            case TARGET_FPS -> settingMap.get(SettingSections.GRAPHICS).get(Settings.TARGET_FPS).getValue().toString();
+            case MONITOR_NUM -> settingMap.get(SettingSections.GRAPHICS).get(Settings.MONITOR_NUM).toString();
+            case DISPLAY_MODES -> settingMap.get(SettingSections.GRAPHICS).get(Settings.DISPLAY_MODES).toString();
+            case MASTER_VOLUME -> settingMap.get(SettingSections.AUDIO).get(Settings.MASTER_VOLUME).toString();
+            case BGM_VOLUME -> settingMap.get(SettingSections.AUDIO).get(Settings.BGM_VOLUME).toString();
+            case SFX_VOLUME -> settingMap.get(SettingSections.AUDIO).get(Settings.SFX_VOLUME).toString();
+            case ANTIALIASING -> settingMap.get(SettingSections.GRAPHICS).get(Settings.ANTIALIASING).toString();
+            case GRAPHICS_QUALITY -> settingMap.get(SettingSections.GRAPHICS).get(Settings.GRAPHICS_QUALITY).toString();
+        };
     }
 
-    public void setSetting(String id, String set) {
-//        switch (id) {
-//            case "targetFPS" -> setTargetFPS(Integer.parseInt(set));
-//            case "monitorNum" -> setMonitorNum(Integer.parseInt(set));
-//            case "displayMode" -> setDisplayMode(DisplayModes.fromValue(set));
-//            case "masterVolume" -> setMasterVolume(Integer.parseInt(set));
-//            case "BGMVolume" -> setBGMVolume(Integer.parseInt(set));
-//            case "SFXVolume" -> setSFXVolume(Integer.parseInt(set));
-//            case "antialiasing" -> setAntialiasing(Boolean.parseBoolean(set));
-//            case "graphicsQuality" -> setGraphicsQuality(GraphicsQuality.fromValue(set));
-//        }
+    @SuppressWarnings("unchecked")
+    public void setSetting(Settings setting, String set) {
+        switch (setting) {
+            case TARGET_FPS -> {
+                setSettingValue((Setting<Integer>)getSetting(Settings.TARGET_FPS), Integer.parseInt(set));
+                SettingsApplicator.setFPS((int) getSetting(Settings.TARGET_FPS).getValue());
+            }
+            case MONITOR_NUM -> {
+                setSettingValue((Setting<Integer>)getSetting(Settings.MONITOR_NUM), Integer.parseInt(set));
+                SettingsApplicator.setFPS((int) getSetting(Settings.MONITOR_NUM).getValue());
+            }
+            case DISPLAY_MODES -> {
+                setSettingValue((Setting<Enum<DisplayModes>>)getSetting(Settings.DISPLAY_MODES), DisplayModes.fromValue(set));
+                //SettingsApplicator.setDisplayModes(setting);
+            }
+            case MASTER_VOLUME -> {
+
+            }
+            case BGM_VOLUME -> {
+
+            }
+            case SFX_VOLUME -> {
+
+            }
+            case ANTIALIASING -> {
+
+            }
+            case GRAPHICS_QUALITY -> {
+
+            }
+        }
+    }
+    public static Setting<?> getSetting(Settings setting){
+        return settingMap.get(setting.getSettingSections()).get(setting);
+    }
+    public static <T> void setSettingValue(Setting<T> setting, T value) {
+        setting.setValue(value);
     }
 
 }

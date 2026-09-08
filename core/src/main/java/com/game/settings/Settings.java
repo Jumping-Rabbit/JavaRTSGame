@@ -1,21 +1,23 @@
 package com.game.settings;
 
 public enum Settings {
-    TARGET_FPS(SettingTypes.INTEGER, "targetFPS"),
-    MONITOR_NUM(SettingTypes.INTEGER, "monitorNum"),
-    DISPLAY_MODES(SettingTypes.ENUM, "displayMode"),
-    MASTER_VOLUME(SettingTypes.INTEGER, "masterVolume"),
-    BGM_VOLUME(SettingTypes.INTEGER, "BGMVolume"),
-    SFX_VOLUME(SettingTypes.INTEGER, "SFXVolume"),
-    ANTIALIASING(SettingTypes.BOOLEAN, "antialiasing"),
-    GRAPHICS_QUALITY(SettingTypes.ENUM, "graphicsQuality");
+    TARGET_FPS(SettingTypes.INTEGER, "targetFPS", SettingSections.GRAPHICS),
+    MONITOR_NUM(SettingTypes.INTEGER, "monitorNum", SettingSections.GRAPHICS),
+    DISPLAY_MODES(SettingTypes.ENUM, "displayMode", SettingSections.GRAPHICS),
+    MASTER_VOLUME(SettingTypes.INTEGER, "masterVolume", SettingSections.AUDIO),
+    BGM_VOLUME(SettingTypes.INTEGER, "BGMVolume", SettingSections.AUDIO),
+    SFX_VOLUME(SettingTypes.INTEGER, "SFXVolume", SettingSections.AUDIO),
+    ANTIALIASING(SettingTypes.BOOLEAN, "antialiasing", SettingSections.GRAPHICS),
+    GRAPHICS_QUALITY(SettingTypes.ENUM, "graphicsQuality", SettingSections.GRAPHICS);
 
     private final SettingTypes type;
     private final String id;
+    private final SettingSections settingSections;
 
-    Settings(SettingTypes type, String id) {
+    Settings(SettingTypes type, String id, SettingSections settingSections) {
         this.type = type;
         this.id = id;
+        this.settingSections = settingSections;
     }
 
     public static Settings fromValue(String givenName) {
@@ -33,5 +35,9 @@ public enum Settings {
 
     public String getId() {
         return id;
+    }
+
+    public SettingSections getSettingSections(){
+        return settingSections;
     }
 }
