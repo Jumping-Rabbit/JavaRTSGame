@@ -7,7 +7,7 @@ import java.util.stream.Stream;
 public class AudioCompressor {
     public static void main(String[] args) {
         Path sourceRootDir = Paths.get("test/resources/bgm");
-        Path targetRootDir = Paths.get("core/resources/bgm");
+        Path targetRootDir = Paths.get("resources/bgm");
 
         try (Stream<Path> paths = Files.walk(sourceRootDir)) {
             paths.filter(Files::isRegularFile)

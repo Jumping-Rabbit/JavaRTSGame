@@ -10,8 +10,15 @@
     </option>
     <option name="ignoredFiles">
       <set>
+        <option value="$PROJECT_DIR$/core/pom.xml" />
+        <option value="$PROJECT_DIR$/lwjgl3/pom.xml" />
         <option value="$PROJECT_DIR$/test/pom.xml" />
       </set>
+    </option>
+    <option name="enabledProfiles">
+      <list>
+        <option value="lwjgl-natives-macos-arm64" />
+      </list>
     </option>
   </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_25" project-jdk-name="graalvm-ce-25" project-jdk-type="JavaSDK">

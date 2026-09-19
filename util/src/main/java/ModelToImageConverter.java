@@ -18,7 +18,7 @@ public class ModelToImageConverter {
     public static void main(String[] args) {
         Platform.startup(() -> {
         });
-        Path outputRoot = Paths.get("core/resources/models");
+        Path outputRoot = Paths.get("resources/models");
         System.out.println("Cleaning up old .png files...");
         clearExistingFiles(outputRoot, ".png");
         processDir("test/resources/models/unit", EntityType.UNIT);
@@ -55,9 +55,9 @@ public class ModelToImageConverter {
     }
 
     public static void processModelParallel(WritableImage[] images, String modelName, int resolution) {
-        File dir = new File("core/resources/models/" + modelName);
+        File dir = new File("resources/models/" + modelName);
         dir.mkdirs();
-        File resDir = new File("core/resources/models/" + modelName +"/"+resolution);
+        File resDir = new File("resources/models/" + modelName +"/"+resolution);
         resDir.mkdirs();
         images = trim(images);
         WritableImage[] finalImages = images;
