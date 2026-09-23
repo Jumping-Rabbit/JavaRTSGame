@@ -1,7 +1,6 @@
 package com.game.utils;
 
-import com.game.Models;
-import com.game.gameWindow.LoadingScreen;
+import com.game.screens.LoadingScreen;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -10,15 +9,15 @@ import java.nio.file.Paths;
 import java.util.stream.Stream;
 
 public class ModelLoaderUtil {
-
-    public static void loadModels(LoadingScreen loadingScreen){
-        Path root = Paths.get("resources/models");
-
-        try (Stream<Path> paths = Files.list(root)) {
-            paths.filter(Files::isRegularFile)
-                .forEach(sourcePath -> {
+  
+  public static void loadModels(LoadingScreen loadingScreen) {
+    Path root = Paths.get("resources/models");
+    
+    try (Stream<Path> paths = Files.list(root)) {
+      paths.filter(Files::isRegularFile)
+          .forEach(sourcePath -> {
 //                    System.out.println(sourcePath.toFile().getName().split("\\.")[0]);
-                    Models modelKey = Models.fromValue(sourcePath.toFile().getName().split("\\.")[0]);
+//            Models modelKey = Models.fromValue(sourcePath.toFile().getName().split("\\.")[0]);
 //                    System.out.println(modelKey);
 
 //                    FileHandle fileHandle = Gdx.files.local(sourcePath.toString());
@@ -41,13 +40,12 @@ public class ModelLoaderUtil {
 //                    } catch (InterruptedException e) {
 //                        LoggerUtil.log(e);
 //                    }
-                    loadingScreen.increment();
-                });
-        } catch (IOException e) {
-            LoggerUtil.log(e);
-        }
+            loadingScreen.increment();
+          });
+    } catch (IOException e) {
+      LoggerUtil.log(e);
     }
-
+  }
 
 
 //    private static final float imageSize = 512;

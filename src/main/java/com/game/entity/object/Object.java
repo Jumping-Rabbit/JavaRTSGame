@@ -8,14 +8,14 @@ import com.game.entity.Tags;
 import java.util.EnumSet;
 
 public abstract class Object extends Entity {
-    public Object(PlayerColor color/*, ModelInstance modelInstance*/) {
-        super(color/*, modelInstance*/, new EntityPosition(0, 0, 0, 0));
-    }
-
-    protected static EnumSet<Tags> tags;
-
-    @Override
-    public EnumSet<Tags> getTags() {
-        return tags;
-    }
+  public Object(PlayerColor color/*, ModelInstance modelInstance*/) {
+    super(color/*, modelInstance*/, new EntityPosition(0, 0, 0, 0));
+  }
+  
+  protected static EnumSet<Tags> tags;
+  
+  @Override
+  public EnumSet<Tags> getTags() {
+    return tags;
+  }
 }

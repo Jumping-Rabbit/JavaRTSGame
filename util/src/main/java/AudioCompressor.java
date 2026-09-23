@@ -25,7 +25,7 @@ public class AudioCompressor {
                             targetFile.getParent().toFile().mkdirs();
                         }
 
-                        convertToM4A(sourcePath.toString(), targetFile.toString());
+//                        convertToM4A(sourcePath.toString(), targetFile.toString());
                     });
         } catch (IOException e) {
             e.printStackTrace();

@@ -2,6 +2,9 @@
   <configuration default="false" name="run" type="Application" factoryName="Application">
     <envs>
       <env name="--enable-native-access" value="ALL-UNNAMED" />
+      <env name="MTL_DEBUG_LAYER" value="1" />
+      <env name="MVK_CONFIG_LOG_LEVEL" value="3" />
+      <env name="MTL_SHADER_VALIDATION" value="1" />
     </envs>
     <option name="MAIN_CLASS_NAME" value="com.game.Main" />
     <module name="javaGame" />
