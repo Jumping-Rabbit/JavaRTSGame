@@ -1,15 +1,17 @@
 package com.game.entity.unit.vanguard;
 
 import com.game.Init;
-import com.game.entity.*;
+import com.game.entity.EntityDimension;
+import com.game.entity.EntityPosition;
+import com.game.entity.EntityStats;
+import com.game.entity.PlayerColor;
 import com.game.entity.unit.Unit;
 import com.game.entity.unit.UnitState;
 import com.game.entity.unit.UnitStats;
-import com.game.screens.LoadingScreen;
 import com.game.input.InputType;
+import com.game.screens.LoadingScreen;
 
 import java.util.ArrayList;
-import java.util.EnumSet;
 
 import static com.game.utils.NumUtil.FTL;
 
@@ -17,7 +19,7 @@ import static com.game.utils.NumUtil.FTL;
 public class VanguardMarine extends Unit {
 //  private static Models model;
   private static EntityDimension entityDimension;
-  private static EnumSet<Tags> tags;
+//  private static EnumSet<Tags> tags;
   private static UnitStats unitStats;
   private static EntityStats entityStats;
   
@@ -31,10 +33,10 @@ public class VanguardMarine extends Unit {
     return entityStats;
   }
   
-  @Override
-  public EnumSet<Tags> getTags() {
-    return tags;
-  }
+//  @Override
+//  public EnumSet<Tags> getTags() {
+//    return tags;
+//  }
   
   
   @Override
@@ -49,7 +51,7 @@ public class VanguardMarine extends Unit {
   
   public VanguardMarine(long x, long y, PlayerColor player) {
     super(player/*, Models.getModelInstance(Models.vanguardMarine)*/, new EntityPosition(x, y, 0, 0));
-    tags = EnumSet.of(Tags.LIGHT_ARMORED, Tags.BIOLOGICAL, Tags.RANGED);
+//    tags = EnumSet.of(Tags.LIGHT_ARMORED, Tags.BIOLOGICAL, Tags.RANGED);
     hp = FTL(50);
     ticksUntilAttack = 4;
     effects = new ArrayList<>();

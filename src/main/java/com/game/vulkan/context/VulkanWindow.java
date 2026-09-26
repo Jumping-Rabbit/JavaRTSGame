@@ -7,6 +7,8 @@ import org.lwjgl.glfw.GLFWVulkan;
 import org.lwjgl.system.MemoryUtil;
 
 class VulkanWindow {
+  private VulkanContextManager vulkanContextManager;
+  
   private int width;
   private int height;
   
@@ -15,7 +17,8 @@ class VulkanWindow {
   
   private boolean shouldClose;
   
-  VulkanWindow() {
+  VulkanWindow(VulkanContextManager vulkanContextManager) {
+    this.vulkanContextManager = vulkanContextManager;
     if (!GLFW.glfwInit()) {
       throw new RuntimeException("Unable to initialize GLFW");
     }

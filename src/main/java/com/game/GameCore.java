@@ -1,18 +1,17 @@
 package com.game;
 
-import com.game.screens.*;
+import com.game.draw.DrawManager;
 import com.game.input.Actions;
 import com.game.input.Input;
 import com.game.input.InputHandler;
+import com.game.screens.*;
 import com.game.settings.SettingsManager;
-import com.game.draw.DrawManager;
 import com.game.sound.SoundManager;
 import com.game.utils.LogType;
 import com.game.utils.LoggerUtil;
 import com.game.utils.PerformanceType;
 import com.game.vulkan.VulkanManager;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import org.lwjgl.glfw.GLFW;
 import org.reflections.Reflections;
 import oshi.ffm.SystemInfo;
 import oshi.hardware.CentralProcessor;
@@ -40,6 +39,7 @@ public class GameCore /*extends Game */ {
   
   private final InputHandler inputHandler;
   
+  VulkanManager vulkanManager;
   
   private Thread logicThread;
   private Thread drawThread;
@@ -252,8 +252,9 @@ public class GameCore /*extends Game */ {
   
   public void init() {
     DrawManager.create();
-    VulkanManager.initWindow();
-    DrawManager.setWindow(VulkanManager.getWindow());
+    vulkanManager = new VulkanManager(loadingScreen);
+    System.out.println("init Vulkan");
+    DrawManager.setWindow(vulkanManager.getWindowHandle());
     logicThread = new Thread(new logicThread(performanceStorage));
     drawThread = new Thread(new drawThread(performanceStorage));
     
@@ -280,6 +281,7 @@ public class GameCore /*extends Game */ {
     }
     
     Thread loader = new Thread(() -> {
+      
       for (int i = 0; i < initClasses.size(); i++) {
         System.out.println("Stage " + i + " contains: " + initClasses.get(i).size() + " classes.");
       }
@@ -353,8 +355,7 @@ public class GameCore /*extends Game */ {
 //            VK14.vkDeviceWaitIdle(DrawUtil.getDevice());
 //        }
     
-    GLFW.glfwDestroyWindow(VulkanManager.getWindow());
-    GLFW.glfwTerminate();
+    vulkanManager.cleanup();
   }
   
   public void resize(int width, int height) {
@@ -462,7 +463,7 @@ public class GameCore /*extends Game */ {
     public void run() {
       long targetFrameInterval = 50_000_000L; // 20 TPS
       long targetTime = System.nanoTime() + targetFrameInterval;
-      while (!VulkanManager.shouldWindowClose()) {
+      while (!vulkanManager.shouldClose()) {
         long currentTime = System.nanoTime();
         
         if (currentTime >= targetTime) {
@@ -498,7 +499,7 @@ public class GameCore /*extends Game */ {
       int targetFPS = 720;
       long currentTime;
       long targetFrameInterval = 0;
-      while (!VulkanManager.shouldWindowClose()) {
+      while (!vulkanManager.shouldClose()) {
 //                targetFPS = settingsManager.getTargetFPS();
         currentTime = System.nanoTime();
         if (targetFPS > 0) {
@@ -507,7 +508,7 @@ public class GameCore /*extends Game */ {
         if (targetFPS <= 0 || currentTime >= targetTime) {
           performanceStorage.addDrawTimeUsed(currentTime);
           targetTime += targetFrameInterval;
-          VulkanManager.pollEvents();
+          vulkanManager.pollEvents();
           render();
           performanceStorage.addDFrame();
         }

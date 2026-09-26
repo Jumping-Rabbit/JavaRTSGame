@@ -6,11 +6,10 @@ import com.game.Init;
 import com.game.entity.*;
 import com.game.entity.building.Building;
 import com.game.entity.unit.UnitStats;
-import com.game.screens.LoadingScreen;
 import com.game.input.InputType;
+import com.game.screens.LoadingScreen;
 
 import java.util.ArrayList;
-import java.util.EnumSet;
 
 import static com.game.utils.NumUtil.FTL;
 
@@ -18,7 +17,7 @@ import static com.game.utils.NumUtil.FTL;
 public class VanguardBarracks extends Building {
 //  private static Models model;
   private static EntityDimension entityDimension;
-  private static EnumSet<Tags> tags;
+//  private static EnumSet<Tags> tags;
   private static UnitStats unitStats;
   private static EntityStats entityStats;
   
@@ -38,11 +37,11 @@ public class VanguardBarracks extends Building {
     return entityDimension;
   }
   
-  @Override
-  public EnumSet<Tags> getTags() {
-    return tags;
-  }
-  
+//  @Override
+//  public EnumSet<Tags> getTags() {
+//    return tags;
+//  }
+//
   public VanguardBarracks(long x, long y, PlayerColor player/*, ModelInstance modelInstance*/) {
     super(player/*, modelInstance*/, new EntityPosition(x, y, 0, 0));
     hp = FTL((float) (Math.random() * 2000));
@@ -55,7 +54,7 @@ public class VanguardBarracks extends Building {
     Entity.validCommandTypes.add(InputType.RIGHT_CLICK);
     
 //    model = Models.vanguardBarracks;
-    tags = EnumSet.of(Tags.HEAVY_ARMORED, Tags.MECHANICAL, Tags.UNMOVABLE);
+//    tags = EnumSet.of(Tags.HEAVY_ARMORED, Tags.MECHANICAL, Tags.UNMOVABLE);
     entityDimension = new EntityDimension(55, 60, 30);
     entityStats = new EntityStats(FTL(2000), FTL(3));
     loadingScreen.increment();

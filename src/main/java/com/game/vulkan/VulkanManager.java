@@ -1,6 +1,5 @@
 package com.game.vulkan;
 
-import com.game.Init;
 import com.game.screens.LoadingScreen;
 import com.game.vulkan.context.VulkanContextManager;
 import com.game.vulkan.memory.VulkanMemoryManager;
@@ -8,31 +7,41 @@ import com.game.vulkan.pipeline.VulkanPipelineManager;
 import com.game.vulkan.render.VulkanRenderManager;
 
 
-@Init(stage = 0)
 public class VulkanManager {
-  VulkanContextManager vulkanContextManager;
-  VulkanMemoryManager vulkanMemoryManager;
-  VulkanPipelineManager vulkanPipelineManager;
-  VulkanRenderManager vulkanRenderManager;
+  private VulkanContextManager vulkanContextManager;
+  private VulkanMemoryManager vulkanMemoryManager;
+  private VulkanPipelineManager vulkanPipelineManager;
+  private VulkanRenderManager vulkanRenderManager;
   
   
-  public static void initWindow() {
+  public VulkanManager(LoadingScreen loadingScreen){
+    vulkanContextManager = new VulkanContextManager();
+    vulkanMemoryManager = new VulkanMemoryManager();
+    vulkanPipelineManager = new VulkanPipelineManager();
+    vulkanRenderManager = new VulkanRenderManager();
+  }
+  public void cleanup(){
+    vulkanContextManager.waitIdle();
+    vulkanRenderManager.cleanupSync();
+    vulkanRenderManager.cleanupCommandPool();
+    vulkanPipelineManager.cleanupPipeline();
+    vulkanPipelineManager.cleanupDescriptors();
+    vulkanRenderManager.cleanupSwapChain();
+    vulkanMemoryManager.cleanup();
+    vulkanContextManager.cleanupDevice();
+    vulkanContextManager.cleanupWindowAndInstance();
   }
   
-  public static void init(LoadingScreen loadingScreen) {
-    
-    loadingScreen.increment();
+  public long getWindowHandle(){
+    return vulkanContextManager.getWindowHandle();
   }
-  
-  public static long getWindow() {
-    return 0;
+  public void setShouldClose(){
+    vulkanContextManager.setShouldClose();
   }
-  
-  public static void pollEvents() {
-  
+  public boolean shouldClose(){
+    return vulkanContextManager.shouldClose();
   }
-  
-  public static boolean shouldWindowClose() {
-    return false;
+  public void pollEvents(){
+    vulkanContextManager.pollEvents();
   }
 }

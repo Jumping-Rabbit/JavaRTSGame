@@ -19,7 +19,7 @@ public class VanguardMUV extends Unit {
 //  private static Models model;
   private static long maxHp;
   private static EntityDimension entityDimension;
-  private static EnumSet<Tags> tags;
+//  private static EnumSet<Tags> tags;
   private static UnitStats unitStats;
   private static EntityStats entityStats;
   
@@ -33,10 +33,10 @@ public class VanguardMUV extends Unit {
     return entityStats;
   }
   
-  @Override
-  public EnumSet<Tags> getTags() {
-    return tags;
-  }
+//  @Override
+//  public EnumSet<Tags> getTags() {
+//    return tags;
+//  }
   
   @Override
   protected EntityDimension getEntityDimension() {
@@ -51,7 +51,7 @@ public class VanguardMUV extends Unit {
   public VanguardMUV(long x, long y, PlayerColor player) {
     super(player/*, Models.getModelInstance(Models.vanguardMUV)*/, new EntityPosition(x, y, 0, 0));
     
-    tags = EnumSet.of(Tags.UNARMORED, Tags.MECHANICAL, Tags.MELEE);
+//    tags = EnumSet.of(Tags.UNARMORED, Tags.MECHANICAL, Tags.MELEE);
     hp = NumUtil.FTL((float) (Math.random() * 40));
     ticksUntilAttack = 4;
     effects = new ArrayList<>();

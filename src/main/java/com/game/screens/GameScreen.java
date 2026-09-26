@@ -4,7 +4,6 @@ import com.game.draw.DrawManager;
 import com.game.entity.Command;
 import com.game.entity.Entity;
 import com.game.entity.PlayerColor;
-import com.game.entity.Tags;
 import com.game.entity.unit.Unit;
 import com.game.entity.unit.vanguard.VanguardMarine;
 import com.game.input.Input;
@@ -199,7 +198,7 @@ public class GameScreen/* implements Screen*/ {
   private void applyPush(Entity entity, long x, long y) {
 //        u.changeX(dx);
 //        u.changeY(dy);
-    if (entity.getTags().contains(Tags.UNMOVABLE)) return;
+//    if (entity.getTags().contains(Tags.UNMOVABLE)) return;
     entity.changeX(x);
     entity.changeY(y);
 //        System.out.println(x);

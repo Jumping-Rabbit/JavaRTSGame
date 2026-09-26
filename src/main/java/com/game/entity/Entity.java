@@ -7,7 +7,6 @@ import com.game.utils.NumUtil;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.EnumSet;
 
 public abstract class Entity {
   public static final Comparator<Entity> Y_SNAP_1_COMPARATOR = Comparator.comparingLong(entity -> entity.snapshot1.getYLerp());
@@ -40,7 +39,7 @@ public abstract class Entity {
   
   protected abstract EntityDimension getEntityDimension();
   
-  public abstract EnumSet<Tags> getTags();
+//  public abstract EnumSet<Tags> getTags();
   
   protected ArrayList<Effects> effects;
   
@@ -116,9 +115,9 @@ public abstract class Entity {
   }
   
   public void drawHeathBar(boolean isSnapshot1) {
-    if (getTags().contains(Tags.INVULNERABLE)) {
-      return;
-    }
+//    if (getTags().contains(Tags.INVULNERABLE)) {
+//      return;
+//    }
     
     long maxHp = getEntityStats().maxHp();
     float scale = getEntityDimension().diameter / (NumUtil.LTF(maxHp) / 100f); //the width of each tick

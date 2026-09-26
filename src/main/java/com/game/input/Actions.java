@@ -91,6 +91,7 @@ public enum Actions {
   }
   
   public static void init(LoadingScreen loadingScreen) {
+    boolean modified = false;
     ObjectMapper objectMapper = new ObjectMapper();
     JsonNode root = objectMapper.readTree(new File("resources/keyBinds.json"));
     ObjectNode mutableRoot = (ObjectNode) root;
@@ -100,9 +101,12 @@ public enum Actions {
       } else {
         mutableRoot.put(key.getString(), "none");
         keyMap.put(key, NONE);
+        modified = true;
       }
     }
-    objectMapper.writerWithDefaultPrettyPrinter().writeValue(new File("resources/keyBinds.json"), root);
+    if (modified){
+      objectMapper.writerWithDefaultPrettyPrinter().writeValue(new File("resources/keyBinds.json"), root);
+    }
     loadingScreen.increment();
   }
   
