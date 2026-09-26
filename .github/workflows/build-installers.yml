@@ -1,4 +1,4 @@
-name: Build Native Executables
+name: Build Loose Native Directories
 
 on:
   push:
@@ -6,41 +6,33 @@ on:
 
 jobs:
   build-native:
-    name: Build on ${{ matrix.os }}
+    name: Build Folder for ${{ matrix.os_name }}
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         include:
           - os: windows-latest
-            package_type: exe
-            installer_name: JavaRTSGame-Windows
+            os_name: Windows
             extra_jvm_args: ""
           - os: ubuntu-latest
-            package_type: deb
-            installer_name: JavaRTSGame-Linux
+            os_name: Linux
             extra_jvm_args: ""
           - os: macos-latest
-            package_type: dmg
-            installer_name: JavaRTSGame-macOS
+            os_name: macOS
             extra_jvm_args: "-XstartOnFirstThread"
-
-    runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Java 25
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '25'
           distribution: 'temurin'
           cache: maven
 
-      - name: Install Linux Dependencies (Ubuntu)
-        if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y fakeroot
-
-      - name: Build Fat JAR with Maven
+      - name: Build Fat JAR and Resource Assets via Maven
         run: mvn clean package --batch-mode
 
       - name: Get JAR Name
@@ -50,42 +42,52 @@ jobs:
           JAR_NAME=$(mvn help:evaluate -Dexpression=project.build.finalName -q -DforceStdout)
           echo "jar_name=${JAR_NAME}.jar" >> $GITHUB_OUTPUT
 
-      - name: Stage JAR for jpackage
+      - name: Stage Production Payload
         shell: bash
         run: |
-          # Create an isolated directory so jpackage doesn't bundle the whole target folder
           mkdir -p staging
-          # Copy ONLY the Fat JAR into the staging directory
           cp target/${{ steps.get_jar.outputs.jar_name }} staging/
 
-      - name: Create Native Package (Windows)
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          jpackage `
-            --type ${{ matrix.package_type }} `
-            --input staging `
-            --main-jar ${{ steps.get_jar.outputs.jar_name }} `
-            --main-class com.game.Main `
-            --name JavaRTSGame `
-            --java-options "-XX:+UseZGC -Xms2G -Xmx6G -XX:-ZProactive -XX:-ZUncommit -XX:+UseCompactObjectHeaders --sun-misc-unsafe-memory-access=allow --enable-native-access=ALL-UNNAMED ${{ matrix.extra_jvm_args }}" `
-            --dest dist
-
-      - name: Create Native Package (macOS & Linux)
-        if: runner.os != 'Windows'
+      - name: Generate Core Application Image
         shell: bash
         run: |
           jpackage \
-            --type ${{ matrix.package_type }} \
+            --type app-image \
             --input staging \
             --main-jar ${{ steps.get_jar.outputs.jar_name }} \
             --main-class com.game.Main \
             --name JavaRTSGame \
-            --java-options "-XX:+UseZGC -Xms2G -Xmx6G -XX:-ZProactive -XX:-ZUncommit -XX:+UseCompactObjectHeaders --sun-misc-unsafe-memory-access=allow --enable-native-access=ALL-UNNAMED ${{ matrix.extra_jvm_args }}" \
+            --java-options "-XX:+UseZGC -XX:-ZProactive -XX:-ZUncommit -Xms2G -Xmx6G -XX:+UseCompactObjectHeaders --sun-misc-unsafe-memory-access=allow --enable-native-access=ALL-UNNAMED ${{ matrix.extra_jvm_args }}" \
             --dest dist
 
-      - name: Upload Installer Artifacts
-        uses: actions/upload-artifact@v4
+      - name: Merge Resources Directly Into Output Folder
+        shell: bash
+        run: |
+          if [ "${{ matrix.os }}" = "macos-latest" ]; then
+            cp -r target/resources dist/JavaRTSGame.app/Contents/MacOS/
+          else
+            cp -r target/resources dist/JavaRTSGame/
+          fi
+
+      - name: Stage OS Artifact
+        uses: actions/upload-artifact@v5
         with:
-          name: ${{ matrix.installer_name }}
-          path: dist/
+          name: ${{ matrix.os_name }}
+          path: dist/JavaRTSGame*/
+          retention-days: 1
+
+  merge-platforms:
+    name: Combine OS Builds
+    needs: build-native
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all OS builds
+        uses: actions/download-artifact@v5
+        with:
+          path: JavaRTSGame
+
+      - name: Upload Single Master Folder
+        uses: actions/upload-artifact@v5
+        with:
+          name: JavaRTSGame
+          path: JavaRTSGame/
