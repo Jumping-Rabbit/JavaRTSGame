@@ -75,19 +75,3 @@ jobs:
           name: ${{ matrix.os_name }}
           path: dist/JavaRTSGame*/
           retention-days: 1
-
-  merge-platforms:
-    name: Combine OS Builds
-    needs: build-native
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download all OS builds
-        uses: actions/download-artifact@v5
-        with:
-          path: JavaRTSGame
-
-      - name: Upload Single Master Folder
-        uses: actions/upload-artifact@v5
-        with:
-          name: JavaRTSGame
-          path: JavaRTSGame/
