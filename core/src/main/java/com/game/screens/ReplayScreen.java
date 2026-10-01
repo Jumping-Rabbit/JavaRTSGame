@@ -1,6 +1,7 @@
 package com.game.screens;
 
 import com.game.input.Input;
+import com.game.utils.JsonUtil;
 import com.game.utils.LoggerUtil;
 import org.apache.commons.io.FileUtils;
 import tools.jackson.databind.ObjectMapper;
@@ -19,7 +20,6 @@ import java.util.concurrent.Executors;
 
 public class ReplayScreen {
   private static File file;
-  private static final ObjectMapper objectMapper = new ObjectMapper();
   private static ExecutorService executor;
   private static PrintWriter writer;
   
@@ -53,6 +53,7 @@ public class ReplayScreen {
   }
   
   public static void addTick(ArrayDeque<Input> inputs, long tickNum) {
+    ObjectMapper objectMapper = JsonUtil.objectMapper;
     if (executor == null || executor.isShutdown() || executor.isTerminated()) {
       return;
     }

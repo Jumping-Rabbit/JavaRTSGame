@@ -10,10 +10,7 @@ import com.game.input.Input;
 import com.game.input.InputHandler;
 import com.game.input.InputType;
 import com.game.tile.TileManager;
-import com.game.utils.CollisionUtil;
-import com.game.utils.LoggerUtil;
-import com.game.utils.NumUtil;
-import com.game.utils.PerformanceType;
+import com.game.utils.*;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
@@ -21,7 +18,6 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import oshi.ffm.SystemInfo;
 import oshi.hardware.CentralProcessor;
 import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -58,7 +54,7 @@ public class GameScreen/* implements Screen*/ {
   Int2ObjectOpenHashMap<ObjectArrayList<Entity>> controlGroups = new Int2ObjectOpenHashMap<>();
   
   public GameScreen(File map) {
-    var objectMapper = new ObjectMapper();
+    var objectMapper = JsonUtil.objectMapper;
     JsonNode root = objectMapper.readTree(new File(map.getPath() + "/map.json"));
     JsonNode playersData = root.path("playerData");
     this(map, 0);//(int) StrictMath.floor(StrictMath.random() * playersData.size()));
@@ -101,7 +97,7 @@ public class GameScreen/* implements Screen*/ {
     
     tileManager = new TileManager(map);
     this.map = map;
-    var objectMapper = new ObjectMapper();
+    var objectMapper = JsonUtil.objectMapper;
     JsonNode root = objectMapper.readTree(new File(map.getPath() + "/map.json"));
     JsonNode playersData = root.path("playerData");
     JsonNode playerData = playersData.get(playerNum);
@@ -734,7 +730,7 @@ public class GameScreen/* implements Screen*/ {
       return results;
     }
     
-    private List<CollisionResult> detectSequentially() {//TODO:make units not compress into each other
+    private List<CollisionResult> detectSequentially() {
       List<CollisionResult> results = new ArrayList<>();
       for (int i = start; i < end; i++) {
         long cx1 = xArr[i] + rArr[i];

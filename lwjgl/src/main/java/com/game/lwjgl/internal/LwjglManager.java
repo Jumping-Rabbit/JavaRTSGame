@@ -10,14 +10,15 @@ import com.game.lwjgl.internal.vma.VmaManager;
 import com.game.lwjgl.internal.vulkan.VulkanManager;
 
 public class LwjglManager {
-  private AssimpManager assimpManager;
-  private GlfwManager glfwManager;
-  private KtxManager ktxManager;
-  private OpenAlManager openAlManager;
-  private ShadercManager shadercManager;
-  private StbManager stbManager;
-  private VmaManager vmaManager;
-  private VulkanManager vulkanManager;
+  private final AssimpManager assimpManager;
+  private final GlfwManager glfwManager;
+  private final KtxManager ktxManager;
+  private final OpenAlManager openAlManager;
+  private final ShadercManager shadercManager;
+  private final StbManager stbManager;
+  private final VmaManager vmaManager;
+  private final VulkanManager vulkanManager;
+  
   public LwjglManager(){
     assimpManager = new AssimpManager();
     glfwManager = new GlfwManager();
@@ -32,6 +33,7 @@ public class LwjglManager {
     vulkanManager.cleanup();
     glfwManager.cleanup();
   }
+  
   public AssimpManager getAssimpManager() {
     return assimpManager;
   }

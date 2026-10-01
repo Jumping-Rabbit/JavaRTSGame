@@ -334,7 +334,7 @@ public class GameCore /*extends Game */ {
       logicThread.start();
     });
     loader.start();
-    
+    //cant do start because window polling needs to be on the main thread
     drawThread.run();
 
 //        try {
@@ -366,45 +366,7 @@ public class GameCore /*extends Game */ {
     long startTime = System.nanoTime();
     DrawManager.render();
 
-//        VK14.vkWaitForFences(vkDevice, inFlightFences[currentFrame], true, Long.MAX_VALUE);
-
-//        VK14.vkResetFences(vkDevice, inFlightFences[currentFrame]);
-//        int imageIndex = acquireNextImage();
-
-//        recordCommandBuffer(imageIndex);TODO: replace with drawing in drawUtil and use Vk14 instead of 10;
-//         VkCommandBufferBeginInfo beginInfo = VkCommandBufferBeginInfo.calloc()
-//        .sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO);
-//
-//    VK14.vkBeginCommandBuffer(commandBuffer, beginInfo);
-//
-//    VkRenderingAttachmentInfo colorAttachment = VkRenderingAttachmentInfo.calloc()
-//        .sType(VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO)
-//        .imageView(getSwapchainImageView(imageIndex))
-//        .imageLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
-//        .loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR)
-//        .storeOp(VK_ATTACHMENT_STORE_OP_STORE);
-//
-//    VkRenderingInfo renderingInfo = VkRenderingInfo.calloc()
-//        .sType(VK_STRUCTURE_TYPE_RENDERING_INFO)
-//        .renderArea(rect -> rect.offset(o -> o.x(0).y(0)).extent(e -> e.width(800).height(600)))
-//        .layerCount(1)
-//        .pColorAttachments(VkRenderingAttachmentInfo.create(colorAttachment.address(), 1));
-//
-//    vkCmdBeginRendering(commandBuffer, renderingInfo);
-//
-//    // draw command
-//
-
-//    vkCmdEndRendering(commandBuffer);
-//
-//    VK14.vkEndCommandBuffer(commandBuffer);
-
-
-//        VkSubmitInfo submitInfo = VkSubmitInfo.calloc();
-//        VK14.vkQueueSubmit(graphicsQueue, submitInfo, inFlightFences[currentFrame]);
-//        KHRSwapchain.vkQueuePresentKHR(presentQueue, presentInfo);
-//        currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
-//        DrawUtil.startRender2D();
+//       DrawUtil.startRender2D();
 //        DrawUtil.setFactor((System.nanoTime() - lastTickTime.get()) / 50000000f);
 //        System.out.println(DrawUtil.getFactor());
 //        DrawUtil.setGC(gc);
@@ -463,7 +425,7 @@ public class GameCore /*extends Game */ {
     public void run() {
       long targetFrameInterval = 50_000_000L; // 20 TPS
       long targetTime = System.nanoTime() + targetFrameInterval;
-      while (!lwjglApi.shouldClose()) {
+      while (lwjglApi.shouldClose()) {
         long currentTime = System.nanoTime();
         
         if (currentTime >= targetTime) {
@@ -499,7 +461,7 @@ public class GameCore /*extends Game */ {
       int targetFPS = 720;
       long currentTime;
       long targetFrameInterval = 0;
-      while (!lwjglApi.shouldClose()) {
+      while (lwjglApi.shouldClose()) {
 //                targetFPS = settingsManager.getTargetFPS();
         currentTime = System.nanoTime();
         if (targetFPS > 0) {

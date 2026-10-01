@@ -5,6 +5,7 @@ import com.game.screens.LoadingScreen;
 import com.game.settings.settingsEnums.DisplayModes;
 import com.game.settings.settingsEnums.GraphicsQuality;
 import com.game.settings.settingsEnums.SettingsEnums;
+import com.game.utils.JsonUtil;
 import com.game.utils.LoggerUtil;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import tools.jackson.core.JacksonException;
@@ -60,7 +61,7 @@ public class SettingsManager {
   }
   
   public static void loadSettings() {
-    ObjectMapper objectMapper = new ObjectMapper();
+    ObjectMapper objectMapper = JsonUtil.objectMapper;
     File file = new File("resources/settings.json");
     
     if (!file.exists()) {
@@ -122,7 +123,7 @@ public class SettingsManager {
   
   private static void writeSetting(Settings setting) {
     File file = new File("resources/settings.json");
-    ObjectMapper objectMapper = new ObjectMapper();
+    ObjectMapper objectMapper = JsonUtil.objectMapper;
     ObjectNode root;
     
     try {

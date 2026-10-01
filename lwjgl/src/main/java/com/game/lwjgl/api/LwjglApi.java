@@ -18,9 +18,8 @@ public class LwjglApi {
   }
   
   public boolean shouldClose() {
-    return lwjglManager.getGlfwManager().shouldClose();
+    return !lwjglManager.getGlfwManager().shouldClose();
   }
-  
   
   public long getWindowHandle() {
     return lwjglManager.getGlfwManager().getWindowHandle();

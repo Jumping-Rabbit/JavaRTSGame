@@ -1,5 +1,6 @@
 package com.game.settings;
 
+import com.game.utils.JsonUtil;
 import com.game.utils.LoggerUtil;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -9,7 +10,7 @@ import java.io.File;
 
 public class SettingsStorage {
   protected static void writeSettings(String directory, String key, Object value) {
-    var objectMapper = new ObjectMapper();
+    ObjectMapper objectMapper = JsonUtil.objectMapper;
     JsonNode root = objectMapper.readTree(new File("resources/settings.json"));
     JsonNode setting = root.path(directory);
     ObjectNode objectNode = (ObjectNode) setting;

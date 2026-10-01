@@ -2,6 +2,7 @@ package com.game.input;
 
 import com.game.Init;
 import com.game.screens.LoadingScreen;
+import com.game.utils.JsonUtil;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ObjectNode;
@@ -92,7 +93,7 @@ public enum Actions {
   
   public static void init(LoadingScreen loadingScreen) {
     boolean modified = false;
-    ObjectMapper objectMapper = new ObjectMapper();
+    ObjectMapper objectMapper = JsonUtil.objectMapper;
     JsonNode root = objectMapper.readTree(new File("resources/keyBinds.json"));
     ObjectNode mutableRoot = (ObjectNode) root;
     for (Keys key : Keys.values()) {
