@@ -1,12 +1,11 @@
 package com.game.lwjgl.internal.vulkan.pipeline;
 
-class VulkanShaderc {
+public class VulkanComputePipeline {
   private final VulkanPipelineManager vulkanPipelineManager;
-  
-  VulkanShaderc(VulkanPipelineManager vulkanPipelineManager){
+  VulkanComputePipeline(VulkanPipelineManager vulkanPipelineManager){
     this.vulkanPipelineManager = vulkanPipelineManager;
   }
-  void compile(){
+  public void cleanup(){
   
   }
 }

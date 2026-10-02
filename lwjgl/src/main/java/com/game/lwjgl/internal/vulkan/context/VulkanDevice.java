@@ -8,7 +8,7 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 class VulkanDevice {
-  private VulkanContextManager vulkanContextManager;
+  private final VulkanContextManager vulkanContextManager;
   
   private VkPhysicalDevice[] vkPhysicalDevices;
   private VkDevice vkDevice;

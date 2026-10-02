@@ -8,7 +8,7 @@ import java.nio.ByteBuffer;
 import java.nio.LongBuffer;
 
 class VulkanPipeline {
-  private VulkanPipelineManager vulkanPipelineManager;
+  private final VulkanPipelineManager vulkanPipelineManager;
   private Object2LongOpenHashMap<PipelineTypes> vulkanPipelines;
   
   VulkanPipeline(VulkanPipelineManager vulkanPipelineManager){

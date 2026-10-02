@@ -7,7 +7,7 @@ import org.lwjgl.vulkan.VkInstance;
 import org.lwjgl.vulkan.VkInstanceCreateInfo;
 
 class VulkanInstance {
-  private VulkanContextManager vulkanContextManager;
+  private final VulkanContextManager vulkanContextManager;
   private VkInstance vkInstance;
   VulkanInstance(VulkanContextManager vulkanContextManager){
     this.vulkanContextManager = vulkanContextManager;

@@ -12,6 +12,7 @@
     <modules>
         <module>lwjgl</module>
         <module>core</module>
+        <module>utils</module>
 
     </modules>
 
