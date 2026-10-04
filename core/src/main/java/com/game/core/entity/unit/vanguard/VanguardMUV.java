@@ -1,0 +1,73 @@
+package com.game.core.entity.unit.vanguard;
+
+import com.game.core.Init;
+import com.game.core.entity.*;
+import com.game.core.entity.unit.Unit;
+import com.game.core.entity.unit.UnitState;
+import com.game.core.entity.unit.UnitStats;
+import com.game.core.screens.LoadingScreen;
+import com.game.core.input.InputType;
+import com.game.core.utils.NumUtil;
+
+import java.util.ArrayList;
+
+import static com.game.core.utils.NumUtil.FTL;
+
+@Init(stage = 2)
+public class VanguardMUV extends Unit {
+//  private static Models model;
+  private static long maxHp;
+  private static EntityDimension entityDimension;
+//  private static EnumSet<Tags> tags;
+  private static UnitStats unitStats;
+  private static EntityStats entityStats;
+  
+  @Override
+  protected UnitStats getUnitStats() {
+    return unitStats;
+  }
+  
+  @Override
+  protected EntityStats getEntityStats() {
+    return entityStats;
+  }
+  
+//  @Override
+//  public EnumSet<Tags> getTags() {
+//    return tags;
+//  }
+  
+  @Override
+  protected EntityDimension getEntityDimension() {
+    return entityDimension;
+  }
+  
+//  @Override
+//  public Models getModel() {
+//    return model;
+//  }
+  
+  public VanguardMUV(long x, long y, PlayerColor player) {
+    super(player/*, Models.getModelInstance(Models.vanguardMUV)*/, new EntityPosition(x, y, 0, 0));
+    
+//    tags = EnumSet.of(Tags.UNARMORED, Tags.MECHANICAL, Tags.MELEE);
+    hp = NumUtil.FTL((float) (Math.random() * 40));
+    ticksUntilAttack = 4;
+    effects = new ArrayList<>();
+    unitState = UnitState.IDLE;
+  }
+  
+  
+  public static void init(LoadingScreen loadingScreen) {
+    hasCollision = true;
+    validCommandTypes = new ArrayList<>();
+    validCommandTypes.add(InputType.RIGHT_CLICK);
+    
+//    model = Models.vanguardMUV;
+    entityDimension = new EntityDimension(10, 10, 6);
+    unitStats = new UnitStats(FTL(10), FTL(100), FTL(0.5f), FTL(4));
+    entityStats = new EntityStats(FTL(50), FTL(0));
+    loadingScreen.increment();
+  }
+  
+}

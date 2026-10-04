@@ -6,7 +6,7 @@
       <env name="MVK_CONFIG_LOG_LEVEL" value="3" />
       <env name="MTL_SHADER_VALIDATION" value="1" />
     </envs>
-    <option name="MAIN_CLASS_NAME" value="com.game.Main" />
+    <option name="MAIN_CLASS_NAME" value="com.game.core.Main" />
     <module name="core" />
     <option name="PROGRAM_PARAMETERS" value="-Xmaxerrs 1000 -Xmaxwarns 1000" />
     <option name="VM_PARAMETERS" value="-XX:+PrintCommandLineFlags -XX:+UseZGC -Xms2G -Xmx6G -XX:-OmitStackTraceInFastThrow -XX:-ZProactive -XX:-ZUncommit -XX:+UseCompactObjectHeaders -XstartOnFirstThread -Xlog:gc*:file=gc.log:time,uptime:filecount=5,filesize=10M --sun-misc-unsafe-memory-access=allow --enable-native-access=org.lwjgl,com.github.oshi.ffm" />

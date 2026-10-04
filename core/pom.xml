@@ -28,20 +28,17 @@
         </dependency>
 
         <dependency>
-            <groupId>com.github.oshi</groupId>
-            <artifactId>oshi-core-ffm</artifactId>
-            <version>7.6.1</version>
-        </dependency>
-        <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>2.21.0</version>
         </dependency>
+
         <dependency>
             <groupId>org.reflections</groupId>
             <artifactId>reflections</artifactId>
             <version>0.10.2</version>
         </dependency>
+
         <dependency>
             <groupId>org.tinylog</groupId>
             <artifactId>tinylog-api</artifactId>

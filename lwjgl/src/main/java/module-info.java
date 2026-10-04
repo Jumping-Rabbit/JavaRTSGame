@@ -1,5 +1,5 @@
 module com.game.lwjgl{
-  exports com.game.lwjgl.api;
+  exports com.game.lwjgl;
   
   requires org.lwjgl.assimp;
   requires org.lwjgl.glfw;
@@ -11,4 +11,5 @@ module com.game.lwjgl{
   requires org.lwjgl.vulkan;
   requires org.lwjgl;
   requires it.unimi.dsi.fastutil;
+  requires com.github.oshi.ffm;
 }
