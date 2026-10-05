@@ -11,9 +11,6 @@ class VulkanPipeline {
   private VulkanPipeline(){}
 
   static void makePipelines(LwjglData lwjglData){
-    for (Shaders s : Shaders.values()) {
-      System.out.println(s + " -> " + lwjglData.shadersToLongHandle.getLong(s));
-    }
     long pipelineLayout = make2DPipelineLayout(lwjglData);
     for (PipelineTypes pipelineType : PipelineTypes.values()){
       lwjglData.vulkanPipelines.put(pipelineType, createGraphicsPipeline(
@@ -21,7 +18,7 @@ class VulkanPipeline {
           lwjglData.shadersToLongHandle.getLong(pipelineType.getVert()),
           lwjglData.shadersToLongHandle.getLong(pipelineType.getFrag()),
           pipelineLayout,
-          pipelineType.getColorFormat(),
+          lwjglData.swapchainImageFormat,
           pipelineType.getDepthFormat()
       ));
     }
@@ -38,7 +35,9 @@ class VulkanPipeline {
   
   private static long make2DPipelineLayout(LwjglData lwjglData){
     try (MemoryStack stack = MemoryStack.stackPush()) {
-      LongBuffer pSetLayouts = stack.longs(VulkanDescriptors.create2DDescriptorSetLayout(lwjglData));
+      lwjglData.descriptorSetLayout2D = VulkanDescriptors.create2DDescriptorSetLayout(lwjglData);
+      LongBuffer pSetLayouts = stack.longs(lwjglData.descriptorSetLayout2D);
+      
       VkPushConstantRange.Buffer pPushConstantRanges = VkPushConstantRange.calloc(1, stack)
           .stageFlags(VK14.VK_SHADER_STAGE_VERTEX_BIT)
           .offset(0)
@@ -51,11 +50,11 @@ class VulkanPipeline {
       
       long[] pPipelineLayout = new long[1];
       if (VK14.vkCreatePipelineLayout(lwjglData.vkDevice, layoutInfo, null, pPipelineLayout) != VK14.VK_SUCCESS) {
-        throw new RuntimeException("Failed to create pipeline layout!");
+        throw new RuntimeException("Failed to create pipeline layout");
       }
+      lwjglData.pipelineLayout2D =  pPipelineLayout[0];
       return pPipelineLayout[0];
     }
-    
     
     
   }
@@ -71,7 +70,7 @@ class VulkanPipeline {
       
       long[] pPipelineLayout = new long[1];
       if (VK14.vkCreatePipelineLayout(lwjglData.vkDevice, layoutInfo, null, pPipelineLayout) != VK14.VK_SUCCESS) {
-        throw new RuntimeException("Failed to create pipeline layout!");
+        throw new RuntimeException("Failed to create pipeline layout");
       }
       return pPipelineLayout[0];
     }
@@ -117,7 +116,7 @@ class VulkanPipeline {
       
       VkPipelineInputAssemblyStateCreateInfo inputAssembly = VkPipelineInputAssemblyStateCreateInfo.calloc(stack)
           .sType$Default()
-          .topology(VK14.VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+          .topology(VK14.VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP);
       
       VkPipelineViewportStateCreateInfo viewportState = VkPipelineViewportStateCreateInfo.calloc(stack)
           .sType$Default()
@@ -153,6 +152,7 @@ class VulkanPipeline {
           .sType$Default()
           .pColorAttachmentFormats(stack.ints(colorAttachmentFormat))
           .depthAttachmentFormat(depthAttachmentFormat);
+      
       VkVertexInputBindingDescription.Buffer bindings = VkVertexInputBindingDescription.calloc(1, stack);
       bindings.get(0).binding(0).stride(40).inputRate(VK14.VK_VERTEX_INPUT_RATE_INSTANCE);
       
@@ -196,7 +196,7 @@ class VulkanPipeline {
       int result = VK14.vkCreateGraphicsPipelines(device, VK14.VK_NULL_HANDLE, pipelineInfo, null, pPipeline);
 
       if (result != VK14.VK_SUCCESS) {
-        throw new RuntimeException("Failed to create graphics pipeline! Error code: " + result);
+        throw new RuntimeException("Failed to create graphics pipeline " + result);
       }
       
       return pPipeline.get(0);

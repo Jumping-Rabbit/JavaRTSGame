@@ -25,7 +25,7 @@ class VulkanDevice {
       int deviceCount = pDeviceCount.get(0);
       
       if (deviceCount == 0) {
-        throw new IllegalStateException("Failed to find GPUs with Vulkan support!");
+        throw new IllegalStateException("Failed to find GPUs with Vulkan support");
       }
       
       PointerBuffer pPhysicalDevices = stack.mallocPointer(deviceCount);
@@ -57,10 +57,14 @@ class VulkanDevice {
           .sType(VK14.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES)
           .dynamicRendering(true);
       
+      PointerBuffer deviceExtensions = stack.mallocPointer(1);
+      deviceExtensions.put(0, stack.UTF8(KHRSwapchain.VK_KHR_SWAPCHAIN_EXTENSION_NAME));
+      
       VkDeviceCreateInfo createInfo = VkDeviceCreateInfo.calloc(stack)
           .sType(VK14.VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO)
           .pNext(vk13Features)
           .pQueueCreateInfos(queueCreateInfo)
+          .ppEnabledExtensionNames(deviceExtensions)
           .pEnabledFeatures(deviceFeatures);
       
       PointerBuffer pDevice = stack.pointers(VK14.VK_NULL_HANDLE);
@@ -68,7 +72,7 @@ class VulkanDevice {
       int result = VK14.vkCreateDevice(lwjglData.vkPhysicalDevice, createInfo, null, pDevice);
       
       if (result != VK14.VK_SUCCESS) {
-        throw new RuntimeException("Failed to create logical device! Error code: " + result);
+        throw new RuntimeException("Failed to create logical device. " + result);
       }
       
       lwjglData.vkDevice = new VkDevice(pDevice.get(0), lwjglData.vkPhysicalDevice, createInfo);
@@ -76,24 +80,42 @@ class VulkanDevice {
   }
   static void findGraphicsQueueFamilyIndex(LwjglData lwjglData){
     try (MemoryStack stack = MemoryStack.stackPush()) {
-      IntBuffer pQueueFamilyPropertyCount = stack.mallocInt(1);
+      IntBuffer queueFamilyCount = stack.mallocInt(1);
+      VK14.vkGetPhysicalDeviceQueueFamilyProperties(lwjglData.vkPhysicalDevice, queueFamilyCount, null);
       
-      VK14.vkGetPhysicalDeviceQueueFamilyProperties(lwjglData.vkPhysicalDevice, pQueueFamilyPropertyCount, null);
-      int queueCount = pQueueFamilyPropertyCount.get(0);
+      VkQueueFamilyProperties.Buffer queueFamilies = VkQueueFamilyProperties.malloc(queueFamilyCount.get(0), stack);
+      VK14.vkGetPhysicalDeviceQueueFamilyProperties(lwjglData.vkPhysicalDevice, queueFamilyCount, queueFamilies);
       
-      VkQueueFamilyProperties.Buffer queueProps = VkQueueFamilyProperties.calloc(queueCount, stack);
+      IntBuffer presentSupport = stack.mallocInt(1);
       
-      VK14.vkGetPhysicalDeviceQueueFamilyProperties(lwjglData.vkPhysicalDevice, pQueueFamilyPropertyCount, queueProps);
-      
-      for (int i = 0; i < queueCount; i++) {
-        int queueFlags = queueProps.get(i).queueFlags();
-        if ((queueFlags & VK14.VK_QUEUE_GRAPHICS_BIT) != 0) {
+      for (int i = 0; i < queueFamilies.capacity(); i++) {
+        if ((queueFamilies.get(i).queueFlags() & VK14.VK_QUEUE_GRAPHICS_BIT) != 0) {
           lwjglData.graphicsQueueFamilyIndex = i;
-          return;
+        }
+        
+        KHRSurface.vkGetPhysicalDeviceSurfaceSupportKHR(
+            lwjglData.vkPhysicalDevice, i, lwjglData.surface, presentSupport
+        );
+        if (presentSupport.get(0) == VK14.VK_TRUE) {
+          lwjglData.presentQueueFamilyIndex = i;
+        }
+        
+        if (lwjglData.graphicsQueueFamilyIndex != -1 && lwjglData.presentQueueFamilyIndex != -1) {
+          break;
         }
       }
+    }
+  }
+  
+  static void getQueues(LwjglData lwjglData){
+    try (MemoryStack stack = MemoryStack.stackPush()) {
+      PointerBuffer pQueue = stack.mallocPointer(1);
       
-      throw new RuntimeException("Failed to find a queue family that supports graphics.");
+      VK14.vkGetDeviceQueue(lwjglData.vkDevice, lwjglData.graphicsQueueFamilyIndex, 0, pQueue);
+      lwjglData.graphicsQueue = new VkQueue(pQueue.get(0), lwjglData.vkDevice);
+      
+      VK14.vkGetDeviceQueue(lwjglData.vkDevice, lwjglData.presentQueueFamilyIndex, 0, pQueue);
+      lwjglData.presentQueue = new VkQueue(pQueue.get(0), lwjglData.vkDevice);
     }
   }
   

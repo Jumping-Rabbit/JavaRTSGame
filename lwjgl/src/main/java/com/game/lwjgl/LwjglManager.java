@@ -13,10 +13,25 @@ public class LwjglManager {
     VulkanInstance.makeVkInstance(lwjglData);
     VulkanDevice.getAllPhysicalDevices(lwjglData);
     VulkanDevice.chooseVkPhysicalDevice(lwjglData);
+    GlfwWindow.createSurface(lwjglData);
     VulkanDevice.findGraphicsQueueFamilyIndex(lwjglData);
     VulkanDevice.makeVkDevice(lwjglData);
+    VulkanDevice.getQueues(lwjglData);
     LwjglShaderc.compileShaders(lwjglData);
+    
+    
+    VulkanSwapchain.makeSwapChain(lwjglData);
+    VulkanSwapchain.getSwapchainImages(lwjglData);
+    VulkanSwapchain.makeImageViews(lwjglData);
     VulkanPipeline.makePipelines(lwjglData);
+    VulkanSync.makeSync(lwjglData);
+    VulkanCommandPool.makeCommandBuffer(lwjglData);
+    VulkanBuffers.makeVertexBuffer(lwjglData);
+    VulkanImage.makeWhiteTexture(lwjglData);
+    VulkanDescriptors.makeDescriptorSet(lwjglData);
+  }
+  public void render(){
+    VulkanRender.drawFrame(lwjglData);
   }
   
   public void pollEvents(){

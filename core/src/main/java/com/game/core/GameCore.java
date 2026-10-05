@@ -402,6 +402,7 @@ public class GameCore /*extends Game */ {
 //        DrawUtil.fillText("BGM: " + SoundManager.getBgmName(), 1915, 1050, Fonts.DEFAULT, 10, StringAlignment.TOP_RIGHT, 0xFFFFFFFF);
 //        DrawUtil.stopRender();
 //        fpsLogger.log();
+    lwjglManager.render();
     performanceStorage.addDrawTimeUsed(startTime);
   }
   

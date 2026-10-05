@@ -1,9 +1,9 @@
 package com.game.lwjgl;
 
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.vulkan.VK14;
-import org.lwjgl.vulkan.VkDescriptorSetLayoutBinding;
-import org.lwjgl.vulkan.VkDescriptorSetLayoutCreateInfo;
+import org.lwjgl.vulkan.*;
+
+import java.nio.LongBuffer;
 
 class VulkanDescriptors {
   private VulkanDescriptors(){}
@@ -66,6 +66,45 @@ class VulkanDescriptors {
       if (VK14.vkCreateDescriptorSetLayout(lwjglData.vkDevice, info, null, out) != VK14.VK_SUCCESS)
         throw new RuntimeException("Failed to create 2D descriptor set layout");
       return out[0];
+    }
+  }
+  static void makeDescriptorSet(LwjglData lwjglData) {
+    try (MemoryStack stack = MemoryStack.stackPush()) {
+      VkDescriptorPoolSize.Buffer poolSize = VkDescriptorPoolSize.calloc(1, stack)
+          .type(VK14.VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
+          .descriptorCount(1);
+      VkDescriptorPoolCreateInfo poolInfo = VkDescriptorPoolCreateInfo.calloc(stack)
+          .sType$Default()
+          .pPoolSizes(poolSize)
+          .maxSets(1);
+      LongBuffer pPool = stack.mallocLong(1);
+      if (VK14.vkCreateDescriptorPool(lwjglData.vkDevice, poolInfo, null, pPool) != VK14.VK_SUCCESS) {
+        throw new RuntimeException("Failed to create descriptor pool");
+      }
+      lwjglData.descriptorPool = pPool.get(0);
+      
+      VkDescriptorSetAllocateInfo allocInfo = VkDescriptorSetAllocateInfo.calloc(stack)
+          .sType$Default()
+          .descriptorPool(lwjglData.descriptorPool)
+          .pSetLayouts(stack.longs(lwjglData.descriptorSetLayout2D));
+      LongBuffer pSet = stack.mallocLong(1);
+      if (VK14.vkAllocateDescriptorSets(lwjglData.vkDevice, allocInfo, pSet) != VK14.VK_SUCCESS) {
+        throw new RuntimeException("Failed to allocate descriptor set");
+      }
+      lwjglData.descriptorSet = pSet.get(0);
+      
+      VkDescriptorImageInfo.Buffer imageInfo = VkDescriptorImageInfo.calloc(1, stack)
+          .imageLayout(VK14.VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+          .imageView(lwjglData.textureView)
+          .sampler(lwjglData.textureSampler);
+      VkWriteDescriptorSet.Buffer write = VkWriteDescriptorSet.calloc(1, stack)
+          .sType$Default()
+          .dstSet(lwjglData.descriptorSet)
+          .dstBinding(0)
+          .descriptorType(VK14.VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
+          .descriptorCount(1)
+          .pImageInfo(imageInfo);
+      VK14.vkUpdateDescriptorSets(lwjglData.vkDevice, write, null);
     }
   }
 }

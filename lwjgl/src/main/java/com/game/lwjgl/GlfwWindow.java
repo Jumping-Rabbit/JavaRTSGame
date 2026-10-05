@@ -4,7 +4,11 @@ import org.lwjgl.glfw.Callbacks;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.glfw.GLFWVulkan;
+import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
+import org.lwjgl.vulkan.VK14;
+
+import java.nio.LongBuffer;
 
 class GlfwWindow {
   
@@ -41,8 +45,30 @@ class GlfwWindow {
       lwjglData.windowWidth = w;
       lwjglData.windowHeight = h;
     });
+    try (MemoryStack stack = MemoryStack.stackPush()) {
+      java.nio.IntBuffer fbW = stack.mallocInt(1), fbH = stack.mallocInt(1);
+      GLFW.glfwGetFramebufferSize(windowHandle, fbW, fbH);
+      lwjglData.windowWidth = fbW.get(0);
+      lwjglData.windowHeight = fbH.get(0);
+      lwjglData.framebufferResized = true;
+    }
     lwjglData.vidMode = vidMode;
     lwjglData.windowHandle = windowHandle;
+    lwjglData.requiredExtensions = GLFWVulkan.glfwGetRequiredInstanceExtensions();
+  }
+  
+  static void createSurface(LwjglData lwjglData){
+    try (MemoryStack stack = MemoryStack.stackPush()) {
+      LongBuffer pSurface = stack.longs(VK14.VK_NULL_HANDLE);
+      
+      int result = GLFWVulkan.glfwCreateWindowSurface(lwjglData.vkInstance, lwjglData.windowHandle, null, pSurface);
+      
+      if (result != VK14.VK_SUCCESS) {
+        throw new RuntimeException("Failed to create window surface. " + result);
+      }
+      
+      lwjglData.surface = pSurface.get(0);
+    }
   }
   
   

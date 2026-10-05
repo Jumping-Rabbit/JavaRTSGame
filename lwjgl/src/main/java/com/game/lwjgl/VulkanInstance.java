@@ -19,7 +19,8 @@ class VulkanInstance {
       
       VkInstanceCreateInfo createInfo = VkInstanceCreateInfo.calloc(stack)
           .sType(VK14.VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO)
-          .pApplicationInfo(appInfo);
+          .pApplicationInfo(appInfo)
+          .ppEnabledExtensionNames(lwjglData.requiredExtensions);
       
       PointerBuffer pInstance = stack.mallocPointer(1);
       
