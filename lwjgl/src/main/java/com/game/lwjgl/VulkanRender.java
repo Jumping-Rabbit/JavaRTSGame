@@ -15,7 +15,7 @@ class VulkanRender {
       if (lwjglData.swapchainWidth == 0 || lwjglData.swapchainHeight == 0) return;
       
       VK14.vkWaitForFences(lwjglData.vkDevice, lwjglData.inFlightFences[lwjglData.currentFrame], true, Long.MAX_VALUE);
-
+      
       IntBuffer pImageIndex = stack.mallocInt(1);
       int result = KHRSwapchain.vkAcquireNextImageKHR(
           lwjglData.vkDevice,
@@ -25,24 +25,24 @@ class VulkanRender {
           VK14.VK_NULL_HANDLE,
           pImageIndex
       );
-
+      
       if (result == KHRSwapchain.VK_ERROR_OUT_OF_DATE_KHR) {
         VulkanSwapchain.recreate(lwjglData);
         return;
       }
-
+      
       int imageIndex = pImageIndex.get(0);
-
+      
       VK14.vkResetFences(lwjglData.vkDevice, lwjglData.inFlightFences[lwjglData.currentFrame]);
-
+      
       VkCommandBuffer cmd = lwjglData.commandBuffers[lwjglData.currentFrame];
       VK14.vkResetCommandBuffer(cmd, 0);
-
+      
       VkCommandBufferBeginInfo beginInfo = VkCommandBufferBeginInfo.calloc(stack)
           .sType(VK14.VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO);
-
+      
       VK14.vkBeginCommandBuffer(cmd, beginInfo);
-
+      
       transitionImageLayout(
           cmd,
           lwjglData.swapchainImages[imageIndex],
@@ -50,10 +50,10 @@ class VulkanRender {
           VK14.VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
           stack
       );
-
+      
       VkClearValue clearColor = VkClearValue.calloc(stack);
       clearColor.color().float32(stack.floats(0.0f, 0.0f, 0.1f, 1.0f));
-
+      
       VkRenderingAttachmentInfo.Buffer colorAttachment = VkRenderingAttachmentInfo.calloc(1, stack)
           .sType(VK14.VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO)
           .imageView(lwjglData.swapchainImageViews[imageIndex])
@@ -61,15 +61,15 @@ class VulkanRender {
           .loadOp(VK14.VK_ATTACHMENT_LOAD_OP_CLEAR)
           .storeOp(VK14.VK_ATTACHMENT_STORE_OP_STORE)
           .clearValue(clearColor);
-
+      
       VkRenderingInfo renderingInfo = VkRenderingInfo.calloc(stack)
           .sType(VK14.VK_STRUCTURE_TYPE_RENDERING_INFO)
           .renderArea(r -> r.extent(e -> e.set(lwjglData.swapchainWidth, lwjglData.swapchainHeight)))
           .layerCount(1)
           .pColorAttachments(colorAttachment);
-
+      
       VK14.vkCmdBeginRendering(cmd, renderingInfo);
-
+      
       VK14.vkCmdBindPipeline(cmd, VK14.VK_PIPELINE_BIND_POINT_GRAPHICS, lwjglData.vulkanPipelines.getLong(PipelineTypes.TWO_D));
       
       VK14.vkCmdBindDescriptorSets(cmd, VK14.VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -92,7 +92,7 @@ class VulkanRender {
             .minDepth(0.0f)
             .maxDepth(1.0f);
         VK14.vkCmdSetViewport(cmd, 0, viewport);
-
+        
         VkRect2D.Buffer scissor = VkRect2D.calloc(1, innerStack)
             .offset(o -> o.set(0, 0))
             .extent(e -> e.set(lwjglData.swapchainWidth, lwjglData.swapchainHeight));
@@ -100,9 +100,9 @@ class VulkanRender {
       }
       VK14.vkCmdDraw(cmd, 4, 1, 0, 0);
 //      VK14.vkCmdBindVertexBuffers(cmd, 0, stack.longs(vertexBuffer), stack.longs(0));//TODO: make a buffer ig
-
+      
       VK14.vkCmdEndRendering(cmd);
-
+      
       transitionImageLayout(
           cmd,
           lwjglData.swapchainImages[imageIndex],
@@ -110,9 +110,9 @@ class VulkanRender {
           KHRSwapchain.VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
           stack
       );
-
+      
       VK14.vkEndCommandBuffer(cmd);
-
+      
       VkSubmitInfo submitInfo = VkSubmitInfo.calloc(stack)
           .sType(VK14.VK_STRUCTURE_TYPE_SUBMIT_INFO)
           .waitSemaphoreCount(1)
@@ -120,17 +120,20 @@ class VulkanRender {
           .pWaitDstStageMask(stack.ints(VK14.VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT))
           .pCommandBuffers(stack.pointers(cmd))
           .pSignalSemaphores(stack.longs(lwjglData.renderFinishedSemaphores[lwjglData.currentFrame]));
-
+      
       VK14.vkQueueSubmit(lwjglData.graphicsQueue, submitInfo, lwjglData.inFlightFences[lwjglData.currentFrame]);
-
+      
       VkPresentInfoKHR presentInfo = VkPresentInfoKHR.calloc(stack)
           .sType(KHRSwapchain.VK_STRUCTURE_TYPE_PRESENT_INFO_KHR)
           .pWaitSemaphores(stack.longs(lwjglData.renderFinishedSemaphores[lwjglData.currentFrame]))
           .swapchainCount(1)
           .pSwapchains(stack.longs(lwjglData.swapchain))
           .pImageIndices(pImageIndex);
-
-      KHRSwapchain.vkQueuePresentKHR(lwjglData.presentQueue, presentInfo);
+      
+      int presentResult = KHRSwapchain.vkQueuePresentKHR(lwjglData.presentQueue, presentInfo);
+      if (presentResult == KHRSwapchain.VK_ERROR_OUT_OF_DATE_KHR || presentResult == KHRSwapchain.VK_SUBOPTIMAL_KHR) {
+        lwjglData.framebufferResized = true;
+      }
     }
   }
   

@@ -8,9 +8,11 @@ import org.lwjgl.vulkan.VkInstance;
 import org.lwjgl.vulkan.VkInstanceCreateInfo;
 
 class VulkanInstance {
-
-  private VulkanInstance(){}
-  static void makeVkInstance(LwjglData lwjglData){
+  
+  private VulkanInstance() {
+  }
+  
+  static void makeVkInstance(LwjglData lwjglData) {
     try (MemoryStack stack = MemoryStack.stackPush()) {
       VkApplicationInfo appInfo = VkApplicationInfo.calloc(stack)
           .sType(VK14.VK_STRUCTURE_TYPE_APPLICATION_INFO)
@@ -34,7 +36,7 @@ class VulkanInstance {
     }
   }
   
-  void cleanup(LwjglData lwjglData){
+  static void cleanupInstance(LwjglData lwjglData) {
     VK14.vkDestroyInstance(lwjglData.vkInstance, null);
   }
 }

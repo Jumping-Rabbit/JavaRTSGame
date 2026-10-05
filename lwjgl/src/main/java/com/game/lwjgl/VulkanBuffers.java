@@ -74,4 +74,9 @@ class VulkanBuffers {
       lwjglData.vertexBufferMemory = vb[1];
     }
   }
+  
+  static void cleanupBuffers(LwjglData lwjglData){
+    VK14.vkDestroyBuffer(lwjglData.vkDevice, lwjglData.vertexBuffer, null);
+    VK14.vkFreeMemory(lwjglData.vkDevice, lwjglData.vertexBufferMemory, null);
+  }
 }

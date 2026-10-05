@@ -19,10 +19,8 @@ enum Shaders {
     this.name = name;
     this.type = type;
   }
-  String getName(){
-    return name;
-  }
-  static Shaders fromValue(String value){
+  
+  static Shaders fromValue(String value) {
     for (Shaders shader : values()) {
       if (shader.name.equalsIgnoreCase(value)) {
         return shader;
@@ -30,12 +28,17 @@ enum Shaders {
     }
     throw new IllegalArgumentException("Unknown shader file: " + value);
   }
+  
   static String readShader(Shaders shader) throws IOException {
     String path = "/shaders/" + shader.name;
     try (InputStream in = LwjglManager.class.getResourceAsStream(path)) {
       if (in == null) throw new FileNotFoundException("Missing shader resource: " + path);
       return new String(in.readAllBytes(), StandardCharsets.UTF_8);
     }
+  }
+  
+  String getName() {
+    return name;
   }
   
   public int getType() {

@@ -6,17 +6,18 @@ import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.glfw.GLFWVulkan;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
+import org.lwjgl.vulkan.KHRSurface;
 import org.lwjgl.vulkan.VK14;
 
 import java.nio.LongBuffer;
 
 class GlfwWindow {
   
-
   
-  private GlfwWindow() {}
+  private GlfwWindow() {
+  }
   
-  static void makeWindow(LwjglData lwjglData){
+  static void makeWindow(LwjglData lwjglData) {
     if (!GLFW.glfwInit()) {
       throw new RuntimeException("Unable to initialize GLFW");
     }
@@ -44,12 +45,13 @@ class GlfwWindow {
     GLFW.glfwSetFramebufferSizeCallback(windowHandle, (window, w, h) -> {
       lwjglData.windowWidth = w;
       lwjglData.windowHeight = h;
+      lwjglData.framebufferResized = true;
     });
     try (MemoryStack stack = MemoryStack.stackPush()) {
-      java.nio.IntBuffer fbW = stack.mallocInt(1), fbH = stack.mallocInt(1);
-      GLFW.glfwGetFramebufferSize(windowHandle, fbW, fbH);
-      lwjglData.windowWidth = fbW.get(0);
-      lwjglData.windowHeight = fbH.get(0);
+      java.nio.IntBuffer frameBufferWidth = stack.mallocInt(1), frameBufferHeight = stack.mallocInt(1);
+      GLFW.glfwGetFramebufferSize(windowHandle, frameBufferWidth, frameBufferHeight);
+      lwjglData.windowWidth = frameBufferWidth.get(0);
+      lwjglData.windowHeight = frameBufferHeight.get(0);
       lwjglData.framebufferResized = true;
     }
     lwjglData.vidMode = vidMode;
@@ -57,7 +59,7 @@ class GlfwWindow {
     lwjglData.requiredExtensions = GLFWVulkan.glfwGetRequiredInstanceExtensions();
   }
   
-  static void createSurface(LwjglData lwjglData){
+  static void createSurface(LwjglData lwjglData) {
     try (MemoryStack stack = MemoryStack.stackPush()) {
       LongBuffer pSurface = stack.longs(VK14.VK_NULL_HANDLE);
       
@@ -80,10 +82,14 @@ class GlfwWindow {
     return GLFW.glfwWindowShouldClose(lwjglData.windowHandle);
   }
   
-  static void cleanup(LwjglData lwjglData) {
+  static void cleanupWindow(LwjglData lwjglData) {
     Callbacks.glfwFreeCallbacks(lwjglData.windowHandle);
     GLFW.glfwDestroyWindow(lwjglData.windowHandle);
     GLFW.glfwTerminate();
+  }
+  
+  static void cleanupSurface(LwjglData lwjglData){
+    KHRSurface.vkDestroySurfaceKHR(lwjglData.vkInstance, lwjglData.surface, null);
   }
   
   

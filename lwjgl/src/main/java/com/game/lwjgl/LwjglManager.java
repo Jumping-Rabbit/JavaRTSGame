@@ -1,13 +1,15 @@
 package com.game.lwjgl;
 
 public class LwjglManager {
-
+  
   
   private LwjglData lwjglData;
-  public LwjglManager(){
+  
+  public LwjglManager() {
     reload();
   }
-  public void reload(){
+  
+  public void reload() {
     lwjglData = new LwjglData();
     GlfwWindow.makeWindow(lwjglData);
     VulkanInstance.makeVkInstance(lwjglData);
@@ -18,8 +20,6 @@ public class LwjglManager {
     VulkanDevice.makeVkDevice(lwjglData);
     VulkanDevice.getQueues(lwjglData);
     LwjglShaderc.compileShaders(lwjglData);
-    
-    
     VulkanSwapchain.makeSwapChain(lwjglData);
     VulkanSwapchain.getSwapchainImages(lwjglData);
     VulkanSwapchain.makeImageViews(lwjglData);
@@ -30,26 +30,40 @@ public class LwjglManager {
     VulkanImage.makeWhiteTexture(lwjglData);
     VulkanDescriptors.makeDescriptorSet(lwjglData);
   }
-  public void render(){
+  
+  public void render() {
     VulkanRender.drawFrame(lwjglData);
   }
   
-  public void pollEvents(){
+  public void pollEvents() {
     GlfwWindow.pollEvents();
   }
-  public long getWindowHandle(){
+  
+  public long getWindowHandle() {
     return lwjglData.windowHandle;
   }
-  public boolean shouldClose(){
+  
+  public boolean shouldClose() {
     return GlfwWindow.shouldClose(lwjglData);
   }
-  public void setShouldClose(){
+  
+  public void setShouldClose() {
     GlfwWindow.setShouldClose(lwjglData);
   }
-  public void cleanup(){
+  
+  public void cleanup() {
     VulkanDevice.waitIdle(lwjglData);
+    VulkanBuffers.cleanupBuffers(lwjglData);
+    VulkanDescriptors.cleanupDescriptors(lwjglData);
+    VulkanImage.cleanupTexture(lwjglData);
+    VulkanCommandPool.cleanupCommandPool(lwjglData);
+    VulkanSync.cleanupSync(lwjglData);
+    VulkanPipeline.cleanupPipelines(lwjglData);
+    LwjglShaderc.cleanupShaders(lwjglData);
+    VulkanSwapchain.cleanupSwapchain(lwjglData);
+    VulkanDevice.cleanupDevice(lwjglData);
+    GlfwWindow.cleanupSurface(lwjglData);
+    VulkanInstance.cleanupInstance(lwjglData);
+    GlfwWindow.cleanupWindow(lwjglData);
   }
-  
-  
-  
 }

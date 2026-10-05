@@ -31,13 +31,15 @@ class LwjglData {
   long textureMemory;
   long textureView;
   long textureSampler;
+  long pipelineLayoutCollision;
+  long descriptorSetLayoutCollision;
   
   //Device
   VkPhysicalDevice[] vkPhysicalDevices;
   VkPhysicalDevice vkPhysicalDevice;
   VkDevice vkDevice;
-  int graphicsQueueFamilyIndex;
-  int presentQueueFamilyIndex;
+  int graphicsQueueFamilyIndex = -1;
+  int presentQueueFamilyIndex = -1;
   VkQueue graphicsQueue;
   VkQueue presentQueue;
   //Instance
@@ -58,10 +60,10 @@ class LwjglData {
   long[] inFlightFences = new long[MAX_FRAMES_IN_FLIGHT];
   
   //command buffer
-  VkCommandBuffer[] commandBuffers= new VkCommandBuffer[MAX_FRAMES_IN_FLIGHT];
+  VkCommandBuffer[] commandBuffers = new VkCommandBuffer[MAX_FRAMES_IN_FLIGHT];
   long commandPool;
   
   long descriptorSet;
   long vertexBuffer;
-
+  
 }

@@ -4,7 +4,8 @@ enum ComputePipelineTypes {
   COLLISION(Shaders.COLLISION);
   
   private final Shaders shader;
-  ComputePipelineTypes(Shaders shader){
+  
+  ComputePipelineTypes(Shaders shader) {
     this.shader = shader;
   }
   

@@ -136,4 +136,29 @@ class VulkanImage {
         .pImageMemoryBarriers(b);
     VK14.vkCmdPipelineBarrier2(cmd, dep);
   }
+  static void cleanupTexture(LwjglData lwjglData) {
+    if (lwjglData == null || lwjglData.vkDevice == null) {
+      return;
+    }
+    
+    if (lwjglData.textureSampler != VK14.VK_NULL_HANDLE) {
+      VK14.vkDestroySampler(lwjglData.vkDevice, lwjglData.textureSampler, null);
+      lwjglData.textureSampler = VK14.VK_NULL_HANDLE;
+    }
+    
+    if (lwjglData.textureView != VK14.VK_NULL_HANDLE) {
+      VK14.vkDestroyImageView(lwjglData.vkDevice, lwjglData.textureView, null);
+      lwjglData.textureView = VK14.VK_NULL_HANDLE;
+    }
+    
+    if (lwjglData.textureImage != VK14.VK_NULL_HANDLE) {
+      VK14.vkDestroyImage(lwjglData.vkDevice, lwjglData.textureImage, null);
+      lwjglData.textureImage = VK14.VK_NULL_HANDLE;
+    }
+    
+    if (lwjglData.textureMemory != VK14.VK_NULL_HANDLE) {
+      VK14.vkFreeMemory(lwjglData.vkDevice, lwjglData.textureMemory, null);
+      lwjglData.textureMemory = VK14.VK_NULL_HANDLE;
+    }
+  }
 }

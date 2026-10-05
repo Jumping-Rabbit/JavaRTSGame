@@ -21,15 +21,19 @@ enum PipelineTypes {
   int getColorFormat() {
     return colorFormat;
   }
+  
   int getDepthFormat() {
     return depthFormat;
   }
+  
   String getShaderName() {
     return shaderName;
   }
+  
   Shaders getFrag() {
     return frag;
   }
+  
   Shaders getVert() {
     return vert;
   }

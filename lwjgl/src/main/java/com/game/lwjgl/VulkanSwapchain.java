@@ -6,8 +6,6 @@ import org.lwjgl.vulkan.*;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 
-import static org.lwjgl.vulkan.VK10.VK_SUCCESS;
-
 class VulkanSwapchain {
   static void makeSwapChain(LwjglData lwjglData) {
     try (MemoryStack stack = MemoryStack.stackPush()) {
@@ -27,7 +25,7 @@ class VulkanSwapchain {
       }
       VkSurfaceFormatKHR.Buffer surfaceFormats = VkSurfaceFormatKHR.malloc(formatCount.get(0), stack);
       KHRSurface.vkGetPhysicalDeviceSurfaceFormatsKHR(lwjglData.vkPhysicalDevice, lwjglData.surface, formatCount, surfaceFormats);
-
+      
       VkSurfaceFormatKHR chosenFormat = surfaceFormats.get(0);
       for (int i = 0; i < surfaceFormats.capacity(); i++) {
         VkSurfaceFormatKHR fmt = surfaceFormats.get(i);
@@ -51,7 +49,7 @@ class VulkanSwapchain {
           }
         }
       }
-
+      
       VkExtent2D extent = VkExtent2D.malloc(stack);
       if (capabilities.currentExtent().width() != 0xFFFFFFFF) {
         extent.set(capabilities.currentExtent());
@@ -63,7 +61,7 @@ class VulkanSwapchain {
       }
       lwjglData.swapchainWidth = extent.width();
       lwjglData.swapchainHeight = extent.height();
-
+      
       VkSwapchainCreateInfoKHR createInfo = VkSwapchainCreateInfoKHR.calloc(stack)
           .sType(KHRSwapchain.VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR)
           .surface(lwjglData.surface)
@@ -79,12 +77,12 @@ class VulkanSwapchain {
           .presentMode(chosenPresentMode)
           .clipped(true)
           .oldSwapchain(VK14.VK_NULL_HANDLE);
-
+      
       LongBuffer pSwapchain = stack.mallocLong(1);
-      if (KHRSwapchain.vkCreateSwapchainKHR(lwjglData.vkDevice, createInfo, null, pSwapchain) != VK_SUCCESS) {
+      if (KHRSwapchain.vkCreateSwapchainKHR(lwjglData.vkDevice, createInfo, null, pSwapchain) != VK14.VK_SUCCESS) {
         throw new RuntimeException("Failed to create swapchain");
       }
-
+      
       lwjglData.swapchain = pSwapchain.get(0);
     }
   }
@@ -122,13 +120,14 @@ class VulkanSwapchain {
       LongBuffer pView = stack.mallocLong(1);
       for (int i = 0; i < lwjglData.swapchainImages.length; i++) {
         viewInfo.image(lwjglData.swapchainImages[i]);
-        if (VK14.vkCreateImageView(lwjglData.vkDevice, viewInfo, null, pView) != VK_SUCCESS) {
+        if (VK14.vkCreateImageView(lwjglData.vkDevice, viewInfo, null, pView) != VK14.VK_SUCCESS) {
           throw new RuntimeException("Failed to create image view at index " + i);
         }
         lwjglData.swapchainImageViews[i] = pView.get(0);
       }
     }
   }
+  
   static void recreate(LwjglData lwjglData) {
     try (MemoryStack stack = MemoryStack.stackPush()) {
       IntBuffer w = stack.mallocInt(1), h = stack.mallocInt(1);
@@ -140,14 +139,33 @@ class VulkanSwapchain {
     
     VK14.vkDeviceWaitIdle(lwjglData.vkDevice);
     
-    for (long view : lwjglData.swapchainImageViews) {
-      VK14.vkDestroyImageView(lwjglData.vkDevice, view, null);
-    }
-    KHRSwapchain.vkDestroySwapchainKHR(lwjglData.vkDevice, lwjglData.swapchain, null);
+   cleanupSwapchain(lwjglData);
     
     makeSwapChain(lwjglData);
     getSwapchainImages(lwjglData);
     makeImageViews(lwjglData);
     lwjglData.framebufferResized = false;
+  }
+  
+  static void cleanupSwapchain(LwjglData lwjglData){
+    if (lwjglData == null || lwjglData.vkDevice == null) {
+      return;
+    }
+    
+    if (lwjglData.swapchainImageViews != null) {
+      for (long view : lwjglData.swapchainImageViews) {
+        if (view != VK14.VK_NULL_HANDLE) {
+          VK14.vkDestroyImageView(lwjglData.vkDevice, view, null);
+        }
+      }
+      lwjglData.swapchainImageViews = null;
+    }
+    
+    if (lwjglData.swapchain != VK14.VK_NULL_HANDLE) {
+      KHRSwapchain.vkDestroySwapchainKHR(lwjglData.vkDevice, lwjglData.swapchain, null);
+      lwjglData.swapchain = VK14.VK_NULL_HANDLE;
+    }
+    
+    lwjglData.swapchainImages = null;
   }
 }

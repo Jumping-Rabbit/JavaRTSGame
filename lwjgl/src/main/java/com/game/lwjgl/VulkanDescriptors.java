@@ -6,7 +6,8 @@ import org.lwjgl.vulkan.*;
 import java.nio.LongBuffer;
 
 class VulkanDescriptors {
-  private VulkanDescriptors(){}
+  private VulkanDescriptors() {
+  }
   
   static long createCollisionDescriptorSetLayout(LwjglData lwjglData) {
     try (MemoryStack stack = MemoryStack.stackPush()) {
@@ -68,6 +69,7 @@ class VulkanDescriptors {
       return out[0];
     }
   }
+  
   static void makeDescriptorSet(LwjglData lwjglData) {
     try (MemoryStack stack = MemoryStack.stackPush()) {
       VkDescriptorPoolSize.Buffer poolSize = VkDescriptorPoolSize.calloc(1, stack)
@@ -106,5 +108,11 @@ class VulkanDescriptors {
           .pImageInfo(imageInfo);
       VK14.vkUpdateDescriptorSets(lwjglData.vkDevice, write, null);
     }
+  }
+  
+  static void cleanupDescriptors(LwjglData lwjglData) {
+    VK14.vkDestroyDescriptorPool(lwjglData.vkDevice, lwjglData.descriptorPool, null);
+    VK14.vkDestroyDescriptorSetLayout(lwjglData.vkDevice, lwjglData.descriptorSetLayout2D, null);
+    VK14.vkDestroyDescriptorSetLayout(lwjglData.vkDevice, lwjglData.descriptorSetLayoutCollision, null);
   }
 }

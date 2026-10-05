@@ -1,4 +1,4 @@
-module com.game.lwjgl{
+module com.game.lwjgl {
   exports com.game.lwjgl;
   
   requires org.lwjgl.assimp;

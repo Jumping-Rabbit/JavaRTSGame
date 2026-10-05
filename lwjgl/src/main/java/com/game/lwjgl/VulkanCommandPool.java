@@ -10,7 +10,7 @@ import org.lwjgl.vulkan.VkCommandPoolCreateInfo;
 import java.nio.LongBuffer;
 
 class VulkanCommandPool {
-  static void makeCommandBuffer(LwjglData lwjglData){
+  static void makeCommandBuffer(LwjglData lwjglData) {
     try (MemoryStack stack = MemoryStack.stackPush()) {
       VkCommandPoolCreateInfo poolInfo = VkCommandPoolCreateInfo.calloc(stack)
           .sType(VK14.VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO)
@@ -38,5 +38,9 @@ class VulkanCommandPool {
         lwjglData.commandBuffers[i] = new VkCommandBuffer(pCommandBuffers.get(i), lwjglData.vkDevice);
       }
     }
+  }
+  
+  static void cleanupCommandPool(LwjglData lwjglData) {
+    VK14.vkDestroyCommandPool(lwjglData.vkDevice, lwjglData.commandPool, null);
   }
 }

@@ -252,9 +252,9 @@ public class GameCore /*extends Game */ {
   
   public void init() {
     DrawManager.create();
-    long vulkanTime = System.nanoTime();
+    long startTime = System.nanoTime();
     lwjglManager = new LwjglManager();
-    System.out.println("init Vulkan: " + (System.nanoTime() - vulkanTime) / 1000000d);
+    System.out.println("init Vulkan: " + (System.nanoTime() - startTime) / 1000000d);
     DrawManager.setWindow(lwjglManager.getWindowHandle());
     logicThread = new Thread(new logicThread(performanceStorage));
     drawThread = new Thread(new drawThread(performanceStorage));
@@ -355,12 +355,9 @@ public class GameCore /*extends Game */ {
 //        if (DrawUtil.getDevice() != null) {
 //            VK14.vkDeviceWaitIdle(DrawUtil.getDevice());
 //        }
-    
+    long cleanupStart = System.nanoTime();
     lwjglManager.cleanup();
-  }
-  
-  public void resize(int width, int height) {
-    DrawManager.updateViewport(width, height);
+    System.out.println("cleanup in: " + (System.nanoTime() - cleanupStart) / 1000000f);
   }
   
   public void render() {

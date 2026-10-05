@@ -4,7 +4,6 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.util.shaderc.Shaderc;
 import org.lwjgl.vulkan.VK14;
 import org.lwjgl.vulkan.VkShaderModuleCreateInfo;
-import oshi.ffm.SystemInfo;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -15,10 +14,11 @@ import java.util.concurrent.*;
 
 
 class LwjglShaderc {
-
-  private LwjglShaderc(){}
   
-  static void cleanup(LwjglData lwjglData){
+  private LwjglShaderc() {
+  }
+  
+  static void cleanupShaders(LwjglData lwjglData) {
     lwjglData.shadersToLongHandle.forEach((shaderModule, resultHandle) -> {
       if (resultHandle != 0) {
         VK14.vkDestroyShaderModule(lwjglData.vkDevice, resultHandle, null);
@@ -29,7 +29,7 @@ class LwjglShaderc {
   
   static void compileShaders(LwjglData lwjglData) {
     ConcurrentHashMap<Shaders, Long> tempMap = new ConcurrentHashMap<>();
-    int cores = new SystemInfo().getHardware().getProcessor().getPhysicalProcessorCount();
+    int cores = StrictMath.max(Runtime.getRuntime().availableProcessors()/2, 1);
     ExecutorService executorService = Executors.newFixedThreadPool(Math.max(cores - 2, 1));
     
     long baseOptions = Shaderc.shaderc_compile_options_initialize();

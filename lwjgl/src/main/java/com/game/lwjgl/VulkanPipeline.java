@@ -7,12 +7,13 @@ import java.nio.ByteBuffer;
 import java.nio.LongBuffer;
 
 class VulkanPipeline {
-
-  private VulkanPipeline(){}
-
-  static void makePipelines(LwjglData lwjglData){
+  
+  private VulkanPipeline() {
+  }
+  
+  static void makePipelines(LwjglData lwjglData) {
     long pipelineLayout = make2DPipelineLayout(lwjglData);
-    for (PipelineTypes pipelineType : PipelineTypes.values()){
+    for (PipelineTypes pipelineType : PipelineTypes.values()) {
       lwjglData.vulkanPipelines.put(pipelineType, createGraphicsPipeline(
           lwjglData.vkDevice,
           lwjglData.shadersToLongHandle.getLong(pipelineType.getVert()),
@@ -23,17 +24,17 @@ class VulkanPipeline {
       ));
     }
     
-    pipelineLayout = makeCollisionPipelineLayout(lwjglData);
-    for (ComputePipelineTypes computePipelineType : ComputePipelineTypes.values()){
+    lwjglData.pipelineLayoutCollision = makeCollisionPipelineLayout(lwjglData);
+    for (ComputePipelineTypes computePipelineType : ComputePipelineTypes.values()) {
       lwjglData.vulkanComputePipelines.put(computePipelineType, createComputePipeline(
           lwjglData.vkDevice,
-          pipelineLayout,
+          lwjglData.pipelineLayoutCollision,
           lwjglData.shadersToLongHandle.getLong(computePipelineType.getShader())
       ));
     }
   }
   
-  private static long make2DPipelineLayout(LwjglData lwjglData){
+  private static long make2DPipelineLayout(LwjglData lwjglData) {
     try (MemoryStack stack = MemoryStack.stackPush()) {
       lwjglData.descriptorSetLayout2D = VulkanDescriptors.create2DDescriptorSetLayout(lwjglData);
       LongBuffer pSetLayouts = stack.longs(lwjglData.descriptorSetLayout2D);
@@ -52,15 +53,17 @@ class VulkanPipeline {
       if (VK14.vkCreatePipelineLayout(lwjglData.vkDevice, layoutInfo, null, pPipelineLayout) != VK14.VK_SUCCESS) {
         throw new RuntimeException("Failed to create pipeline layout");
       }
-      lwjglData.pipelineLayout2D =  pPipelineLayout[0];
+      lwjglData.pipelineLayout2D = pPipelineLayout[0];
       return pPipelineLayout[0];
     }
     
     
   }
-  private static long makeCollisionPipelineLayout(LwjglData lwjglData){
+  
+  private static long makeCollisionPipelineLayout(LwjglData lwjglData) {
     try (MemoryStack stack = MemoryStack.stackPush()) {
-      java.nio.LongBuffer pSetLayouts = stack.longs(VulkanDescriptors.createCollisionDescriptorSetLayout(lwjglData));
+      lwjglData.descriptorSetLayoutCollision = VulkanDescriptors.createCollisionDescriptorSetLayout(lwjglData);
+      LongBuffer pSetLayouts = stack.longs(lwjglData.descriptorSetLayoutCollision);
       VkPushConstantRange.Buffer pPushConstantRanges = null;
       
       VkPipelineLayoutCreateInfo layoutInfo = VkPipelineLayoutCreateInfo.calloc(stack)
@@ -76,7 +79,7 @@ class VulkanPipeline {
     }
   }
   
-  static void cleanup(LwjglData lwjglData){
+  static void cleanupPipelines(LwjglData lwjglData) {
     for (long pipeline : lwjglData.vulkanPipelines.values()) {
       VK14.vkDestroyPipeline(lwjglData.vkDevice, pipeline, null);
     }
@@ -86,6 +89,9 @@ class VulkanPipeline {
       VK14.vkDestroyPipeline(lwjglData.vkDevice, pipeline, null);
     }
     lwjglData.vulkanComputePipelines.clear();
+    
+    VK14.vkDestroyPipelineLayout(lwjglData.vkDevice, lwjglData.pipelineLayout2D, null);
+    VK14.vkDestroyPipelineLayout(lwjglData.vkDevice, lwjglData.pipelineLayoutCollision, null);
   }
   
   
@@ -99,7 +105,6 @@ class VulkanPipeline {
     
     try (MemoryStack stack = MemoryStack.stackPush()) {
       ByteBuffer entryPoint = stack.UTF8("main");
-      
       
       
       VkPipelineShaderStageCreateInfo.Buffer shaderStages = VkPipelineShaderStageCreateInfo.calloc(2, stack);
@@ -194,7 +199,7 @@ class VulkanPipeline {
       
       LongBuffer pPipeline = stack.mallocLong(1);
       int result = VK14.vkCreateGraphicsPipelines(device, VK14.VK_NULL_HANDLE, pipelineInfo, null, pPipeline);
-
+      
       if (result != VK14.VK_SUCCESS) {
         throw new RuntimeException("Failed to create graphics pipeline " + result);
       }
@@ -202,7 +207,7 @@ class VulkanPipeline {
       return pPipeline.get(0);
     }
   }
-
+  
   private static long createComputePipeline(VkDevice device, long pipelineLayout, long shaderModule) {
     try (MemoryStack stack = MemoryStack.stackPush()) {
       

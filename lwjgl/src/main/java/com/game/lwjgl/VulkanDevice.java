@@ -9,12 +9,8 @@ import java.nio.IntBuffer;
 
 class VulkanDevice {
   
-
   
-  private VulkanDevice(){}
-  
-  void cleanup(LwjglData lwjglData){
-    VK14.vkDestroyDevice(lwjglData.vkDevice, null);
+  private VulkanDevice() {
   }
   
   static void getAllPhysicalDevices(LwjglData lwjglData) {
@@ -39,9 +35,11 @@ class VulkanDevice {
       lwjglData.vkPhysicalDevices = devices;
     }
   }
-  static void chooseVkPhysicalDevice(LwjglData lwjglData){
+  
+  static void chooseVkPhysicalDevice(LwjglData lwjglData) {
     lwjglData.vkPhysicalDevice = lwjglData.vkPhysicalDevices[0];
   }
+  
   static void makeVkDevice(LwjglData lwjglData) {
     try (MemoryStack stack = MemoryStack.stackPush()) {
       FloatBuffer queuePriorities = stack.floats(1.0f);
@@ -78,7 +76,8 @@ class VulkanDevice {
       lwjglData.vkDevice = new VkDevice(pDevice.get(0), lwjglData.vkPhysicalDevice, createInfo);
     }
   }
-  static void findGraphicsQueueFamilyIndex(LwjglData lwjglData){
+  
+  static void findGraphicsQueueFamilyIndex(LwjglData lwjglData) {
     try (MemoryStack stack = MemoryStack.stackPush()) {
       IntBuffer queueFamilyCount = stack.mallocInt(1);
       VK14.vkGetPhysicalDeviceQueueFamilyProperties(lwjglData.vkPhysicalDevice, queueFamilyCount, null);
@@ -107,7 +106,7 @@ class VulkanDevice {
     }
   }
   
-  static void getQueues(LwjglData lwjglData){
+  static void getQueues(LwjglData lwjglData) {
     try (MemoryStack stack = MemoryStack.stackPush()) {
       PointerBuffer pQueue = stack.mallocPointer(1);
       
@@ -119,8 +118,12 @@ class VulkanDevice {
     }
   }
   
-  static void waitIdle(LwjglData lwjglData){
+  static void waitIdle(LwjglData lwjglData) {
     VK14.vkDeviceWaitIdle(lwjglData.vkDevice);
+  }
+  
+  static void cleanupDevice(LwjglData lwjglData) {
+    VK14.vkDestroyDevice(lwjglData.vkDevice, null);
   }
   
 }
