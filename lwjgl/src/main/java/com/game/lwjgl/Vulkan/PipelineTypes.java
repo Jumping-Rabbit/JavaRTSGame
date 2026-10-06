@@ -1,8 +1,10 @@
-package com.game.lwjgl;
+package com.game.lwjgl.Vulkan;
 
+
+import com.game.lwjgl.Shaderc.Shaders;
 import org.lwjgl.vulkan.VK14;
 
-enum PipelineTypes {
+public enum PipelineTypes {
   TWO_D(VK14.VK_FORMAT_R8G8B8A8_SRGB, VK14.VK_FORMAT_UNDEFINED, "2d", Shaders.VERT2D, Shaders.FRAG2D);
   private final int colorFormat;
   private final int depthFormat;

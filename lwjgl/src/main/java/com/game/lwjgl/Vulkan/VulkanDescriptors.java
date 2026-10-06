@@ -1,15 +1,15 @@
-package com.game.lwjgl;
+package com.game.lwjgl.Vulkan;
 
+import com.game.lwjgl.LwjglData;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 
 import java.nio.LongBuffer;
 
-class VulkanDescriptors {
-  private VulkanDescriptors() {
-  }
+public class VulkanDescriptors {
+  private VulkanDescriptors() {}
   
-  static long createCollisionDescriptorSetLayout(LwjglData lwjglData) {
+  public static long createCollisionDescriptorSetLayout(LwjglData lwjglData) {
     try (MemoryStack stack = MemoryStack.stackPush()) {
       VkDescriptorSetLayoutBinding.Buffer bindings = VkDescriptorSetLayoutBinding.calloc(4, stack);
       
@@ -54,7 +54,7 @@ class VulkanDescriptors {
     }
   }
   
-  static long create2DDescriptorSetLayout(LwjglData lwjglData) {
+  public static long create2DDescriptorSetLayout(LwjglData lwjglData) {
     try (MemoryStack stack = MemoryStack.stackPush()) {
       VkDescriptorSetLayoutBinding.Buffer b = VkDescriptorSetLayoutBinding.calloc(1, stack);
       b.get(0).binding(0)
@@ -70,7 +70,7 @@ class VulkanDescriptors {
     }
   }
   
-  static void makeDescriptorSet(LwjglData lwjglData) {
+  public static void makeDescriptorSet(LwjglData lwjglData) {
     try (MemoryStack stack = MemoryStack.stackPush()) {
       VkDescriptorPoolSize.Buffer poolSize = VkDescriptorPoolSize.calloc(1, stack)
           .type(VK14.VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
@@ -110,7 +110,7 @@ class VulkanDescriptors {
     }
   }
   
-  static void cleanupDescriptors(LwjglData lwjglData) {
+  public static void cleanupDescriptors(LwjglData lwjglData) {
     VK14.vkDestroyDescriptorPool(lwjglData.vkDevice, lwjglData.descriptorPool, null);
     VK14.vkDestroyDescriptorSetLayout(lwjglData.vkDevice, lwjglData.descriptorSetLayout2D, null);
     VK14.vkDestroyDescriptorSetLayout(lwjglData.vkDevice, lwjglData.descriptorSetLayoutCollision, null);

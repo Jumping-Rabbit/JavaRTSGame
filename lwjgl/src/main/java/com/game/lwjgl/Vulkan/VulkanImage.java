@@ -1,5 +1,6 @@
-package com.game.lwjgl;
+package com.game.lwjgl.Vulkan;
 
+import com.game.lwjgl.LwjglData;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
@@ -7,8 +8,10 @@ import org.lwjgl.vulkan.*;
 import java.nio.ByteBuffer;
 import java.nio.LongBuffer;
 
-class VulkanImage {
-  static void makeWhiteTexture(LwjglData lwjglData) {
+public class VulkanImage {
+  private VulkanImage(){}
+  
+  public static void makeWhiteTexture(LwjglData lwjglData) {
     try (MemoryStack stack = MemoryStack.stackPush()) {
       int format = VK14.VK_FORMAT_R8G8B8A8_UNORM;
       
@@ -136,7 +139,7 @@ class VulkanImage {
         .pImageMemoryBarriers(b);
     VK14.vkCmdPipelineBarrier2(cmd, dep);
   }
-  static void cleanupTexture(LwjglData lwjglData) {
+  public static void cleanupTexture(LwjglData lwjglData) {
     if (lwjglData == null || lwjglData.vkDevice == null) {
       return;
     }

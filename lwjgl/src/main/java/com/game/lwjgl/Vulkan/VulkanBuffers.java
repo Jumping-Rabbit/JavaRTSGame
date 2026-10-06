@@ -1,5 +1,6 @@
-package com.game.lwjgl;
+package com.game.lwjgl.Vulkan;
 
+import com.game.lwjgl.LwjglData;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
@@ -8,8 +9,9 @@ import org.lwjgl.vulkan.*;
 import java.nio.ByteBuffer;
 import java.nio.LongBuffer;
 
-class VulkanBuffers {
-  static int findMemoryType(LwjglData lwjglData, int typeBits, int props) {
+public class VulkanBuffers {
+  private VulkanBuffers(){}
+  public static int findMemoryType(LwjglData lwjglData, int typeBits, int props) {
     try (MemoryStack stack = MemoryStack.stackPush()) {
       VkPhysicalDeviceMemoryProperties mem = VkPhysicalDeviceMemoryProperties.malloc(stack);
       VK14.vkGetPhysicalDeviceMemoryProperties(lwjglData.vkPhysicalDevice, mem);
@@ -22,7 +24,7 @@ class VulkanBuffers {
     throw new RuntimeException("No suitable memory type");
   }
   
-  static long[] createBuffer(LwjglData lwjglData, long size, int usage, int props) {
+  public static long[] createBuffer(LwjglData lwjglData, long size, int usage, int props) {
     try (MemoryStack stack = MemoryStack.stackPush()) {
       VkBufferCreateInfo info = VkBufferCreateInfo.calloc(stack)
           .sType$Default()
@@ -51,7 +53,7 @@ class VulkanBuffers {
     }
   }
   
-  static void upload(LwjglData lwjglData, long memory, ByteBuffer data) {
+  public static void upload(LwjglData lwjglData, long memory, ByteBuffer data) {
     try (MemoryStack stack = MemoryStack.stackPush()) {
       PointerBuffer pData = stack.mallocPointer(1);
       VK14.vkMapMemory(lwjglData.vkDevice, memory, 0, data.remaining(), 0, pData);
@@ -60,7 +62,7 @@ class VulkanBuffers {
     }
   }
   
-  static void makeVertexBuffer(LwjglData lwjglData) {
+  public static void makeVertexBuffer(LwjglData lwjglData) {
     try (MemoryStack stack = MemoryStack.stackPush()) {
       ByteBuffer data = stack.calloc(40);
       data.putFloat(0, 760f).putFloat(4, 340f).putFloat(8, 400f).putFloat(12, 400f); // x, y, w, h
@@ -75,7 +77,7 @@ class VulkanBuffers {
     }
   }
   
-  static void cleanupBuffers(LwjglData lwjglData){
+  public static void cleanupBuffers(LwjglData lwjglData){
     VK14.vkDestroyBuffer(lwjglData.vkDevice, lwjglData.vertexBuffer, null);
     VK14.vkFreeMemory(lwjglData.vkDevice, lwjglData.vertexBufferMemory, null);
   }

@@ -1,5 +1,5 @@
 module com.game.lwjgl {
-  exports com.game.lwjgl;
+  exports com.game.lwjgl.api;
   
   requires org.lwjgl.assimp;
   requires org.lwjgl.glfw;

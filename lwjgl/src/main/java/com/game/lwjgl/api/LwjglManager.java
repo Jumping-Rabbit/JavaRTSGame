@@ -1,8 +1,11 @@
-package com.game.lwjgl;
+package com.game.lwjgl.api;
+
+import com.game.lwjgl.Glfw.GlfwWindow;
+import com.game.lwjgl.LwjglData;
+import com.game.lwjgl.Shaderc.LwjglShaderc;
+import com.game.lwjgl.Vulkan.*;
 
 public class LwjglManager {
-  
-  
   private LwjglData lwjglData;
   
   public LwjglManager() {

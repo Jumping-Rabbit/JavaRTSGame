@@ -1,13 +1,17 @@
-package com.game.lwjgl;
+package com.game.lwjgl.Vulkan;
 
+
+import com.game.lwjgl.LwjglData;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
-class VulkanRender {
-  static void drawFrame(LwjglData lwjglData) {
+public class VulkanRender {
+  private VulkanRender(){}
+  
+  public static void drawFrame(LwjglData lwjglData) {
     try (MemoryStack stack = MemoryStack.stackPush()) {
       if (lwjglData.framebufferResized) {
         VulkanSwapchain.recreate(lwjglData);

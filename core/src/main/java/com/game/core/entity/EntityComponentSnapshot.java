@@ -14,6 +14,7 @@ public class EntityComponentSnapshot {
   LongArrayList direction;
   LongArrayList lastDirection;
   LongArrayList hp;
+  IntArrayList ticksUntilAction;
   BooleanArrayList isSelected;
   IntArrayList selected;
   BooleanArrayList isActive;
@@ -25,7 +26,9 @@ public class EntityComponentSnapshot {
   IntArrayList generation;
   
   LongArrayList tags;
+  LongArrayList tags2;
   LongArrayList abilities;
+  LongArrayList abilityCooldown;//16 bits is one ability, max 4 abilities on a unit
   
   LongArrayList effects;
   
@@ -55,6 +58,7 @@ public class EntityComponentSnapshot {
     direction = new LongArrayList(size);
     lastDirection = new LongArrayList(size);
     hp = new LongArrayList(size);
+    ticksUntilAction = new IntArrayList(size);
     isSelected = new BooleanArrayList(size);
     selected = new IntArrayList(size);
     isActive = new BooleanArrayList(size);
@@ -66,7 +70,9 @@ public class EntityComponentSnapshot {
     generation = new IntArrayList(size);
     
     tags = new LongArrayList(size);
+    tags2 = new LongArrayList(size);//TODO:add support for this
     abilities = new LongArrayList(size);
+    abilityCooldown = new LongArrayList(size);//TODO:add support for this
     
     effectMask = new LongArrayList();
     effects = new LongArrayList(size);
@@ -89,6 +95,7 @@ public class EntityComponentSnapshot {
     direction.size(size);
     lastDirection.size(size);
     hp.size(size);
+    ticksUntilAction.size(size);
     isSelected.size(size);
     isActive.size(size);
     nextInCell.size(size);
@@ -96,11 +103,14 @@ public class EntityComponentSnapshot {
     generation.size(size);
     
     tags.size(size);
+    tags2.size(size);
     abilities.size(size);
+    abilityCooldown.size(size);
     
     effects.size(size);
     
     //set to -1 so it won't think something of id 0 is there
+    reset(ticksUntilAction);
     reset(nextInCell);
     reset(unitType);
   }

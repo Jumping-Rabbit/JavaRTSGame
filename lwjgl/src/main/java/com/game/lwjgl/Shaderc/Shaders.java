@@ -1,5 +1,6 @@
-package com.game.lwjgl;
+package com.game.lwjgl.Shaderc;
 
+import com.game.lwjgl.api.LwjglManager;
 import org.lwjgl.util.shaderc.Shaderc;
 
 import java.io.FileNotFoundException;
@@ -7,7 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
-enum Shaders {
+public enum Shaders {
   FRAG2D("2d.frag", Shaderc.shaderc_fragment_shader),
   VERT2D("2d.vert", Shaderc.shaderc_vertex_shader),
   COLLISION("collision.comp", Shaderc.shaderc_compute_shader);
@@ -20,7 +21,7 @@ enum Shaders {
     this.type = type;
   }
   
-  static Shaders fromValue(String value) {
+  public static Shaders fromValue(String value) {
     for (Shaders shader : values()) {
       if (shader.name.equalsIgnoreCase(value)) {
         return shader;
@@ -29,7 +30,7 @@ enum Shaders {
     throw new IllegalArgumentException("Unknown shader file: " + value);
   }
   
-  static String readShader(Shaders shader) throws IOException {
+  public static String readShader(Shaders shader) throws IOException {
     String path = "/shaders/" + shader.name;
     try (InputStream in = LwjglManager.class.getResourceAsStream(path)) {
       if (in == null) throw new FileNotFoundException("Missing shader resource: " + path);
@@ -37,7 +38,7 @@ enum Shaders {
     }
   }
   
-  String getName() {
+  public String getName() {
     return name;
   }
   

@@ -1,5 +1,6 @@
-package com.game.lwjgl;
+package com.game.lwjgl.Vulkan;
 
+import com.game.lwjgl.LwjglData;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VK14;
@@ -7,12 +8,11 @@ import org.lwjgl.vulkan.VkApplicationInfo;
 import org.lwjgl.vulkan.VkInstance;
 import org.lwjgl.vulkan.VkInstanceCreateInfo;
 
-class VulkanInstance {
+public class VulkanInstance {
   
-  private VulkanInstance() {
-  }
+  private VulkanInstance() {}
   
-  static void makeVkInstance(LwjglData lwjglData) {
+  public static void makeVkInstance(LwjglData lwjglData) {
     try (MemoryStack stack = MemoryStack.stackPush()) {
       VkApplicationInfo appInfo = VkApplicationInfo.calloc(stack)
           .sType(VK14.VK_STRUCTURE_TYPE_APPLICATION_INFO)
@@ -36,7 +36,7 @@ class VulkanInstance {
     }
   }
   
-  static void cleanupInstance(LwjglData lwjglData) {
+  public static void cleanupInstance(LwjglData lwjglData) {
     VK14.vkDestroyInstance(lwjglData.vkInstance, null);
   }
 }

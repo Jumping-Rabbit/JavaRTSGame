@@ -1,13 +1,16 @@
-package com.game.lwjgl;
+package com.game.lwjgl.Vulkan;
 
+import com.game.lwjgl.LwjglData;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 
-class VulkanSwapchain {
-  static void makeSwapChain(LwjglData lwjglData) {
+public class VulkanSwapchain {
+  private VulkanSwapchain(){}
+  
+  public static void makeSwapChain(LwjglData lwjglData) {
     try (MemoryStack stack = MemoryStack.stackPush()) {
       
       VkSurfaceCapabilitiesKHR capabilities = VkSurfaceCapabilitiesKHR.malloc(stack);
@@ -87,7 +90,7 @@ class VulkanSwapchain {
     }
   }
   
-  static void getSwapchainImages(LwjglData lwjglData) {
+  public static void getSwapchainImages(LwjglData lwjglData) {
     try (MemoryStack stack = MemoryStack.stackPush()) {
       IntBuffer imageCount = stack.mallocInt(1);
       KHRSwapchain.vkGetSwapchainImagesKHR(lwjglData.vkDevice, lwjglData.swapchain, imageCount, null);
@@ -102,7 +105,7 @@ class VulkanSwapchain {
     }
   }
   
-  static void makeImageViews(LwjglData lwjglData) {
+  public static void makeImageViews(LwjglData lwjglData) {
     lwjglData.swapchainImageViews = new long[lwjglData.swapchainImages.length];
     
     try (MemoryStack stack = MemoryStack.stackPush()) {
@@ -128,7 +131,7 @@ class VulkanSwapchain {
     }
   }
   
-  static void recreate(LwjglData lwjglData) {
+  public static void recreate(LwjglData lwjglData) {
     try (MemoryStack stack = MemoryStack.stackPush()) {
       IntBuffer w = stack.mallocInt(1), h = stack.mallocInt(1);
       org.lwjgl.glfw.GLFW.glfwGetFramebufferSize(lwjglData.windowHandle, w, h);
@@ -147,7 +150,7 @@ class VulkanSwapchain {
     lwjglData.framebufferResized = false;
   }
   
-  static void cleanupSwapchain(LwjglData lwjglData){
+  public static void cleanupSwapchain(LwjglData lwjglData){
     if (lwjglData == null || lwjglData.vkDevice == null) {
       return;
     }

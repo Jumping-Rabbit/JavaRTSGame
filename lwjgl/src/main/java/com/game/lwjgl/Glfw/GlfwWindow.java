@@ -1,5 +1,6 @@
-package com.game.lwjgl;
+package com.game.lwjgl.Glfw;
 
+import com.game.lwjgl.LwjglData;
 import org.lwjgl.glfw.Callbacks;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWVidMode;
@@ -11,13 +12,12 @@ import org.lwjgl.vulkan.VK14;
 
 import java.nio.LongBuffer;
 
-class GlfwWindow {
+public class GlfwWindow {
   
   
-  private GlfwWindow() {
-  }
+  private GlfwWindow() {}
   
-  static void makeWindow(LwjglData lwjglData) {
+  public static void makeWindow(LwjglData lwjglData) {
     if (!GLFW.glfwInit()) {
       throw new RuntimeException("Unable to initialize GLFW");
     }
@@ -59,7 +59,7 @@ class GlfwWindow {
     lwjglData.requiredExtensions = GLFWVulkan.glfwGetRequiredInstanceExtensions();
   }
   
-  static void createSurface(LwjglData lwjglData) {
+  public static void createSurface(LwjglData lwjglData) {
     try (MemoryStack stack = MemoryStack.stackPush()) {
       LongBuffer pSurface = stack.longs(VK14.VK_NULL_HANDLE);
       
@@ -74,26 +74,26 @@ class GlfwWindow {
   }
   
   
-  static void setShouldClose(LwjglData lwjglData) {
+  public static void setShouldClose(LwjglData lwjglData) {
     GLFW.glfwSetWindowShouldClose(lwjglData.windowHandle, true);
   }
   
-  static boolean shouldClose(LwjglData lwjglData) {
+  public static boolean shouldClose(LwjglData lwjglData) {
     return GLFW.glfwWindowShouldClose(lwjglData.windowHandle);
   }
   
-  static void cleanupWindow(LwjglData lwjglData) {
+  public static void cleanupWindow(LwjglData lwjglData) {
     Callbacks.glfwFreeCallbacks(lwjglData.windowHandle);
     GLFW.glfwDestroyWindow(lwjglData.windowHandle);
     GLFW.glfwTerminate();
   }
   
-  static void cleanupSurface(LwjglData lwjglData){
+  public static void cleanupSurface(LwjglData lwjglData){
     KHRSurface.vkDestroySurfaceKHR(lwjglData.vkInstance, lwjglData.surface, null);
   }
   
   
-  static void pollEvents() {
+  public static void pollEvents() {
     GLFW.glfwPollEvents();
   }
 }

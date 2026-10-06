@@ -1,5 +1,6 @@
-package com.game.lwjgl;
+package com.game.lwjgl.Vulkan;
 
+import com.game.lwjgl.LwjglData;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VK14;
@@ -9,8 +10,9 @@ import org.lwjgl.vulkan.VkCommandPoolCreateInfo;
 
 import java.nio.LongBuffer;
 
-class VulkanCommandPool {
-  static void makeCommandBuffer(LwjglData lwjglData) {
+public class VulkanCommandPool {
+  private VulkanCommandPool(){}
+  public static void makeCommandBuffer(LwjglData lwjglData) {
     try (MemoryStack stack = MemoryStack.stackPush()) {
       VkCommandPoolCreateInfo poolInfo = VkCommandPoolCreateInfo.calloc(stack)
           .sType(VK14.VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO)
@@ -40,7 +42,7 @@ class VulkanCommandPool {
     }
   }
   
-  static void cleanupCommandPool(LwjglData lwjglData) {
+  public static void cleanupCommandPool(LwjglData lwjglData) {
     VK14.vkDestroyCommandPool(lwjglData.vkDevice, lwjglData.commandPool, null);
   }
 }

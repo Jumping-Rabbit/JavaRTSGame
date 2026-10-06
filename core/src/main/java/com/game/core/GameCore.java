@@ -4,7 +4,7 @@ import com.game.core.draw.DrawManager;
 import com.game.core.input.Actions;
 import com.game.core.input.Input;
 import com.game.core.input.InputHandler;
-import com.game.lwjgl.LwjglManager;
+import com.game.lwjgl.api.LwjglManager;
 import com.game.core.screens.*;
 import com.game.core.settings.SettingsManager;
 import com.game.core.sound.SoundManager;

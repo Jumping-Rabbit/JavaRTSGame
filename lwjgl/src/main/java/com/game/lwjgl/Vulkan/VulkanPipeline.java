@@ -1,17 +1,19 @@
-package com.game.lwjgl;
+package com.game.lwjgl.Vulkan;
 
+
+
+import com.game.lwjgl.LwjglData;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 
 import java.nio.ByteBuffer;
 import java.nio.LongBuffer;
 
-class VulkanPipeline {
+public class VulkanPipeline {
   
-  private VulkanPipeline() {
-  }
+  private VulkanPipeline() {}
   
-  static void makePipelines(LwjglData lwjglData) {
+  public static void makePipelines(LwjglData lwjglData) {
     long pipelineLayout = make2DPipelineLayout(lwjglData);
     for (PipelineTypes pipelineType : PipelineTypes.values()) {
       lwjglData.vulkanPipelines.put(pipelineType, createGraphicsPipeline(
@@ -79,7 +81,7 @@ class VulkanPipeline {
     }
   }
   
-  static void cleanupPipelines(LwjglData lwjglData) {
+  public static void cleanupPipelines(LwjglData lwjglData) {
     for (long pipeline : lwjglData.vulkanPipelines.values()) {
       VK14.vkDestroyPipeline(lwjglData.vkDevice, pipeline, null);
     }

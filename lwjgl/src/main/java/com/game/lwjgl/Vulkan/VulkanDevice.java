@@ -1,5 +1,6 @@
-package com.game.lwjgl;
+package com.game.lwjgl.Vulkan;
 
+import com.game.lwjgl.LwjglData;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
@@ -7,13 +8,10 @@ import org.lwjgl.vulkan.*;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
-class VulkanDevice {
+public class VulkanDevice {
+  private VulkanDevice() {}
   
-  
-  private VulkanDevice() {
-  }
-  
-  static void getAllPhysicalDevices(LwjglData lwjglData) {
+  public static void getAllPhysicalDevices(LwjglData lwjglData) {
     try (MemoryStack stack = MemoryStack.stackPush()) {
       IntBuffer pDeviceCount = stack.mallocInt(1);
       
@@ -36,11 +34,11 @@ class VulkanDevice {
     }
   }
   
-  static void chooseVkPhysicalDevice(LwjglData lwjglData) {
+  public static void chooseVkPhysicalDevice(LwjglData lwjglData) {
     lwjglData.vkPhysicalDevice = lwjglData.vkPhysicalDevices[0];
   }
   
-  static void makeVkDevice(LwjglData lwjglData) {
+  public static void makeVkDevice(LwjglData lwjglData) {
     try (MemoryStack stack = MemoryStack.stackPush()) {
       FloatBuffer queuePriorities = stack.floats(1.0f);
       
@@ -77,7 +75,7 @@ class VulkanDevice {
     }
   }
   
-  static void findGraphicsQueueFamilyIndex(LwjglData lwjglData) {
+  public static void findGraphicsQueueFamilyIndex(LwjglData lwjglData) {
     try (MemoryStack stack = MemoryStack.stackPush()) {
       IntBuffer queueFamilyCount = stack.mallocInt(1);
       VK14.vkGetPhysicalDeviceQueueFamilyProperties(lwjglData.vkPhysicalDevice, queueFamilyCount, null);
@@ -106,7 +104,7 @@ class VulkanDevice {
     }
   }
   
-  static void getQueues(LwjglData lwjglData) {
+  public static void getQueues(LwjglData lwjglData) {
     try (MemoryStack stack = MemoryStack.stackPush()) {
       PointerBuffer pQueue = stack.mallocPointer(1);
       
@@ -118,11 +116,11 @@ class VulkanDevice {
     }
   }
   
-  static void waitIdle(LwjglData lwjglData) {
+  public static void waitIdle(LwjglData lwjglData) {
     VK14.vkDeviceWaitIdle(lwjglData.vkDevice);
   }
   
-  static void cleanupDevice(LwjglData lwjglData) {
+  public static void cleanupDevice(LwjglData lwjglData) {
     VK14.vkDestroyDevice(lwjglData.vkDevice, null);
   }
   

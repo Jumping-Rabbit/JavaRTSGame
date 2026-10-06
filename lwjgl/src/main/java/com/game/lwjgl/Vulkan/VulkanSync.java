@@ -1,5 +1,6 @@
-package com.game.lwjgl;
+package com.game.lwjgl.Vulkan;
 
+import com.game.lwjgl.LwjglData;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VK14;
 import org.lwjgl.vulkan.VkFenceCreateInfo;
@@ -7,8 +8,10 @@ import org.lwjgl.vulkan.VkSemaphoreCreateInfo;
 
 import java.nio.LongBuffer;
 
-class VulkanSync {
-  static void makeSync(LwjglData lwjglData) {
+public class VulkanSync {
+  private VulkanSync(){}
+  
+  public static void makeSync(LwjglData lwjglData) {
     try (MemoryStack stack = MemoryStack.stackPush()) {
       VkSemaphoreCreateInfo semaphoreInfo = VkSemaphoreCreateInfo.calloc(stack)
           .sType(VK14.VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO);
@@ -36,7 +39,7 @@ class VulkanSync {
   }
   
   
-  static void cleanupSync(LwjglData lwjglData){
+  public static void cleanupSync(LwjglData lwjglData){
     if (lwjglData == null || lwjglData.vkDevice == null) {
       return;
     }
