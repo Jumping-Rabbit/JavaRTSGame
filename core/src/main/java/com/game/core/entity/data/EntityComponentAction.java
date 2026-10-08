@@ -1,4 +1,4 @@
-package com.game.core.entity;
+package com.game.core.entity.data;
 
 public class EntityComponentAction {
   public static final long setX = 1L << 1;

@@ -56,7 +56,7 @@ public class VulkanRender {
       );
       
       VkClearValue clearColor = VkClearValue.calloc(stack);
-      clearColor.color().float32(stack.floats(0.0f, 0.0f, 0.1f, 1.0f));
+      clearColor.color().float32(stack.floats(0.0f, 0.0f, 0.0f, 1.0f));
       
       VkRenderingAttachmentInfo.Buffer colorAttachment = VkRenderingAttachmentInfo.calloc(1, stack)
           .sType(VK14.VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO)
@@ -102,7 +102,7 @@ public class VulkanRender {
             .extent(e -> e.set(lwjglData.swapchainWidth, lwjglData.swapchainHeight));
         VK14.vkCmdSetScissor(cmd, 0, scissor);
       }
-      VK14.vkCmdDraw(cmd, 4, 1, 0, 0);
+//      VK14.vkCmdDraw(cmd, 4, 1, 0, 0);
 //      VK14.vkCmdBindVertexBuffers(cmd, 0, stack.longs(vertexBuffer), stack.longs(0));//TODO: make a buffer ig
       
       VK14.vkCmdEndRendering(cmd);
@@ -164,7 +164,7 @@ public class VulkanRender {
       dstStageMask = VK14.VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT;
       dstAccessMask = 0;
     } else {
-      throw new IllegalArgumentException("Unsupported layout transition!");
+      throw new IllegalArgumentException("Unsupported layout transition");
     }
     
     VkImageMemoryBarrier2.Buffer barrier = VkImageMemoryBarrier2.calloc(1, stack)

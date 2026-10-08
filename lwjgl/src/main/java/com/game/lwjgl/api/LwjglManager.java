@@ -28,7 +28,7 @@ public class LwjglManager {
     VulkanSwapchain.makeImageViews(lwjglData);
     VulkanPipeline.makePipelines(lwjglData);
     VulkanSync.makeSync(lwjglData);
-    VulkanCommandPool.makeCommandBuffer(lwjglData);
+    VulkanThreadState.makeThreadLocalBuffers(lwjglData);
     VulkanBuffers.makeVertexBuffer(lwjglData);
     VulkanImage.makeWhiteTexture(lwjglData);
     VulkanDescriptors.makeDescriptorSet(lwjglData);

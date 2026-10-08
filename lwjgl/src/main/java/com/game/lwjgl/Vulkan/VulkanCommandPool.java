@@ -1,6 +1,7 @@
 package com.game.lwjgl.Vulkan;
 
 import com.game.lwjgl.LwjglData;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VK14;
@@ -12,7 +13,7 @@ import java.nio.LongBuffer;
 
 public class VulkanCommandPool {
   private VulkanCommandPool(){}
-  public static void makeCommandBuffer(LwjglData lwjglData) {
+  public static long makeCommandPool(LwjglData lwjglData) {
     try (MemoryStack stack = MemoryStack.stackPush()) {
       VkCommandPoolCreateInfo poolInfo = VkCommandPoolCreateInfo.calloc(stack)
           .sType(VK14.VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO)
@@ -21,10 +22,22 @@ public class VulkanCommandPool {
       
       LongBuffer pCmdPool = stack.mallocLong(1);
       if (VK14.vkCreateCommandPool(lwjglData.vkDevice, poolInfo, null, pCmdPool) != VK14.VK_SUCCESS) {
-        throw new RuntimeException("Failed to create command pool!");
+        throw new RuntimeException("Failed to create command pool");
       }
-      long commandPool = pCmdPool.get(0);
-      lwjglData.commandPool = commandPool;
+      
+      return  pCmdPool.get(0);
+    }
+  }
+  
+  public static void cleanupCommandPool(LwjglData lwjglData) {
+    for (Long commandPool : lwjglData.allMadePools){
+      VK14.vkDestroyCommandPool(lwjglData.vkDevice, commandPool, null);
+    }
+    
+  }
+  
+  public static ObjectArrayList<VkCommandBuffer> makeBuffer(long commandPool, LwjglData lwjglData){
+    try (MemoryStack stack = MemoryStack.stackPush()){
       VkCommandBufferAllocateInfo allocInfo = VkCommandBufferAllocateInfo.calloc(stack)
           .sType(VK14.VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO)
           .commandPool(commandPool)
@@ -33,16 +46,14 @@ public class VulkanCommandPool {
       
       PointerBuffer pCommandBuffers = stack.mallocPointer(lwjglData.MAX_FRAMES_IN_FLIGHT);
       if (VK14.vkAllocateCommandBuffers(lwjglData.vkDevice, allocInfo, pCommandBuffers) != VK14.VK_SUCCESS) {
-        throw new RuntimeException("Failed to allocate command buffers!");
+        throw new RuntimeException("Failed to allocate command buffers");
       }
       
+      ObjectArrayList<VkCommandBuffer> buffers = new ObjectArrayList<>();
       for (int i = 0; i < lwjglData.MAX_FRAMES_IN_FLIGHT; i++) {
-        lwjglData.commandBuffers[i] = new VkCommandBuffer(pCommandBuffers.get(i), lwjglData.vkDevice);
+        buffers.add(new VkCommandBuffer(pCommandBuffers.get(i), lwjglData.vkDevice));
       }
+      return buffers;
     }
-  }
-  
-  public static void cleanupCommandPool(LwjglData lwjglData) {
-    VK14.vkDestroyCommandPool(lwjglData.vkDevice, lwjglData.commandPool, null);
   }
 }

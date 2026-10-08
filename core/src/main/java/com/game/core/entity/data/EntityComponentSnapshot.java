@@ -1,5 +1,6 @@
-package com.game.core.entity;
+package com.game.core.entity.data;
 
+import com.game.core.entity.Entity;
 import it.unimi.dsi.fastutil.booleans.BooleanArrayList;
 import it.unimi.dsi.fastutil.ints.AbstractIntList;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -11,6 +12,8 @@ public class EntityComponentSnapshot {
   LongArrayList lastX;
   LongArrayList y;
   LongArrayList lastY;
+  LongArrayList z;//TODO: implement these
+  LongArrayList lastZ;
   LongArrayList direction;
   LongArrayList lastDirection;
   LongArrayList hp;
@@ -23,6 +26,7 @@ public class EntityComponentSnapshot {
   IntArrayList nextInCell;
   IntArrayList unitType;
   IntArrayList visible;
+  IntArrayList visibleSelected;
   IntArrayList generation;
   
   LongArrayList tags;
@@ -67,6 +71,7 @@ public class EntityComponentSnapshot {
     nextInCell = new IntArrayList(size);
     unitType = new IntArrayList(size);
     visible = new IntArrayList(size);
+    visibleSelected = new IntArrayList(size);//TODO: make this work, hopefully dont need to sort twice
     generation = new IntArrayList(size);
     
     tags = new LongArrayList(size);

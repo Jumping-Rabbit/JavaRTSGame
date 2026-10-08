@@ -4,12 +4,16 @@ import com.game.lwjgl.Shaderc.Shaders;
 import com.game.lwjgl.Vulkan.ComputePipelineTypes;
 import com.game.lwjgl.Vulkan.PipelineTypes;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.vulkan.*;
 
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 public class LwjglData {
   public final int MAX_FRAMES_IN_FLIGHT = 1;
+  public int renderThreads = 2;
   
   //Window
   public int windowWidth;
@@ -65,9 +69,9 @@ public class LwjglData {
   
   //command buffer
   public VkCommandBuffer[] commandBuffers = new VkCommandBuffer[MAX_FRAMES_IN_FLIGHT];
-  public long commandPool;
-  
+  public ConcurrentLinkedQueue<Long> allMadePools = new ConcurrentLinkedQueue<>();
+  public ThreadLocal<ObjectArrayList<VkCommandBuffer>> threadBuffers;
+
   public long descriptorSet;
   public long vertexBuffer;
-  
 }
