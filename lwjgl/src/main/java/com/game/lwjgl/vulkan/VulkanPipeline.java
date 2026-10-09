@@ -1,17 +1,34 @@
-package com.game.lwjgl.Vulkan;
-
+package com.game.lwjgl.vulkan;
 
 
 import com.game.lwjgl.LwjglData;
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.vulkan.*;
+import org.lwjgl.vulkan.VK14;
+import org.lwjgl.vulkan.VkComputePipelineCreateInfo;
+import org.lwjgl.vulkan.VkDevice;
+import org.lwjgl.vulkan.VkGraphicsPipelineCreateInfo;
+import org.lwjgl.vulkan.VkPipelineColorBlendAttachmentState;
+import org.lwjgl.vulkan.VkPipelineColorBlendStateCreateInfo;
+import org.lwjgl.vulkan.VkPipelineDynamicStateCreateInfo;
+import org.lwjgl.vulkan.VkPipelineInputAssemblyStateCreateInfo;
+import org.lwjgl.vulkan.VkPipelineLayoutCreateInfo;
+import org.lwjgl.vulkan.VkPipelineMultisampleStateCreateInfo;
+import org.lwjgl.vulkan.VkPipelineRasterizationStateCreateInfo;
+import org.lwjgl.vulkan.VkPipelineRenderingCreateInfo;
+import org.lwjgl.vulkan.VkPipelineShaderStageCreateInfo;
+import org.lwjgl.vulkan.VkPipelineVertexInputStateCreateInfo;
+import org.lwjgl.vulkan.VkPipelineViewportStateCreateInfo;
+import org.lwjgl.vulkan.VkPushConstantRange;
+import org.lwjgl.vulkan.VkVertexInputAttributeDescription;
+import org.lwjgl.vulkan.VkVertexInputBindingDescription;
 
 import java.nio.ByteBuffer;
 import java.nio.LongBuffer;
 
 public class VulkanPipeline {
   
-  private VulkanPipeline() {}
+  private VulkanPipeline() {
+  }
   
   public static void makePipelines(LwjglData lwjglData) {
     long pipelineLayout = make2DPipelineLayout(lwjglData);
@@ -53,7 +70,7 @@ public class VulkanPipeline {
       
       long[] pPipelineLayout = new long[1];
       if (VK14.vkCreatePipelineLayout(lwjglData.vkDevice, layoutInfo, null, pPipelineLayout) != VK14.VK_SUCCESS) {
-        throw new RuntimeException("Failed to create pipeline layout");
+        throw new RuntimeException("failed to create pipeline layout");
       }
       lwjglData.pipelineLayout2D = pPipelineLayout[0];
       return pPipelineLayout[0];
@@ -75,7 +92,7 @@ public class VulkanPipeline {
       
       long[] pPipelineLayout = new long[1];
       if (VK14.vkCreatePipelineLayout(lwjglData.vkDevice, layoutInfo, null, pPipelineLayout) != VK14.VK_SUCCESS) {
-        throw new RuntimeException("Failed to create pipeline layout");
+        throw new RuntimeException("failed to create pipeline layout");
       }
       return pPipelineLayout[0];
     }
@@ -96,7 +113,6 @@ public class VulkanPipeline {
     VK14.vkDestroyPipelineLayout(lwjglData.vkDevice, lwjglData.pipelineLayoutCollision, null);
   }
   
-  
   private static long createGraphicsPipeline(
       VkDevice device,
       long vertShaderModule,
@@ -104,7 +120,6 @@ public class VulkanPipeline {
       long pipelineLayout,
       int colorAttachmentFormat,
       int depthAttachmentFormat) {
-    
     try (MemoryStack stack = MemoryStack.stackPush()) {
       ByteBuffer entryPoint = stack.UTF8("main");
       
@@ -137,7 +152,7 @@ public class VulkanPipeline {
       VkPipelineRasterizationStateCreateInfo rasterizer = VkPipelineRasterizationStateCreateInfo.calloc(stack)
           .sType$Default()
           .polygonMode(VK14.VK_POLYGON_MODE_FILL)
-          .cullMode(VK14.VK_CULL_MODE_BACK_BIT)
+          .cullMode(VK14.VK_CULL_MODE_NONE)
           .frontFace(VK14.VK_FRONT_FACE_CLOCKWISE)
           .lineWidth(1.0f);
       
@@ -203,7 +218,7 @@ public class VulkanPipeline {
       int result = VK14.vkCreateGraphicsPipelines(device, VK14.VK_NULL_HANDLE, pipelineInfo, null, pPipeline);
       
       if (result != VK14.VK_SUCCESS) {
-        throw new RuntimeException("Failed to create graphics pipeline " + result);
+        throw new RuntimeException("failed to create graphics pipeline " + result);
       }
       
       return pPipeline.get(0);
@@ -229,7 +244,7 @@ public class VulkanPipeline {
       int result = VK14.vkCreateComputePipelines(device, VK14.VK_NULL_HANDLE, pipelineInfo, null, pPipeline);
       
       if (result != VK14.VK_SUCCESS) {
-        throw new RuntimeException("Failed to create compute pipeline: " + result);
+        throw new RuntimeException("failed to create compute pipeline: " + result);
       }
       
       return pPipeline[0];

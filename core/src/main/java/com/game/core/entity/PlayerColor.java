@@ -1,6 +1,6 @@
 package com.game.core.entity;
 
-import java.awt.*;
+import java.awt.Color;
 
 public enum PlayerColor {
   RED(new Color(255, 0, 0), 0),

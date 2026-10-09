@@ -190,11 +190,11 @@ public class TitleScreen extends GameWindow/* implements Screen*/ {
 //                continue;
 //            }
 //            DrawUtil.strokeRect(button.getRectangle(), 0x0096FFFF, 5);
-//            DrawUtil.fillText(button.getName(), button.getRectangle().getX() + button.getRectangle().getWidth() / 2, 1030, Fonts.DEFAULT, 40, StringAlignment.CENTER_MIDDLE, 0xFFFFFFFF);
+//            DrawUtil.fillText(button.getName(), button.getRectangle().getX() + button.getRectangle().getWidth() / 2, 1030, Fonts.DEFAULT, 40, TextAlignment.CENTER_MIDDLE, 0xFFFFFFFF);
 //        }
 
 //        DrawUtil.strokeRect(selectedButton.getRectangle(), 0x00FFFFFF, 5);
-//        DrawUtil.fillText(selectedButton.getName(), selectedButton.getRectangle().getX() + selectedButton.getRectangle().getWidth() / 2, 1030, Fonts.DEFAULT, 40, StringAlignment.CENTER_MIDDLE, 0xFFFFFFFF);
+//        DrawUtil.fillText(selectedButton.getName(), selectedButton.getRectangle().getX() + selectedButton.getRectangle().getWidth() / 2, 1030, Fonts.DEFAULT, 40, TextAlignment.CENTER_MIDDLE, 0xFFFFFFFF);
 
 //        switch (selectedButton) {
 //            case HOME:
@@ -217,8 +217,8 @@ public class TitleScreen extends GameWindow/* implements Screen*/ {
       DrawManager.fillRect(0, 0, 1920, 1080, 0x00000054);
       DrawManager.fillRect(620, 420, 680, 300, 0x646464FF);
 //            DrawUtil.fillRect(exitButton, 0x969696FF);
-//            DrawUtil.fillText("close program?", 960, 630, Fonts.DEFAULT, 50, StringAlignment.CENTER_MIDDLE, 0xFFFFFFFF);
-//            DrawUtil.fillText("close", 960, 510, Fonts.DEFAULT, 50, StringAlignment.CENTER_MIDDLE, 0xFFFFFFFF);
+//            DrawUtil.fillText("close program?", 960, 630, Fonts.DEFAULT, 50, TextAlignment.CENTER_MIDDLE, 0xFFFFFFFF);
+//            DrawUtil.fillText("close", 960, 510, Fonts.DEFAULT, 50, TextAlignment.CENTER_MIDDLE, 0xFFFFFFFF);
     }
   }
   
@@ -247,12 +247,12 @@ public class TitleScreen extends GameWindow/* implements Screen*/ {
       if (i == selectedIndex) {
         DrawManager.strokeRect(50, 830 - (i - start) * 100, 1000, 80, 0x00FFFFFF, 5);
         if (!customMaps.isEmpty()) {
-//                    DrawUtil.fillText(customMapsName.get(i), 525, 880-(i - start) * 100, Fonts.DEFAULT, 40, StringAlignment.CENTER_MIDDLE, 0x00FFFFFF);
+//                    DrawUtil.fillText(customMapsName.get(i), 525, 880-(i - start) * 100, Fonts.DEFAULT, 40, TextAlignment.CENTER_MIDDLE, 0x00FFFFFF);
         }
       } else {
         DrawManager.strokeRect(50, 830 - (i - start) * 100, 1000, 80, 0x0096FFFF, 5);
         if (!customMaps.isEmpty()) {
-//                    DrawUtil.fillText(customMapsName.get(i), 525, 880-(i - start) * 100, Fonts.DEFAULT, 40, StringAlignment.CENTER_MIDDLE, 0x0096FFFF);
+//                    DrawUtil.fillText(customMapsName.get(i), 525, 880-(i - start) * 100, Fonts.DEFAULT, 40, TextAlignment.CENTER_MIDDLE, 0x0096FFFF);
         }
       }
       
@@ -279,10 +279,10 @@ public class TitleScreen extends GameWindow/* implements Screen*/ {
       DrawManager.fillRect(50, 930 - (i - start) * 100, 1000, 80, 0x000000FF);
       if (i == selectedIndex) {
         DrawManager.strokeRect(50, 930 - (i - start) * 100, 1000, 80, 0x00FFFFFF, 5);
-//                DrawUtil.fillText(replaysName.get(i), 525, 880-(i - start) * 100, Fonts.DEFAULT, 40, StringAlignment.CENTER_MIDDLE, 0x00FFFFFF);
+//                DrawUtil.fillText(replaysName.get(i), 525, 880-(i - start) * 100, Fonts.DEFAULT, 40, TextAlignment.CENTER_MIDDLE, 0x00FFFFFF);
       } else {
         DrawManager.strokeRect(50, 930 - (i - start) * 100, 1000, 80, 0x0096FFFF, 5);
-//                DrawUtil.fillText(replaysName.get(i), 525, 880-(i - start) * 100, Fonts.DEFAULT, 40, StringAlignment.CENTER_MIDDLE, 0x0096FFFF);
+//                DrawUtil.fillText(replaysName.get(i), 525, 880-(i - start) * 100, Fonts.DEFAULT, 40, TextAlignment.CENTER_MIDDLE, 0x0096FFFF);
       }
       
       

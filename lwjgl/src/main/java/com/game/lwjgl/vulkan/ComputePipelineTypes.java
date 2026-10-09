@@ -1,7 +1,7 @@
-package com.game.lwjgl.Vulkan;
+package com.game.lwjgl.vulkan;
 
 
-import com.game.lwjgl.Shaderc.Shaders;
+import com.game.lwjgl.shaderc.Shaders;
 
 public enum ComputePipelineTypes {
   COLLISION(Shaders.COLLISION);

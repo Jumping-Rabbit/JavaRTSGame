@@ -89,7 +89,7 @@ public class SettingsManager {
                 intSetting.setValue(valueNode.asInt());
               } else if (settingObj instanceof BoolSetting boolSetting && valueNode.isBoolean()) {
                 boolSetting.setValue(valueNode.asBoolean());
-              } else if (settingObj instanceof EnumSetting enumSetting && valueNode.isTextual()) {
+              } else if (settingObj instanceof EnumSetting enumSetting && valueNode.isString()) {
                 String enumStringValue = valueNode.asString();
                 
                 Class enumClass = enumSetting.getEnumClass();

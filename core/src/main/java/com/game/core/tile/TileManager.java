@@ -2,7 +2,7 @@ package com.game.core.tile;
 
 import com.game.core.utils.LoggerUtil;
 
-import java.awt.*;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;

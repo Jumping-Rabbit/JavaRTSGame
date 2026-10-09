@@ -1,4 +1,4 @@
-package com.game.lwjgl.Shaderc;
+package com.game.lwjgl.shaderc;
 
 import com.game.lwjgl.api.LwjglManager;
 import org.lwjgl.util.shaderc.Shaderc;
@@ -27,13 +27,13 @@ public enum Shaders {
         return shader;
       }
     }
-    throw new IllegalArgumentException("Unknown shader file: " + value);
+    throw new IllegalArgumentException("unknown shader file: " + value);
   }
   
   public static String readShader(Shaders shader) throws IOException {
     String path = "/shaders/" + shader.name;
     try (InputStream in = LwjglManager.class.getResourceAsStream(path)) {
-      if (in == null) throw new FileNotFoundException("Missing shader resource: " + path);
+      if (in == null) throw new FileNotFoundException("missing shader resource: " + path);
       return new String(in.readAllBytes(), StandardCharsets.UTF_8);
     }
   }

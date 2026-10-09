@@ -20,7 +20,7 @@ public class SoundManager {
   
   private static int bgmNum;
   private static String bgmName;
-  private static float masterVolume = 1.0f; // Scale: 0.0f to 1.0f
+  private static float masterVolume = 1.0f; //  0.0f to 1.0f
   private static float bgmVolume = 1.0f;
   private static float sfxVolume = 1.0f;
   

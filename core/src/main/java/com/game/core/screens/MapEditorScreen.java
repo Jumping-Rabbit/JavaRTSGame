@@ -322,9 +322,9 @@ public class MapEditorScreen extends GameWindow/* implements Screen */ {
 ////                }
 //                continue;
 //            } else if (button == Buttons.HEIGHT_COUNTER) {
-//                DrawUtil.fillText(String.valueOf(height), button.getRectangle().getX() + button.getRectangle().getWidth() / 2, button.getRectangle().getY() + button.getRectangle().getHeight() / 2, Fonts.DEFAULT, 20, StringAlignment.CENTER_MIDDLE, 0x0096FFFF);
+//                DrawUtil.fillText(String.valueOf(height), button.getRectangle().getX() + button.getRectangle().getWidth() / 2, button.getRectangle().getY() + button.getRectangle().getHeight() / 2, Fonts.DEFAULT, 20, TextAlignment.CENTER_MIDDLE, 0x0096FFFF);
 //            }
-//            DrawUtil.fillText(button.getName(), button.getRectangle().getX() + button.getRectangle().getWidth() / 2, button.getRectangle().getY() + button.getRectangle().getHeight() / 2, Fonts.DEFAULT, 20, StringAlignment.CENTER_MIDDLE, 0x0096FFFF);
+//            DrawUtil.fillText(button.getName(), button.getRectangle().getX() + button.getRectangle().getWidth() / 2, button.getRectangle().getY() + button.getRectangle().getHeight() / 2, Fonts.DEFAULT, 20, TextAlignment.CENTER_MIDDLE, 0x0096FFFF);
 //        }
   }
   

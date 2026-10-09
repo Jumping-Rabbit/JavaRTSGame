@@ -1,19 +1,33 @@
 package com.game.lwjgl;
 
-import com.game.lwjgl.Shaderc.Shaders;
-import com.game.lwjgl.Vulkan.ComputePipelineTypes;
-import com.game.lwjgl.Vulkan.PipelineTypes;
+import com.game.lwjgl.shaderc.Shaders;
+import com.game.lwjgl.stb.BakedAtlas;
+import com.game.lwjgl.vulkan.ComputePipelineTypes;
+import com.game.lwjgl.vulkan.PipelineTypes;
+import com.game.lwjgl.vulkan.RenderData;
+import com.game.lwjgl.vulkan.VulkanRenderBatchTask2D;
+import com.game.lwjgl.vulkan.VulkanThreadState;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWVidMode;
-import org.lwjgl.vulkan.*;
+import org.lwjgl.vulkan.VkCommandBuffer;
+import org.lwjgl.vulkan.VkDevice;
+import org.lwjgl.vulkan.VkInstance;
+import org.lwjgl.vulkan.VkPhysicalDevice;
+import org.lwjgl.vulkan.VkQueue;
 
+import java.nio.ByteBuffer;
+import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
 
 public class LwjglData {
   public final int MAX_FRAMES_IN_FLIGHT = 1;
   public int renderThreads = 2;
+  public int instancesPerTask = 1 << 14;
+  public int taskCount;
+  
+  public RenderData renderData = new RenderData();
   
   //Window
   public int windowWidth;
@@ -32,12 +46,7 @@ public class LwjglData {
   public Object2LongOpenHashMap<ComputePipelineTypes> vulkanComputePipelines = new Object2LongOpenHashMap<>();
   public long pipelineLayout2D;
   public long descriptorSetLayout2D;
-  public long vertexBufferMemory;
   public long descriptorPool;
-  public long textureImage;
-  public long textureMemory;
-  public long textureView;
-  public long textureSampler;
   public long pipelineLayoutCollision;
   public long descriptorSetLayoutCollision;
   
@@ -64,14 +73,31 @@ public class LwjglData {
   
   //sync
   public long[] imageAvailableSemaphores = new long[MAX_FRAMES_IN_FLIGHT];
-  public long[] renderFinishedSemaphores = new long[MAX_FRAMES_IN_FLIGHT];
+  public long[] renderFinishedSemaphores;
   public long[] inFlightFences = new long[MAX_FRAMES_IN_FLIGHT];
   
   //command buffer
   public VkCommandBuffer[] commandBuffers = new VkCommandBuffer[MAX_FRAMES_IN_FLIGHT];
-  public ConcurrentLinkedQueue<Long> allMadePools = new ConcurrentLinkedQueue<>();
-  public ThreadLocal<ObjectArrayList<VkCommandBuffer>> threadBuffers;
-
+  
   public long descriptorSet;
-  public long vertexBuffer;
+  
+  public long commandPool;                // main-thread pool (primary buffers + one-shot uploads)
+  public long instanceBuffer, instanceMemory;
+  public ByteBuffer instanceMapped;
+  
+  //render
+  public ExecutorService renderExecutor;
+  public List<VulkanRenderBatchTask2D> renderTasks;
+  public ConcurrentLinkedQueue<VulkanThreadState.ThreadState> threadStates = new ConcurrentLinkedQueue<>();
+  public ThreadLocal<VulkanThreadState.ThreadState> threadState;
+  
+  //stb
+  public long fontImage;
+  public long fontAllocation;
+  public long fontImageView;
+  public long fontSampler;
+  public BakedAtlas[] bakedAtlases;
+  
+  //vma
+  public long vmaAllocator;
 }

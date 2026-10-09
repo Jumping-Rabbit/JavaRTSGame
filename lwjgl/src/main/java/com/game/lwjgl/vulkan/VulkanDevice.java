@@ -1,15 +1,26 @@
-package com.game.lwjgl.Vulkan;
+package com.game.lwjgl.vulkan;
 
 import com.game.lwjgl.LwjglData;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.vulkan.*;
+import org.lwjgl.vulkan.KHRSurface;
+import org.lwjgl.vulkan.KHRSwapchain;
+import org.lwjgl.vulkan.VK14;
+import org.lwjgl.vulkan.VkDevice;
+import org.lwjgl.vulkan.VkDeviceCreateInfo;
+import org.lwjgl.vulkan.VkDeviceQueueCreateInfo;
+import org.lwjgl.vulkan.VkPhysicalDevice;
+import org.lwjgl.vulkan.VkPhysicalDeviceFeatures;
+import org.lwjgl.vulkan.VkPhysicalDeviceVulkan13Features;
+import org.lwjgl.vulkan.VkQueue;
+import org.lwjgl.vulkan.VkQueueFamilyProperties;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 public class VulkanDevice {
-  private VulkanDevice() {}
+  private VulkanDevice() {
+  }
   
   public static void getAllPhysicalDevices(LwjglData lwjglData) {
     try (MemoryStack stack = MemoryStack.stackPush()) {
@@ -19,7 +30,7 @@ public class VulkanDevice {
       int deviceCount = pDeviceCount.get(0);
       
       if (deviceCount == 0) {
-        throw new IllegalStateException("Failed to find GPUs with Vulkan support");
+        throw new IllegalStateException("failed to find GPUs with Vulkan support");
       }
       
       PointerBuffer pPhysicalDevices = stack.mallocPointer(deviceCount);
@@ -51,7 +62,8 @@ public class VulkanDevice {
       
       VkPhysicalDeviceVulkan13Features vk13Features = VkPhysicalDeviceVulkan13Features.calloc(stack)
           .sType(VK14.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES)
-          .dynamicRendering(true);
+          .dynamicRendering(true)
+          .synchronization2(true);
       
       PointerBuffer deviceExtensions = stack.mallocPointer(1);
       deviceExtensions.put(0, stack.UTF8(KHRSwapchain.VK_KHR_SWAPCHAIN_EXTENSION_NAME));
@@ -68,7 +80,7 @@ public class VulkanDevice {
       int result = VK14.vkCreateDevice(lwjglData.vkPhysicalDevice, createInfo, null, pDevice);
       
       if (result != VK14.VK_SUCCESS) {
-        throw new RuntimeException("Failed to create logical device. " + result);
+        throw new RuntimeException("failed to create logical device. " + result);
       }
       
       lwjglData.vkDevice = new VkDevice(pDevice.get(0), lwjglData.vkPhysicalDevice, createInfo);

@@ -1,4 +1,4 @@
-package com.game.lwjgl.Shaderc;
+package com.game.lwjgl.shaderc;
 
 import com.game.lwjgl.LwjglData;
 import org.lwjgl.system.MemoryStack;
@@ -11,12 +11,17 @@ import java.nio.ByteBuffer;
 import java.nio.LongBuffer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 
 public class LwjglShaderc {
   
-  private LwjglShaderc() {}
+  private LwjglShaderc() {
+  }
   
   public static void cleanupShaders(LwjglData lwjglData) {
     lwjglData.shadersToLongHandle.forEach((shaderModule, resultHandle) -> {
@@ -29,7 +34,7 @@ public class LwjglShaderc {
   
   public static void compileShaders(LwjglData lwjglData) {
     ConcurrentHashMap<Shaders, Long> tempMap = new ConcurrentHashMap<>();
-    int cores = StrictMath.max(Runtime.getRuntime().availableProcessors()/2, 1);
+    int cores = StrictMath.max(Runtime.getRuntime().availableProcessors() / 2, 1);
     ExecutorService executorService = Executors.newFixedThreadPool(Math.max(cores - 2, 1));
     
     long baseOptions = Shaderc.shaderc_compile_options_initialize();
@@ -60,7 +65,7 @@ public class LwjglShaderc {
         if (Shaderc.shaderc_result_get_compilation_status(result) != Shaderc.shaderc_compilation_status_success) {
           String errorLog = Shaderc.shaderc_result_get_error_message(result);
           Shaderc.shaderc_result_release(result);
-          throw new RuntimeException("Shader compilation failed for " + shader.getName() + ":\n" + errorLog);
+          throw new RuntimeException("shader compilation failed for " + shader.getName() + ":\n" + errorLog);
         }
         
         ByteBuffer spirvBytes = Shaderc.shaderc_result_get_bytes(result);
@@ -69,9 +74,9 @@ public class LwjglShaderc {
               .sType(VK14.VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO)
               .pCode(spirvBytes);
           LongBuffer pShaderModule = stack.mallocLong(1);
-          int r = VK14.vkCreateShaderModule(lwjglData.vkDevice, createInfo, null, pShaderModule);
-          if (r != VK14.VK_SUCCESS) {
-            throw new RuntimeException("vkCreateShaderModule failed for " + shader.getName() + ": " + r);
+          int shaderModule = VK14.vkCreateShaderModule(lwjglData.vkDevice, createInfo, null, pShaderModule);
+          if (shaderModule != VK14.VK_SUCCESS) {
+            throw new RuntimeException("vkCreateShaderModule failed for " + shader.getName() + ": " + shaderModule);
           }
           tempMap.put(shader, pShaderModule.get(0));
         } finally {
@@ -87,7 +92,7 @@ public class LwjglShaderc {
       }
     } catch (Exception e) {
       executorService.shutdownNow();
-      throw new RuntimeException("Shader compilation failed", e);
+      throw new RuntimeException("shader compilation failed ", e);
     } finally {
       Shaderc.shaderc_compile_options_release(baseOptions);
     }

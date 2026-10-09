@@ -1,11 +1,11 @@
 package com.game.core.draw;
 
-import com.game.core.Fonts;
 import com.game.core.Init;
 import com.game.core.screens.LoadingScreen;
 import com.game.core.utils.ModelLoaderUtil;
 import com.game.core.utils.NumUtil;
-import com.game.core.utils.StringAlignment;
+import com.game.lwjgl.api.Fonts;
+import com.game.lwjgl.api.TextAlignment;
 
 import static com.game.core.utils.NumUtil.LTF;
 
@@ -377,7 +377,7 @@ public class DrawManager {
   /**
    * draws a filled text, scaled inputs
    */
-  public static void fillTextScaled(String text, long xScaled, long yScaled, Fonts font, float size/*, StringAlignment alignment*/) {
+  public static void fillTextScaled(String text, long xScaled, long yScaled, Fonts font, float size/*, TextAlignment alignment*/) {
     int finalSize = Math.round(size * scale);
 //        BitmapFont gdxFont = font.getFont(finalSize);
     
@@ -548,7 +548,7 @@ public class DrawManager {
   /**
    * draws a filled text
    */
-  public static void fillText(String text, float x, float y, Fonts font, float size/*, StringAlignment alignment*/, int color) {
+  public static void fillText(String text, float x, float y, Fonts font, float size/*, TextAlignment alignment*/, int color) {
     setColor(color);
     int finalSize = Math.round(size * scale);
 //        BitmapFont gdxFont = font.getFont(finalSize);
@@ -671,7 +671,7 @@ public class DrawManager {
     /**
      * draws a filled text, scaled inputs
      */
-    public static void fillTextScaled(String text, long xCurrentScaled, long xLastScaled, long yCurrentScaled, long yLastScaled, Fonts font, float size/*, StringAlignment alignment*/) {
+    public static void fillTextScaled(String text, long xCurrentScaled, long xLastScaled, long yCurrentScaled, long yLastScaled, Fonts font, float size/*, TextAlignment alignment*/) {
       DrawManager.fillTextScaled(text, lerp(xCurrentScaled, xLastScaled), lerp(yCurrentScaled, yLastScaled), font, size/*, alignment*/);
     }
     
@@ -763,7 +763,7 @@ public class DrawManager {
     /**
      * draws a filled text
      */
-    public static void fillText(String text, float xCurrent, float xLast, float yCurrent, float yLast, Fonts font, float size/*, StringAlignment alignment*/, int color) {
+    public static void fillText(String text, float xCurrent, float xLast, float yCurrent, float yLast, Fonts font, float size/*, TextAlignment alignment*/, int color) {
       DrawManager.fillText(text, lerp(xCurrent, xLast), lerp(yCurrent, yLast), font, size/*, alignment*/, color);
     }
     
@@ -871,7 +871,7 @@ public class DrawManager {
     /**
      * draws a filled text, scaled inputs
      */
-    public static void fillTextScaled(String text, long xCurrentScaled, long xLastScaled, long yCurrentScaled, long yLastScaled, Fonts font, float size/*, StringAlignment alignment*/) {
+    public static void fillTextScaled(String text, long xCurrentScaled, long xLastScaled, long yCurrentScaled, long yLastScaled, Fonts font, float size/*, TextAlignment alignment*/) {
       DrawManager.fillTextScaled(text, lerp(xCurrentScaled, xLastScaled), lerp(yCurrentScaled, yLastScaled), font, size/*, alignment*/);
     }
     
@@ -963,7 +963,7 @@ public class DrawManager {
     /**
      * draws a filled text
      */
-    public static void fillText(String text, float xCurrent, float xLast, float yCurrent, float yLast, Fonts font, float size/*, StringAlignment alignment*/, int color) {
+    public static void fillText(String text, float xCurrent, float xLast, float yCurrent, float yLast, Fonts font, float size/*, TextAlignment alignment*/, int color) {
       DrawManager.fillText(text, lerp(xCurrent, xLast), lerp(yCurrent, yLast), font, size/*, alignment*/, color);
     }
     
@@ -1099,7 +1099,7 @@ public class DrawManager {
     /**
      * draws a filled text, scaled inputs, returns false if culled
      */
-    public static boolean fillTextScaledCull(String text, long xCurrentScaled, long xLastScaled, long yCurrentScaled, long yLastScaled, Fonts font, float size/*, StringAlignment alignment*/) {
+    public static boolean fillTextScaledCull(String text, long xCurrentScaled, long xLastScaled, long yCurrentScaled, long yLastScaled, Fonts font, float size/*, TextAlignment alignment*/) {
       long x = lerp(xCurrentScaled, xLastScaled);
       long y = lerp(yCurrentScaled, yLastScaled);
 //            if (cull(x, y, widthScaled, heightScaled)) return;//TODO:fix this
@@ -1246,7 +1246,7 @@ public class DrawManager {
     /**
      * draws a filled text, returns false if culled
      */
-    public static boolean fillTextCull(String text, float xCurrent, float xLast, float yCurrent, float yLast, Fonts font, float size, StringAlignment alignment, int color) {
+    public static boolean fillTextCull(String text, float xCurrent, float xLast, float yCurrent, float yLast, Fonts font, float size, TextAlignment alignment, int color) {
       float x = lerp(xCurrent, xLast);
       float y = lerp(yCurrent, yLast);
 //            if (cull(x, y, width, height)) return;//TODO: fix

@@ -1,4 +1,4 @@
-package com.game.lwjgl.Vulkan;
+package com.game.lwjgl.vulkan;
 
 import com.game.lwjgl.LwjglData;
 import org.lwjgl.PointerBuffer;
@@ -10,14 +10,15 @@ import org.lwjgl.vulkan.VkInstanceCreateInfo;
 
 public class VulkanInstance {
   
-  private VulkanInstance() {}
+  private VulkanInstance() {
+  }
   
   public static void makeVkInstance(LwjglData lwjglData) {
     try (MemoryStack stack = MemoryStack.stackPush()) {
       VkApplicationInfo appInfo = VkApplicationInfo.calloc(stack)
           .sType(VK14.VK_STRUCTURE_TYPE_APPLICATION_INFO)
-          .pApplicationName(stack.UTF8("Java RTS Game"))
-          .apiVersion(VK14.VK_API_VERSION_1_4);
+          .pApplicationName(stack.UTF8("SALF"))
+          .apiVersion(VK14.VK_API_VERSION_1_3);
       
       VkInstanceCreateInfo createInfo = VkInstanceCreateInfo.calloc(stack)
           .sType(VK14.VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO)
@@ -28,7 +29,7 @@ public class VulkanInstance {
       
       int result = VK14.vkCreateInstance(createInfo, null, pInstance);
       if (result != VK14.VK_SUCCESS) {
-        throw new RuntimeException("Failed to create Vulkan instance. Error code: " + result);
+        throw new RuntimeException("failed to create Vulkan instance. Error code: " + result);
       }
       
       long instanceHandle = pInstance.get(0);

@@ -1,12 +1,15 @@
 package com.game.core.entity.unit.vanguard;
 
 import com.game.core.Init;
-import com.game.core.entity.*;
+import com.game.core.entity.EntityDimension;
+import com.game.core.entity.EntityPosition;
+import com.game.core.entity.EntityStats;
+import com.game.core.entity.PlayerColor;
 import com.game.core.entity.unit.Unit;
 import com.game.core.entity.unit.UnitState;
 import com.game.core.entity.unit.UnitStats;
-import com.game.core.screens.LoadingScreen;
 import com.game.core.input.InputType;
+import com.game.core.screens.LoadingScreen;
 import com.game.core.utils.NumUtil;
 
 import java.util.ArrayList;

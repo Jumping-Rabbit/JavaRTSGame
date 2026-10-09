@@ -1,9 +1,12 @@
 package com.game.core.entity.building.vanguard;
 
-//import com.badlogic.gdx.graphics.g3d.ModelInstance;
 
 import com.game.core.Init;
-import com.game.core.entity.*;
+import com.game.core.entity.Entity;
+import com.game.core.entity.EntityDimension;
+import com.game.core.entity.EntityPosition;
+import com.game.core.entity.EntityStats;
+import com.game.core.entity.PlayerColor;
 import com.game.core.entity.building.Building;
 import com.game.core.entity.unit.UnitStats;
 import com.game.core.input.InputType;

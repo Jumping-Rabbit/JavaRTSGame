@@ -1,7 +1,7 @@
 package com.game.core.screens;
 
-import com.game.core.Fonts;
 import com.game.core.draw.DrawManager;
+import com.game.lwjgl.api.Fonts;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -32,7 +32,7 @@ public class LoadingScreen/* implements Screen */ {
     DrawManager.fillRect(0, 0, 1920, 1080, 0x000000FF);
     DrawManager.strokeRect(200, 880, 1520, 80, 0xFFFFFFFF, 4);
     DrawManager.fillRect(200, 880, ((float) loading.get() / total) * 1520, 80, 0xFFFFFFFF);
-    DrawManager.fillText("(" + loading + "/" + total + ") " + text, 960, 780, Fonts.DEFAULT, 20/*, StringAlignment.TOP_MIDDLE*/, 0xFFFFFFFF);
+    DrawManager.fillText("(" + loading + "/" + total + ") " + text, 960, 780, Fonts.DEFAULT, 20/*, TextAlignment.TOP_MIDDLE*/, 0xFFFFFFFF);
   }
 
 //    @Override

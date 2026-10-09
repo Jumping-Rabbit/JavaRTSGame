@@ -1,4 +1,4 @@
-package com.game.lwjgl.Glfw;
+package com.game.lwjgl.glfw;
 
 import com.game.lwjgl.LwjglData;
 import org.lwjgl.glfw.Callbacks;
@@ -15,20 +15,21 @@ import java.nio.LongBuffer;
 public class GlfwWindow {
   
   
-  private GlfwWindow() {}
+  private GlfwWindow() {
+  }
   
   public static void makeWindow(LwjglData lwjglData) {
     if (!GLFW.glfwInit()) {
-      throw new RuntimeException("Unable to initialize GLFW");
+      throw new RuntimeException("unable to initialize GLFW");
     }
     
     if (!GLFWVulkan.glfwVulkanSupported()) {
-      throw new RuntimeException("Cannot find a compatible Vulkan installable client driver (ICD)");
+      throw new RuntimeException("cannot find a compatible Vulkan installable client driver (ICD)");
     }
     
     GLFWVidMode vidMode = GLFW.glfwGetVideoMode(GLFW.glfwGetPrimaryMonitor());
     if (vidMode == null) {
-      throw new RuntimeException("Error getting primary monitor");
+      throw new RuntimeException("error getting primary monitor");
     }
     int width = vidMode.width();
     int height = vidMode.height();
@@ -37,10 +38,10 @@ public class GlfwWindow {
     GLFW.glfwWindowHint(GLFW.GLFW_CLIENT_API, GLFW.GLFW_NO_API);
     GLFW.glfwWindowHint(GLFW.GLFW_MAXIMIZED, GLFW.GLFW_FALSE);
     
-    // Create the window
-    long windowHandle = GLFW.glfwCreateWindow(width, height, "Java RTS Game", MemoryUtil.NULL, MemoryUtil.NULL);
+    // create the window
+    long windowHandle = GLFW.glfwCreateWindow(width, height, "SALF", MemoryUtil.NULL, MemoryUtil.NULL);
     if (windowHandle == MemoryUtil.NULL) {
-      throw new RuntimeException("Failed to create the GLFW window");
+      throw new RuntimeException("failed to create the GLFW window");
     }
     GLFW.glfwSetFramebufferSizeCallback(windowHandle, (window, w, h) -> {
       lwjglData.windowWidth = w;
@@ -66,7 +67,7 @@ public class GlfwWindow {
       int result = GLFWVulkan.glfwCreateWindowSurface(lwjglData.vkInstance, lwjglData.windowHandle, null, pSurface);
       
       if (result != VK14.VK_SUCCESS) {
-        throw new RuntimeException("Failed to create window surface. " + result);
+        throw new RuntimeException("failed to create window surface. " + result);
       }
       
       lwjglData.surface = pSurface.get(0);
@@ -88,7 +89,7 @@ public class GlfwWindow {
     GLFW.glfwTerminate();
   }
   
-  public static void cleanupSurface(LwjglData lwjglData){
+  public static void cleanupSurface(LwjglData lwjglData) {
     KHRSurface.vkDestroySurfaceKHR(lwjglData.vkInstance, lwjglData.surface, null);
   }
   

@@ -1,14 +1,23 @@
-package com.game.lwjgl.Vulkan;
+package com.game.lwjgl.vulkan;
 
 import com.game.lwjgl.LwjglData;
+import org.lwjgl.glfw.GLFW;
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.vulkan.*;
+import org.lwjgl.vulkan.KHRSurface;
+import org.lwjgl.vulkan.KHRSwapchain;
+import org.lwjgl.vulkan.VK14;
+import org.lwjgl.vulkan.VkExtent2D;
+import org.lwjgl.vulkan.VkImageViewCreateInfo;
+import org.lwjgl.vulkan.VkSurfaceCapabilitiesKHR;
+import org.lwjgl.vulkan.VkSurfaceFormatKHR;
+import org.lwjgl.vulkan.VkSwapchainCreateInfoKHR;
 
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 
 public class VulkanSwapchain {
-  private VulkanSwapchain(){}
+  private VulkanSwapchain() {
+  }
   
   public static void makeSwapChain(LwjglData lwjglData) {
     try (MemoryStack stack = MemoryStack.stackPush()) {
@@ -24,16 +33,16 @@ public class VulkanSwapchain {
       IntBuffer formatCount = stack.mallocInt(1);
       KHRSurface.vkGetPhysicalDeviceSurfaceFormatsKHR(lwjglData.vkPhysicalDevice, lwjglData.surface, formatCount, null);
       if (formatCount.get(0) == 0) {
-        throw new RuntimeException("Failed to find supported surface formats");
+        throw new RuntimeException("failed to find supported surface formats");
       }
       VkSurfaceFormatKHR.Buffer surfaceFormats = VkSurfaceFormatKHR.malloc(formatCount.get(0), stack);
       KHRSurface.vkGetPhysicalDeviceSurfaceFormatsKHR(lwjglData.vkPhysicalDevice, lwjglData.surface, formatCount, surfaceFormats);
       
       VkSurfaceFormatKHR chosenFormat = surfaceFormats.get(0);
       for (int i = 0; i < surfaceFormats.capacity(); i++) {
-        VkSurfaceFormatKHR fmt = surfaceFormats.get(i);
-        if (fmt.format() == VK14.VK_FORMAT_B8G8R8A8_SRGB && fmt.colorSpace() == KHRSurface.VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
-          chosenFormat = fmt;
+        VkSurfaceFormatKHR format = surfaceFormats.get(i);
+        if (format.format() == VK14.VK_FORMAT_B8G8R8A8_UNORM && format.colorSpace() == KHRSurface.VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
+          chosenFormat = format;
           break;
         }
       }
@@ -83,7 +92,7 @@ public class VulkanSwapchain {
       
       LongBuffer pSwapchain = stack.mallocLong(1);
       if (KHRSwapchain.vkCreateSwapchainKHR(lwjglData.vkDevice, createInfo, null, pSwapchain) != VK14.VK_SUCCESS) {
-        throw new RuntimeException("Failed to create swapchain");
+        throw new RuntimeException("failed to create swapchain");
       }
       
       lwjglData.swapchain = pSwapchain.get(0);
@@ -124,25 +133,26 @@ public class VulkanSwapchain {
       for (int i = 0; i < lwjglData.swapchainImages.length; i++) {
         viewInfo.image(lwjglData.swapchainImages[i]);
         if (VK14.vkCreateImageView(lwjglData.vkDevice, viewInfo, null, pView) != VK14.VK_SUCCESS) {
-          throw new RuntimeException("Failed to create image view at index " + i);
+          throw new RuntimeException("failed to create image view at index " + i);
         }
         lwjglData.swapchainImageViews[i] = pView.get(0);
       }
     }
+    VulkanSync.makeRenderFinished(lwjglData);
   }
   
   public static void recreate(LwjglData lwjglData) {
     try (MemoryStack stack = MemoryStack.stackPush()) {
-      IntBuffer w = stack.mallocInt(1), h = stack.mallocInt(1);
-      org.lwjgl.glfw.GLFW.glfwGetFramebufferSize(lwjglData.windowHandle, w, h);
-      if (w.get(0) == 0 || h.get(0) == 0) return; // minimized, try again later
-      lwjglData.windowWidth = w.get(0);
-      lwjglData.windowHeight = h.get(0);
+      IntBuffer width = stack.mallocInt(1), height = stack.mallocInt(1);
+      GLFW.glfwGetFramebufferSize(lwjglData.windowHandle, width, height);
+      if (width.get(0) == 0 || height.get(0) == 0) return;
+      lwjglData.windowWidth = width.get(0);
+      lwjglData.windowHeight = height.get(0);
     }
     
     VK14.vkDeviceWaitIdle(lwjglData.vkDevice);
     
-   cleanupSwapchain(lwjglData);
+    cleanupSwapchain(lwjglData);
     
     makeSwapChain(lwjglData);
     getSwapchainImages(lwjglData);
@@ -150,10 +160,12 @@ public class VulkanSwapchain {
     lwjglData.framebufferResized = false;
   }
   
-  public static void cleanupSwapchain(LwjglData lwjglData){
+  public static void cleanupSwapchain(LwjglData lwjglData) {
     if (lwjglData == null || lwjglData.vkDevice == null) {
       return;
     }
+    
+    VulkanSync.destroyRenderFinished(lwjglData);
     
     if (lwjglData.swapchainImageViews != null) {
       for (long view : lwjglData.swapchainImageViews) {

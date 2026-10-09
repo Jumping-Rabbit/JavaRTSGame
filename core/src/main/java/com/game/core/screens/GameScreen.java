@@ -10,7 +10,11 @@ import com.game.core.input.Input;
 import com.game.core.input.InputHandler;
 import com.game.core.input.InputType;
 import com.game.core.tile.TileManager;
-import com.game.core.utils.*;
+import com.game.core.utils.CollisionUtil;
+import com.game.core.utils.JsonUtil;
+import com.game.core.utils.LoggerUtil;
+import com.game.core.utils.NumUtil;
+import com.game.core.utils.PerformanceType;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
@@ -575,7 +579,7 @@ public class GameScreen/* implements Screen*/ {
     for (int i = 0; i < 20; i += 1) {
       DrawManager.fillLine(260 + i * 65.5f, 200, 260 + i * 65.5f, 260, 0x000000FF, 4);
       DrawManager.fillRect(262 + i * 65.5f + 15, 190, 30, 20, 0x505050FF);
-//            DrawUtil.fillText(String.valueOf(i + 1), 260 + i * 65.5f + 32.75f, 200, Fonts.DEFAULT, 20, StringAlignment.CENTER_MIDDLE, 0xFFFFFFFF);
+//            DrawUtil.fillText(String.valueOf(i + 1), 260 + i * 65.5f + 32.75f, 200, Fonts.DEFAULT, 20, TextAlignment.CENTER_MIDDLE, 0xFFFFFFFF);
     }
     int counter = 0;
 //    if (selectedEntities.size() > 20 * 3) {//col * row, more than can compress

@@ -15,9 +15,7 @@ public class AudioConverter {
                     .forEach(sourcePath -> {
                         Path relativePath = sourceRootDir.relativize(sourcePath);
                         String fileName = relativePath.toString();
-
-                        // Remove the last 9 characters (".mp3.mpeg")
-                        // and append ".m4a"
+                        
                         String baseName = fileName.substring(0, fileName.length() - 9);
                         Path targetFile = targetRootDir.resolve(baseName + ".m4a");
 

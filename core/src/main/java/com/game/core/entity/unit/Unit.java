@@ -1,8 +1,12 @@
 package com.game.core.entity.unit;
 
-import com.game.core.entity.*;
-import com.game.core.input.InputType;
 import com.game.core.draw.DrawManager;
+import com.game.core.entity.Abilities;
+import com.game.core.entity.Command;
+import com.game.core.entity.Entity;
+import com.game.core.entity.EntityPosition;
+import com.game.core.entity.PlayerColor;
+import com.game.core.input.InputType;
 import com.game.core.utils.NumUtil;
 
 import java.util.ArrayList;

@@ -56,7 +56,7 @@ jobs:
             --input staging \
             --main-jar ${{ steps.get_jar.outputs.jar_name }} \
             --main-class com.game.Main \
-            --name JavaRTSGame \
+            --name SALF \
             --java-options "-XX:+UseZGC -XX:-ZProactive -XX:-ZUncommit -Xms2G -Xmx6G -XX:+UseCompactObjectHeaders --sun-misc-unsafe-memory-access=allow --enable-native-access=ALL-UNNAMED ${{ matrix.extra_jvm_args }}" \
             --dest dist
 
@@ -64,14 +64,14 @@ jobs:
         shell: bash
         run: |
           if [ "${{ matrix.os }}" = "macos-latest" ]; then
-            cp -r target/resources dist/JavaRTSGame.app/Contents/MacOS/
+            cp -r target/resources dist/SALF.app/Contents/MacOS/
           else
-            cp -r target/resources dist/JavaRTSGame/
+            cp -r target/resources dist/SALF/
           fi
 
       - name: Stage OS Artifact
         uses: actions/upload-artifact@v5
         with:
           name: ${{ matrix.os_name }}
-          path: dist/JavaRTSGame*/
+          path: dist/SALF*/
           retention-days: 1

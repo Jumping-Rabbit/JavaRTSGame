@@ -1,9 +1,9 @@
 package com.game.core.screens;
 
+import com.game.core.draw.DrawManager;
 import com.game.core.input.Input;
 import com.game.core.input.InputHandler;
 import com.game.core.settings.SettingsManager;
-import com.game.core.draw.DrawManager;
 
 public class SettingsScreen extends GameWindow/* implements Screen*/ {
   private boolean isEditing = false;
@@ -201,10 +201,10 @@ public class SettingsScreen extends GameWindow/* implements Screen*/ {
 //        for (Buttons button : Buttons.values()) {
 //            if (button == currentSection) {
 //                DrawUtil.strokeRect(button.getRectangle(), 0x00FFFFFF, 5);
-//                DrawUtil.fillText(button.getName(), button.getRectangle().getX() + button.getRectangle().getWidth() / 2, 1030, Fonts.DEFAULT, 40, StringAlignment.CENTER_MIDDLE, 0x00FFFFFF);
+//                DrawUtil.fillText(button.getName(), button.getRectangle().getX() + button.getRectangle().getWidth() / 2, 1030, Fonts.DEFAULT, 40, TextAlignment.CENTER_MIDDLE, 0x00FFFFFF);
 //            } else {
 //                DrawUtil.strokeRect(button.getRectangle(), 0x0096FFFF, 5);
-//                DrawUtil.fillText(button.getName(), button.getRectangle().getX() + button.getRectangle().getWidth() / 2, 1030, Fonts.DEFAULT, 40, StringAlignment.CENTER_MIDDLE, 0x0096FFFF);
+//                DrawUtil.fillText(button.getName(), button.getRectangle().getX() + button.getRectangle().getWidth() / 2, 1030, Fonts.DEFAULT, 40, TextAlignment.CENTER_MIDDLE, 0x0096FFFF);
 //            }
 //
 //        }
@@ -214,12 +214,12 @@ public class SettingsScreen extends GameWindow/* implements Screen*/ {
 //                for (GraphicsButtons button : GraphicsButtons.values()) {
 //                    if (button == currentGraphicsSetting) {
 //                        DrawUtil.strokeRect(button.getRectangle(), 0x00FFFFFF, 5);
-//                        DrawUtil.fillText(button.getName(), button.getRectangle().getX() + button.getRectangle().getWidth() / 5, button.getRectangle().getY() + button.getRectangle().getHeight() / 2, Fonts.DEFAULT, 40, StringAlignment.CENTER_MIDDLE, 0x00FFFFFF);
-//                        DrawUtil.fillText(settingsManager.getSettingStringValue(button.getSetting().getId()), button.getRectangle().getX() + (button.getRectangle().getWidth() / 5) * 4, button.getRectangle().getY() + button.getRectangle().getHeight() / 2, Fonts.DEFAULT, 40, StringAlignment.CENTER_MIDDLE, 0x00FFFFFF);
+//                        DrawUtil.fillText(button.getName(), button.getRectangle().getX() + button.getRectangle().getWidth() / 5, button.getRectangle().getY() + button.getRectangle().getHeight() / 2, Fonts.DEFAULT, 40, TextAlignment.CENTER_MIDDLE, 0x00FFFFFF);
+//                        DrawUtil.fillText(settingsManager.getSettingStringValue(button.getSetting().getId()), button.getRectangle().getX() + (button.getRectangle().getWidth() / 5) * 4, button.getRectangle().getY() + button.getRectangle().getHeight() / 2, Fonts.DEFAULT, 40, TextAlignment.CENTER_MIDDLE, 0x00FFFFFF);
 //                    } else {
 //                        DrawUtil.strokeRect(button.getRectangle(), 0x0096FFFF, 5);
-//                        DrawUtil.fillText(button.getName(), button.getRectangle().getX() + button.getRectangle().getWidth() / 5, button.getRectangle().getY() + button.getRectangle().getHeight() / 2, Fonts.DEFAULT, 40, StringAlignment.CENTER_MIDDLE, 0x0096FFFF);
-//                        DrawUtil.fillText(settingsManager.getSettingStringValue(button.getSetting().getId()), button.getRectangle().getX() + (button.getRectangle().getWidth() / 5) * 4, button.getRectangle().getY() + button.getRectangle().getHeight() / 2, Fonts.DEFAULT, 40, StringAlignment.CENTER_MIDDLE, 0x0096FFFF);
+//                        DrawUtil.fillText(button.getName(), button.getRectangle().getX() + button.getRectangle().getWidth() / 5, button.getRectangle().getY() + button.getRectangle().getHeight() / 2, Fonts.DEFAULT, 40, TextAlignment.CENTER_MIDDLE, 0x0096FFFF);
+//                        DrawUtil.fillText(settingsManager.getSettingStringValue(button.getSetting().getId()), button.getRectangle().getX() + (button.getRectangle().getWidth() / 5) * 4, button.getRectangle().getY() + button.getRectangle().getHeight() / 2, Fonts.DEFAULT, 40, TextAlignment.CENTER_MIDDLE, 0x0096FFFF);
 //                    }
 //
 //                }
@@ -228,12 +228,12 @@ public class SettingsScreen extends GameWindow/* implements Screen*/ {
 //                for (AudioButtons button : AudioButtons.values()) {
 //                    if (button == currentAudioSetting) {
 //                        DrawUtil.strokeRect(button.getRectangle(), 0x00FFFFFF, 5);
-//                        DrawUtil.fillText(button.getName(), button.getRectangle().getX() + button.getRectangle().getWidth() / 5, button.getRectangle().getY() + button.getRectangle().getHeight() / 2, Fonts.DEFAULT, 40, StringAlignment.CENTER_MIDDLE, 0x00FFFFFF);
-//                        DrawUtil.fillText(settingsManager.getSettingStringValue(button.getSetting().getId()), button.getRectangle().getX() + (button.getRectangle().getWidth() / 5) * 4, button.getRectangle().getY() + button.getRectangle().getHeight() / 2, Fonts.DEFAULT, 40, StringAlignment.CENTER_MIDDLE, 0x00FFFFFF);
+//                        DrawUtil.fillText(button.getName(), button.getRectangle().getX() + button.getRectangle().getWidth() / 5, button.getRectangle().getY() + button.getRectangle().getHeight() / 2, Fonts.DEFAULT, 40, TextAlignment.CENTER_MIDDLE, 0x00FFFFFF);
+//                        DrawUtil.fillText(settingsManager.getSettingStringValue(button.getSetting().getId()), button.getRectangle().getX() + (button.getRectangle().getWidth() / 5) * 4, button.getRectangle().getY() + button.getRectangle().getHeight() / 2, Fonts.DEFAULT, 40, TextAlignment.CENTER_MIDDLE, 0x00FFFFFF);
 //                    } else {
 //                        DrawUtil.strokeRect(button.getRectangle(), 0x0096FFFF, 5);
-//                        DrawUtil.fillText(button.getName(), button.getRectangle().getX() + button.getRectangle().getWidth() / 5, button.getRectangle().getY() + button.getRectangle().getHeight() / 2, Fonts.DEFAULT, 40, StringAlignment.CENTER_MIDDLE, 0x0096FFFF);
-//                        DrawUtil.fillText(settingsManager.getSettingStringValue(button.getSetting().getId()), button.getRectangle().getX() + (button.getRectangle().getWidth() / 5) * 4, button.getRectangle().getY() + button.getRectangle().getHeight() / 2, Fonts.DEFAULT, 40, StringAlignment.CENTER_MIDDLE, 0x0096FFFF);
+//                        DrawUtil.fillText(button.getName(), button.getRectangle().getX() + button.getRectangle().getWidth() / 5, button.getRectangle().getY() + button.getRectangle().getHeight() / 2, Fonts.DEFAULT, 40, TextAlignment.CENTER_MIDDLE, 0x0096FFFF);
+//                        DrawUtil.fillText(settingsManager.getSettingStringValue(button.getSetting().getId()), button.getRectangle().getX() + (button.getRectangle().getWidth() / 5) * 4, button.getRectangle().getY() + button.getRectangle().getHeight() / 2, Fonts.DEFAULT, 40, TextAlignment.CENTER_MIDDLE, 0x0096FFFF);
 //                    }
 //
 //                }
@@ -245,14 +245,14 @@ public class SettingsScreen extends GameWindow/* implements Screen*/ {
 //                case GRAPHICS:
 //                    DrawUtil.fillRect(currentGraphicsSetting.getRectangle(), 0x323232FF);
 //                    DrawUtil.strokeRect(currentGraphicsSetting.getRectangle(), 0x00FFFFFF, 5);
-//                    DrawUtil.fillText(currentGraphicsSetting.getName(), currentGraphicsSetting.getRectangle().getX() + currentGraphicsSetting.getRectangle().getWidth() / 5, currentGraphicsSetting.getRectangle().getY() + currentGraphicsSetting.getRectangle().getHeight() / 2, Fonts.DEFAULT, 40, StringAlignment.CENTER_MIDDLE, 0x00FFFFFF);
-//                    DrawUtil.fillText(settingsManager.getSettingStringValue(currentGraphicsSetting.getSetting().getId()), currentGraphicsSetting.getRectangle().getX() + (currentGraphicsSetting.getRectangle().getWidth() / 5) * 4, currentGraphicsSetting.getRectangle().getY() + currentGraphicsSetting.getRectangle().getHeight() / 2, Fonts.DEFAULT, 40, StringAlignment.CENTER_MIDDLE, 0x00FFFFFF);
+//                    DrawUtil.fillText(currentGraphicsSetting.getName(), currentGraphicsSetting.getRectangle().getX() + currentGraphicsSetting.getRectangle().getWidth() / 5, currentGraphicsSetting.getRectangle().getY() + currentGraphicsSetting.getRectangle().getHeight() / 2, Fonts.DEFAULT, 40, TextAlignment.CENTER_MIDDLE, 0x00FFFFFF);
+//                    DrawUtil.fillText(settingsManager.getSettingStringValue(currentGraphicsSetting.getSetting().getId()), currentGraphicsSetting.getRectangle().getX() + (currentGraphicsSetting.getRectangle().getWidth() / 5) * 4, currentGraphicsSetting.getRectangle().getY() + currentGraphicsSetting.getRectangle().getHeight() / 2, Fonts.DEFAULT, 40, TextAlignment.CENTER_MIDDLE, 0x00FFFFFF);
 //                    break;
 //                case AUDIO:
 //                    DrawUtil.fillRect(currentAudioSetting.getRectangle(), 0x323232FF);
 //                    DrawUtil.strokeRect(currentAudioSetting.getRectangle(), 0x00FFFFFF, 5);
-//                    DrawUtil.fillText(currentAudioSetting.getName(), currentAudioSetting.getRectangle().getX() + currentAudioSetting.getRectangle().getWidth() / 5, currentAudioSetting.getRectangle().getY() + currentAudioSetting.getRectangle().getHeight() / 2, Fonts.DEFAULT, 40, StringAlignment.CENTER_MIDDLE, 0x00FFFFFF);
-//                    DrawUtil.fillText(settingsManager.getSettingStringValue(currentAudioSetting.getSetting().getId()), currentAudioSetting.getRectangle().getX() + (currentAudioSetting.getRectangle().getWidth() / 5) * 4, currentAudioSetting.getRectangle().getY() + currentAudioSetting.getRectangle().getHeight() / 2, Fonts.DEFAULT, 40, StringAlignment.CENTER_MIDDLE, 0x00FFFFFF);
+//                    DrawUtil.fillText(currentAudioSetting.getName(), currentAudioSetting.getRectangle().getX() + currentAudioSetting.getRectangle().getWidth() / 5, currentAudioSetting.getRectangle().getY() + currentAudioSetting.getRectangle().getHeight() / 2, Fonts.DEFAULT, 40, TextAlignment.CENTER_MIDDLE, 0x00FFFFFF);
+//                    DrawUtil.fillText(settingsManager.getSettingStringValue(currentAudioSetting.getSetting().getId()), currentAudioSetting.getRectangle().getX() + (currentAudioSetting.getRectangle().getWidth() / 5) * 4, currentAudioSetting.getRectangle().getY() + currentAudioSetting.getRectangle().getHeight() / 2, Fonts.DEFAULT, 40, TextAlignment.CENTER_MIDDLE, 0x00FFFFFF);
 //                    break;
 //            }
 //        }

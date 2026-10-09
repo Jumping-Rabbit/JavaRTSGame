@@ -4,13 +4,19 @@ import com.game.core.draw.DrawManager;
 import com.game.core.input.Actions;
 import com.game.core.input.Input;
 import com.game.core.input.InputHandler;
-import com.game.lwjgl.api.LwjglManager;
-import com.game.core.screens.*;
+import com.game.core.screens.GameScreen;
+import com.game.core.screens.GameWindow;
+import com.game.core.screens.LoadingScreen;
+import com.game.core.screens.MapEditorScreen;
+import com.game.core.screens.ReplayScreen;
+import com.game.core.screens.SettingsScreen;
+import com.game.core.screens.TitleScreen;
 import com.game.core.settings.SettingsManager;
 import com.game.core.sound.SoundManager;
 import com.game.core.utils.LogType;
 import com.game.core.utils.LoggerUtil;
 import com.game.core.utils.PerformanceType;
+import com.game.lwjgl.api.LwjglManager;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.reflections.Reflections;
 import oshi.ffm.SystemInfo;
@@ -390,13 +396,13 @@ public class GameCore /*extends Game */ {
 //        }
 //        DrawUtil.fillOffsetEdge();
 
-//        DrawUtil.fillText("fps:" + formatString(Gdx.graphics.getFramesPerSecond(), "00000.00") + " tps:" + formatString(performanceStorage.getTPS(), "00"), 5, 1070, Fonts.DEFAULT, 10, StringAlignment.TOP_LEFT, 0xFFFFFFFF);
-//        DrawUtil.fillText("fps1%:" + formatString(performanceStorage.getPeakDT(), "0000.00") + " fps0.1%:" + formatString(performanceStorage.getPeakPeakDT(), "0000.00"), 5, 1060, Fonts.DEFAULT, 10, StringAlignment.TOP_LEFT, 0xFFFFFFFF);
-//        DrawUtil.fillText("ttu:" + formatString(performanceStorage.getTickTimeUsed(), "0000.00") + "%" + " ttu1%:" + formatString(performanceStorage.getTickTimeUsedLow(), "0000.00") + "%" + " late frames:" + performanceStorage.getLateFrames(), 5, 1050, Fonts.DEFAULT, 10, StringAlignment.TOP_LEFT, 0xFFFFFFFF);
+//        DrawUtil.fillText("fps:" + formatString(Gdx.graphics.getFramesPerSecond(), "00000.00") + " tps:" + formatString(performanceStorage.getTPS(), "00"), 5, 1070, Fonts.DEFAULT, 10, TextAlignment.TOP_LEFT, 0xFFFFFFFF);
+//        DrawUtil.fillText("fps1%:" + formatString(performanceStorage.getPeakDT(), "0000.00") + " fps0.1%:" + formatString(performanceStorage.getPeakPeakDT(), "0000.00"), 5, 1060, Fonts.DEFAULT, 10, TextAlignment.TOP_LEFT, 0xFFFFFFFF);
+//        DrawUtil.fillText("ttu:" + formatString(performanceStorage.getTickTimeUsed(), "0000.00") + "%" + " ttu1%:" + formatString(performanceStorage.getTickTimeUsedLow(), "0000.00") + "%" + " late frames:" + performanceStorage.getLateFrames(), 5, 1050, Fonts.DEFAULT, 10, TextAlignment.TOP_LEFT, 0xFFFFFFFF);
 //
-//        DrawUtil.fillText(hardwarePerformance.getCpuStats(), 1915, 1070, Fonts.DEFAULT, 10, StringAlignment.TOP_RIGHT, 0xFFFFFFFF);
-//        DrawUtil.fillText(hardwarePerformance.getRamStats(), 1915, 1060, Fonts.DEFAULT, 10, StringAlignment.TOP_RIGHT, 0xFFFFFFFF);
-//        DrawUtil.fillText("BGM: " + SoundManager.getBgmName(), 1915, 1050, Fonts.DEFAULT, 10, StringAlignment.TOP_RIGHT, 0xFFFFFFFF);
+//        DrawUtil.fillText(hardwarePerformance.getCpuStats(), 1915, 1070, Fonts.DEFAULT, 10, TextAlignment.TOP_RIGHT, 0xFFFFFFFF);
+//        DrawUtil.fillText(hardwarePerformance.getRamStats(), 1915, 1060, Fonts.DEFAULT, 10, TextAlignment.TOP_RIGHT, 0xFFFFFFFF);
+//        DrawUtil.fillText("BGM: " + SoundManager.getBgmName(), 1915, 1050, Fonts.DEFAULT, 10, TextAlignment.TOP_RIGHT, 0xFFFFFFFF);
 //        DrawUtil.stopRender();
 //        fpsLogger.log();
     lwjglManager.render();

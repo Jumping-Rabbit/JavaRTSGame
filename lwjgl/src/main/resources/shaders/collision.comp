@@ -114,8 +114,8 @@ void main() {
                 uint normalizedDistance = (initialGuess + normalizedDistanceSquared / initialGuess) >> 1;
                 // Back to real units (rounded when scaling down).
                 uint distance = (bitLength > NORMALIZED_BIT_COUNT)
-                    ? (normalizedDistance << shiftAmount)
-                    : ((normalizedDistance + ((1u << shiftAmount) >> 1)) >> shiftAmount);
+                ? (normalizedDistance << shiftAmount)
+                : ((normalizedDistance + ((1u << shiftAmount) >> 1)) >> shiftAmount);
 
                 if (distance >= radiusSum) continue;
 

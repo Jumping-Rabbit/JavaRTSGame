@@ -11,5 +11,4 @@ module com.game.lwjgl {
   requires org.lwjgl.vulkan;
   requires org.lwjgl;
   requires it.unimi.dsi.fastutil;
-  requires com.github.oshi.ffm;
 }

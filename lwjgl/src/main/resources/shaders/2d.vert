@@ -1,7 +1,7 @@
 #version 460
 
-layout(location = 0) in vec4 inA;      // RECT/TEXT: x,y,w,h | CIRCLE: cx,cy,r,_ | LINE: x1,y1,x2,y2   (1920x1080 units)
-layout(location = 1) in vec4 inB;      // TEXT: u0,v0,u1,v1  | LINE: width,_,_,_ | else unused
+layout(location = 0) in vec4 inA;      // RECT/TEXT: x,y,w,h, CIRCLE: cx,cy,r,_, LINE: x1,y1,x2,y2   (1920x1080 units)
+layout(location = 1) in vec4 inB;      // TEXT: u0,v0,u1,v1 , LINE: width,_,_,_, else unused
 layout(location = 2) in vec4 inColor;  // R8G8B8A8_UNORM, straight (non-premultiplied) RGBA
 layout(location = 3) in uint inType;   // bits 0-7: type (0 rect, 1 circle, 2 line, 3 text glyph), bits 8-15: font index (atlas layer)
 
@@ -15,7 +15,7 @@ layout(push_constant) uniform PC {
 layout(location = 0) out vec4 vColor;
 layout(location = 1) out vec2 vLocal;        // pixel-space position relative to shape center (rect/circle/line)
 layout(location = 2) out vec2 vUV;
-layout(location = 3) flat out vec2 vParam;   // rect: (halfW, halfH) px | circle: (radiusPx, _) | line: (halfLengthPx, halfWidthPx)
+layout(location = 3) flat out vec2 vParam;   // rect: (halfW, halfH) px, circle: (radiusPx, _), line: (halfLengthPx, halfWidthPx)
 layout(location = 4) flat out uint vType;    // passed through unchanged (type + font index)
 
 const uint T_RECT = 0u;
